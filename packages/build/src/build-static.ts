@@ -30,10 +30,9 @@ const remoteUrl = getRemoteUrl(workerPath)
 const occurrence = `// const explorerWorkerUrl = \`\${assetDir}/packages/explorer-worker/dist/explorerViewWorkerMain.js\`
 const explorerWorkerUrl = \`${remoteUrl}\``
 const replacement = `const explorerWorkerUrl = \`\${assetDir}/packages/explorer-worker/dist/explorerViewWorkerMain.js\``
-if (!content.includes(occurrence)) {
-  throw new Error('occurrence not found')
+if (content.includes(occurrence)) {
+  const newContent = content.replace(occurrence, replacement)
+  await writeFile(rendererWorkerPath, newContent)
 }
-const newContent = content.replace(occurrence, replacement)
-await writeFile(rendererWorkerPath, newContent)
 
 await cp(join(root, 'dist'), join(root, '.tmp', 'static'), { recursive: true })
