@@ -9,7 +9,7 @@ const sharedProcessUrl = pathToFileURL(sharedProcessPath).toString()
 
 const sharedProcess = await import(sharedProcessUrl)
 
-process.env.PATH_PREFIX = '/pull-request-github'
+process.env.PATH_PREFIX = '/pull-requests-github'
 const { commitHash } = await sharedProcess.exportStatic({
   root,
   extensionPath: '',
@@ -27,9 +27,9 @@ const content = await readFile(rendererWorkerPath, 'utf8')
 const workerPath = join(root, '.tmp/dist/dist/pullRequestWorkerMain.js')
 const remoteUrl = getRemoteUrl(workerPath)
 
-const occurrence = `// const explorerWorkerUrl = \`\${assetDir}/packages/explorer-worker/dist/explorerViewWorkerMain.js\`
-const explorerWorkerUrl = \`${remoteUrl}\``
-const replacement = `const explorerWorkerUrl = \`\${assetDir}/packages/explorer-worker/dist/explorerViewWorkerMain.js\``
+const occurrence = `// const pullRequestsGithubWorkerUrl = \`\${assetDir}/packages/pull-requests-github-worker/dist/pullRequestsGithubViewWorkerMain.js\`
+const pullRequestsGithubWorkerUrl = \`${remoteUrl}\``
+const replacement = `const pullRequestsGithubWorkerUrl = \`\${assetDir}/packages/pull-requests-github-worker/dist/pullRequestsGithubViewWorkerMain.js\``
 if (content.includes(occurrence)) {
   const newContent = content.replace(occurrence, replacement)
   await writeFile(rendererWorkerPath, newContent)

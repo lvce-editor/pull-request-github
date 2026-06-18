@@ -1,5 +1,10 @@
-import { expect, test } from '@jest/globals'
+import { afterEach, expect, test } from '@jest/globals'
 import { fetchPullRequest, toPullRequestData } from '../src/parts/GitHubPullRequest/GitHubPullRequest.ts'
+import { clearPullRequestData, setPullRequestData, setPullRequestError } from '../src/parts/PullRequestMockRegistry/PullRequestMockRegistry.ts'
+
+afterEach(() => {
+  clearPullRequestData()
+})
 
 const createNotFoundFetch = async (): Promise<Response> => {
   return {
@@ -79,4 +84,34 @@ test('fetchPullRequest fetches public github pull request', async () => {
 
 test('fetchPullRequest reports github error message', async () => {
   await expect(fetchPullRequest('https://github.com/owner/repo/pull/7', createNotFoundFetch)).rejects.toThrow('Not Found')
+})
+
+test('fetchPullRequest returns mock data without fetching', async () => {
+  const data = {
+    baseBranch: 'main',
+    description: 'description',
+    headBranch: 'feature',
+    title: 'Add feature',
+  }
+  const calls: unknown[] = []
+  const fetchFn = async (): Promise<Response> => {
+    calls.push('fetch')
+    throw new Error('unexpected fetch')
+  }
+  setPullRequestData('https://github.com/owner/repo/pull/7', data)
+
+  await expect(fetchPullRequest('https://github.com/owner/repo/pull/7', fetchFn)).resolves.toEqual(data)
+  expect(calls).toEqual([])
+})
+
+test('fetchPullRequest throws mock error without fetching', async () => {
+  const calls: unknown[] = []
+  const fetchFn = async (): Promise<Response> => {
+    calls.push('fetch')
+    throw new Error('unexpected fetch')
+  }
+  setPullRequestError('https://github.com/owner/repo/pull/7', 'Not Found')
+
+  await expect(fetchPullRequest('https://github.com/owner/repo/pull/7', fetchFn)).rejects.toThrow('Not Found')
+  expect(calls).toEqual([])
 })

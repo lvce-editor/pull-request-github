@@ -1,0 +1,28 @@
+{
+  "id": "github.pull-requests",
+  "browser": "dist/pullRequestWorkerMain.js",
+  "isolated": true,
+  "activation": ["onView:github.pullRequests"],
+  "commands": [
+    {
+      "id": "PullRequestsGithub.clearPullRequestData",
+      "label": "Clear Pull Requests GitHub Mock Data"
+    },
+    {
+      "id": "PullRequestsGithub.setPullRequestData",
+      "label": "Set Pull Requests GitHub Mock Data"
+    },
+    {
+      "id": "PullRequestsGithub.setPullRequestError",
+      "label": "Set Pull Requests GitHub Mock Error"
+    }
+  ],
+  "views": [
+    {
+      "id": "github.pullRequests",
+      "title": "Pull Requests",
+      "icon": "symbol-github",
+      "kind": "virtualDom"
+    }
+  ]
+}

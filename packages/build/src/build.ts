@@ -56,7 +56,7 @@ await bundleJs()
 
 const version = await getVersion()
 
-const packageJson = await readJson(join(root, 'packages', 'explorer-view', 'package.json'))
+const packageJson = await readJson(join(root, 'packages', 'pull-requests-github', 'package.json'))
 
 delete packageJson.scripts
 delete packageJson.devDependencies
@@ -70,6 +70,6 @@ packageJson.main = 'dist/pullRequestWorkerMain.js'
 
 await writeJson(join(dist, 'package.json'), packageJson)
 
-await cp(join(root, 'packages', 'explorer-view', 'extension.json'), join(dist, 'extension.json'))
+await cp(join(root, 'packages', 'pull-requests-github', 'extension.json'), join(dist, 'extension.json'))
 await cp(join(root, 'README.md'), join(dist, 'README.md'))
 await cp(join(root, 'LICENSE'), join(dist, 'LICENSE'))
