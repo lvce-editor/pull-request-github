@@ -1,12 +1,15 @@
 {
-  "name": "@lvce-editor/pull-request-github-server",
+  "name": "@lvce-editor/explorer-view-server",
   "version": "0.0.0-dev",
   "main": "index.js",
   "type": "module",
+  "scripts": {
+    "dev": "node ./node_modules/@lvce-editor/server/bin/server.js --test-path=../e2e"
+  },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@lvce-editor/server": "0.83.1"
+    "@lvce-editor/server": "0.84.0"
   }
 }
