@@ -1,4 +1,5 @@
 import { parsePullRequestUrl } from '../PullRequestUrl/PullRequestUrl.ts'
+import * as PullRequestMockRegistry from '../PullRequestMockRegistry/PullRequestMockRegistry.ts'
 
 export interface PullRequestData {
   readonly baseBranch: string
@@ -43,6 +44,13 @@ const getErrorMessage = (response: GitHubPullResponse, status: number): string =
 }
 
 export const fetchPullRequest = async (url: string, fetchFn: typeof fetch = fetch): Promise<PullRequestData> => {
+  const mock = PullRequestMockRegistry.getMockPullRequest(url)
+  if (mock?.type === 'data') {
+    return mock.data
+  }
+  if (mock?.type === 'error') {
+    throw new Error(mock.message)
+  }
   const location = parsePullRequestUrl(url)
   const apiUrl = `https://api.github.com/repos/${location.owner}/${location.repo}/pulls/${location.number}`
   const response = await fetchFn(apiUrl, {
