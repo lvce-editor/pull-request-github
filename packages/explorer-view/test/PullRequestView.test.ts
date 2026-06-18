@@ -1,10 +1,8 @@
 import { afterEach, expect, jest, test } from '@jest/globals'
 import { create } from '../src/parts/PullRequestView/PullRequestView.ts'
 
-const originalFetch = globalThis.fetch
-
 afterEach(() => {
-  globalThis.fetch = originalFetch
+  jest.restoreAllMocks()
 })
 
 test('create renders saved url', () => {
@@ -35,7 +33,7 @@ test('handleEvent updates url from input', async () => {
 })
 
 test('handleEvent loads pull request on button click', async () => {
-  globalThis.fetch = jest.fn(async () => {
+  jest.spyOn(globalThis, 'fetch').mockImplementation(async () => {
     return {
       json: async () => ({
         base: {
@@ -50,7 +48,7 @@ test('handleEvent loads pull request on button click', async () => {
       ok: true,
       status: 200,
     } as Response
-  }) as typeof fetch
+  })
 
   const view = create()
   await view.handleEvent({

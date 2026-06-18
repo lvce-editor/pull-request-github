@@ -18,8 +18,8 @@ export const parsePullRequestUrl = (value: string): PullRequestLocation => {
   if (parts.length < 4 || parts[2] !== 'pull') {
     throw new Error('Enter a GitHub pull request URL like https://github.com/owner/repo/pull/123')
   }
-  const number = Number.parseInt(parts[3], 10)
-  if (!Number.isInteger(number) || number <= 0 || `${number}` !== parts[3]) {
+  const number = Number(parts[3])
+  if (!Number.isSafeInteger(number) || number <= 0 || String(number) !== parts[3]) {
     throw new Error('Pull request number must be a positive integer')
   }
   return {

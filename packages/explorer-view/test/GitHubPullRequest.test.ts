@@ -1,6 +1,16 @@
 import { expect, test } from '@jest/globals'
 import { fetchPullRequest, toPullRequestData } from '../src/parts/GitHubPullRequest/GitHubPullRequest.ts'
 
+const createNotFoundFetch = async (): Promise<Response> => {
+  return {
+    json: async () => ({
+      message: 'Not Found',
+    }),
+    ok: false,
+    status: 404,
+  } as Response
+}
+
 test('toPullRequestData maps github response', () => {
   expect(
     toPullRequestData({
@@ -24,7 +34,7 @@ test('toPullRequestData maps github response', () => {
 test('fetchPullRequest fetches public github pull request', async () => {
   const calls: unknown[] = []
   const fetchFn = async (url: URL | RequestInfo, options?: RequestInit): Promise<Response> => {
-    calls.push([`${url}`, options])
+    calls.push([String(url), options])
     return {
       json: async () => ({
         base: {
@@ -60,15 +70,5 @@ test('fetchPullRequest fetches public github pull request', async () => {
 })
 
 test('fetchPullRequest reports github error message', async () => {
-  const fetchFn = async (): Promise<Response> => {
-    return {
-      json: async () => ({
-        message: 'Not Found',
-      }),
-      ok: false,
-      status: 404,
-    } as Response
-  }
-
-  await expect(fetchPullRequest('https://github.com/owner/repo/pull/7', fetchFn)).rejects.toThrow('Not Found')
+  await expect(fetchPullRequest('https://github.com/owner/repo/pull/7', createNotFoundFetch)).rejects.toThrow('Not Found')
 })

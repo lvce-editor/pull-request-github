@@ -1,7 +1,7 @@
 import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
-import { fetchPullRequest } from '../GitHubPullRequest/GitHubPullRequest.ts'
-import { getPullRequestVirtualDom } from '../GetPullRequestVirtualDom/GetPullRequestVirtualDom.ts'
 import type { PullRequestViewSavedState, PullRequestViewState } from '../PullRequestViewState/PullRequestViewState.ts'
+import { getPullRequestVirtualDom } from '../GetPullRequestVirtualDom/GetPullRequestVirtualDom.ts'
+import { fetchPullRequest } from '../GitHubPullRequest/GitHubPullRequest.ts'
 import * as PullRequestViewStatus from '../PullRequestViewState/PullRequestViewState.ts'
 
 interface ViewContext {
@@ -43,7 +43,7 @@ const loadPullRequest = async (state: PullRequestViewState): Promise<PullRequest
   } catch (error) {
     return {
       ...state,
-      error: error instanceof Error ? error.message : `${error}`,
+      error: error instanceof Error ? error.message : String(error),
       pullRequest: undefined,
       status: PullRequestViewStatus.Error,
     }
@@ -71,7 +71,7 @@ export const create = (context?: ViewContext): VirtualDomViewInstance => {
         state = await loadPullRequest(state)
       }
     },
-    render() {
+    render(): readonly VirtualDomNode[] {
       return getPullRequestVirtualDom(state)
     },
     saveState(): PullRequestViewSavedState {
