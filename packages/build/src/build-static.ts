@@ -9,7 +9,7 @@ const sharedProcessUrl = pathToFileURL(sharedProcessPath).toString()
 
 const sharedProcess = await import(sharedProcessUrl)
 
-process.env.PATH_PREFIX = '/explorer-view'
+process.env.PATH_PREFIX = '/pull-request-github'
 const { commitHash } = await sharedProcess.exportStatic({
   root,
   extensionPath: '',
