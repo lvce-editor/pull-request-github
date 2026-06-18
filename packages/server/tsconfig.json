@@ -3,7 +3,7 @@
     "lib": ["esnext"],
     "checkJs": true,
     "target": "esnext",
-    "types": ["node"],
+    "types": [],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "skipLibCheck": true,
