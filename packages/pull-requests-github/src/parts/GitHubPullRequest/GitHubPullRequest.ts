@@ -1,5 +1,5 @@
-import { parsePullRequestUrl } from '../PullRequestUrl/PullRequestUrl.ts'
 import * as PullRequestMockRegistry from '../PullRequestMockRegistry/PullRequestMockRegistry.ts'
+import { parsePullRequestUrl } from '../PullRequestUrl/PullRequestUrl.ts'
 
 export interface PullRequestData {
   readonly baseBranch: string

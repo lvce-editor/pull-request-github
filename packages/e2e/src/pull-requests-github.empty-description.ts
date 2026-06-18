@@ -1,30 +1,35 @@
 import type { Test } from '@lvce-editor/test-with-playwright'
-import {
-  clearMockPullRequests,
-  dispatchPullRequestUrl,
-  openPullRequestsView,
-  setMockPullRequest,
-  submitPullRequest,
-} from './pull-requests-github-helper.ts'
 
 export const name = 'pull-requests-github.empty-description'
 
 export const test: Test = async ({ ActivityBar, Command, expect, Locator }) => {
   const url = 'https://github.com/lvce-editor/lvce-editor/pull/124'
-  await openPullRequestsView(ActivityBar, expect, Locator)
-  await clearMockPullRequests(Command)
-  await setMockPullRequest(Command, url, {
+  await ActivityBar.toggleActivityBarItem('github.pullRequests')
+  const input = Locator('input[name="pullRequestUrl"]')
+  await expect(input).toBeVisible()
+  await Command.execute('ExtensionHost.executeCommand', 'PullRequestsGithub.clearPullRequestData')
+  await Command.execute('ExtensionHost.executeCommand', 'PullRequestsGithub.setPullRequestData', url, {
     baseBranch: 'release/e2e-empty-base',
     description: '',
     headBranch: 'feature/e2e-empty-head',
     title: 'Render empty pull request description',
   })
 
-  await dispatchPullRequestUrl(Command, url)
-  await submitPullRequest(Command)
+  await Command.execute('Extensions.dispatchViewEvent', 'github.pullRequests', 1, {
+    name: 'pullRequestUrl',
+    type: 'input',
+    value: url,
+  })
+  await Command.execute('Extensions.dispatchViewEvent', 'github.pullRequests', 1, {
+    type: 'submit',
+  })
 
-  await expect(Locator('text=Render empty pull request description')).toBeVisible()
-  await expect(Locator('text=feature/e2e-empty-head')).toBeVisible()
-  await expect(Locator('text=release/e2e-empty-base')).toBeVisible()
-  await expect(Locator('text=No description')).toBeVisible()
+  const title = Locator('text=Render empty pull request description')
+  const headBranch = Locator('text=feature/e2e-empty-head')
+  const baseBranch = Locator('text=release/e2e-empty-base')
+  const description = Locator('text=No description')
+  await expect(title).toBeVisible()
+  await expect(headBranch).toBeVisible()
+  await expect(baseBranch).toBeVisible()
+  await expect(description).toBeVisible()
 }

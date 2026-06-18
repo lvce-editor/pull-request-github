@@ -1,10 +1,6 @@
 import { afterEach, expect, test } from '@jest/globals'
 import { fetchPullRequest, toPullRequestData } from '../src/parts/GitHubPullRequest/GitHubPullRequest.ts'
-import {
-  clearPullRequestData,
-  setPullRequestData,
-  setPullRequestError,
-} from '../src/parts/PullRequestMockRegistry/PullRequestMockRegistry.ts'
+import { clearPullRequestData, setPullRequestData, setPullRequestError } from '../src/parts/PullRequestMockRegistry/PullRequestMockRegistry.ts'
 
 afterEach(() => {
   clearPullRequestData()

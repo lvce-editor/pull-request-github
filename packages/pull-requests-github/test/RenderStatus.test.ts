@@ -1,6 +1,6 @@
 import { expect, test } from '@jest/globals'
-import { renderStatus } from '../src/parts/RenderStatus/RenderStatus.ts'
 import * as PullRequestViewStatus from '../src/parts/PullRequestViewState/PullRequestViewState.ts'
+import { renderStatus } from '../src/parts/RenderStatus/RenderStatus.ts'
 
 test('renderStatus renders loading state', () => {
   const dom = renderStatus({

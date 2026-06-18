@@ -1,30 +1,35 @@
 import type { Test } from '@lvce-editor/test-with-playwright'
-import {
-  clearMockPullRequests,
-  dispatchPullRequestUrl,
-  openPullRequestsView,
-  setMockPullRequest,
-  submitPullRequest,
-} from './pull-requests-github-helper.ts'
 
 export const name = 'pull-requests-github.load-success'
 
 export const test: Test = async ({ ActivityBar, Command, expect, Locator }) => {
   const url = 'https://github.com/lvce-editor/lvce-editor/pull/123'
-  await openPullRequestsView(ActivityBar, expect, Locator)
-  await clearMockPullRequests(Command)
-  await setMockPullRequest(Command, url, {
+  await ActivityBar.toggleActivityBarItem('github.pullRequests')
+  const input = Locator('input[name="pullRequestUrl"]')
+  await expect(input).toBeVisible()
+  await Command.execute('ExtensionHost.executeCommand', 'PullRequestsGithub.clearPullRequestData')
+  await Command.execute('ExtensionHost.executeCommand', 'PullRequestsGithub.setPullRequestData', url, {
     baseBranch: 'release/e2e-base',
     description: 'Plain text description from deterministic e2e data.',
     headBranch: 'feature/e2e-head',
     title: 'Add deterministic pull request e2e coverage',
   })
 
-  await dispatchPullRequestUrl(Command, url)
-  await submitPullRequest(Command)
+  await Command.execute('Extensions.dispatchViewEvent', 'github.pullRequests', 1, {
+    name: 'pullRequestUrl',
+    type: 'input',
+    value: url,
+  })
+  await Command.execute('Extensions.dispatchViewEvent', 'github.pullRequests', 1, {
+    type: 'submit',
+  })
 
-  await expect(Locator('text=Add deterministic pull request e2e coverage')).toBeVisible()
-  await expect(Locator('text=feature/e2e-head')).toBeVisible()
-  await expect(Locator('text=release/e2e-base')).toBeVisible()
-  await expect(Locator('text=Plain text description from deterministic e2e data.')).toBeVisible()
+  const title = Locator('text=Add deterministic pull request e2e coverage')
+  const headBranch = Locator('text=feature/e2e-head')
+  const baseBranch = Locator('text=release/e2e-base')
+  const description = Locator('text=Plain text description from deterministic e2e data.')
+  await expect(title).toBeVisible()
+  await expect(headBranch).toBeVisible()
+  await expect(baseBranch).toBeVisible()
+  await expect(description).toBeVisible()
 }
