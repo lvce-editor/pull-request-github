@@ -34,7 +34,14 @@ test('toPullRequestData maps github response', () => {
 test('fetchPullRequest fetches public github pull request', async () => {
   const calls: unknown[] = []
   const fetchFn = async (url: URL | RequestInfo, options?: RequestInit): Promise<Response> => {
-    const requestUrl = typeof url === 'string' ? url : url instanceof URL ? url.href : url.url
+    let requestUrl: string
+    if (typeof url === 'string') {
+      requestUrl = url
+    } else if (url instanceof URL) {
+      requestUrl = url.href
+    } else {
+      requestUrl = url.url
+    }
     calls.push([requestUrl, options])
     return {
       json: async () => ({

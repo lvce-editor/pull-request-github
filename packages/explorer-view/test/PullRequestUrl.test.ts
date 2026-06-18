@@ -16,7 +16,5 @@ test('parsePullRequestUrl rejects non github urls', () => {
 })
 
 test('parsePullRequestUrl rejects invalid pull request number', () => {
-  expect(() => parsePullRequestUrl('https://github.com/lvce-editor/lvce-editor/pull/abc')).toThrow(
-    'Pull request number must be a positive integer',
-  )
+  expect(() => parsePullRequestUrl('https://github.com/lvce-editor/lvce-editor/pull/abc')).toThrow('Pull request number must be a positive integer')
 })
