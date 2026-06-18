@@ -6,13 +6,13 @@ import { rollup, type RollupOptions } from 'rollup'
 import { root } from './root.ts'
 
 const options: RollupOptions = {
-  input: join(root, 'packages/explorer-view/src/explorerViewWorkerMain.ts'),
+  input: join(root, 'packages/explorer-view/src/pullRequestWorkerMain.ts'),
   preserveEntrySignatures: 'strict',
   treeshake: {
     propertyReadSideEffects: false,
   },
   output: {
-    file: join(root, '.tmp/dist/dist/explorerViewWorkerMain.js'),
+    file: join(root, '.tmp/dist/dist/pullRequestWorkerMain.js'),
     format: 'es',
     freeze: false,
     generatedCode: {

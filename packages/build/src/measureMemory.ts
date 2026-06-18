@@ -8,7 +8,7 @@ const instantiations = 9000
 
 const instantiationsPath = join(root, 'packages', 'explorer-view')
 
-const workerPath = join(root, '.tmp/dist/dist/explorerViewWorkerMain.js')
+const workerPath = join(root, '.tmp/dist/dist/pullRequestWorkerMain.js')
 
 const playwrightPath = import.meta.resolve('../../e2e/node_modules/playwright/index.mjs')
 

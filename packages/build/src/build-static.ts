@@ -24,7 +24,7 @@ export const getRemoteUrl = (path: string): string => {
 }
 
 const content = await readFile(rendererWorkerPath, 'utf8')
-const workerPath = join(root, '.tmp/dist/dist/explorerViewWorkerMain.js')
+const workerPath = join(root, '.tmp/dist/dist/pullRequestWorkerMain.js')
 const remoteUrl = getRemoteUrl(workerPath)
 
 const occurrence = `// const explorerWorkerUrl = \`\${assetDir}/packages/explorer-worker/dist/explorerViewWorkerMain.js\`

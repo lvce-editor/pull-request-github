@@ -1,0 +1,14 @@
+{
+  "id": "github.pull-requests",
+  "browser": "dist/pullRequestWorkerMain.js",
+  "isolated": true,
+  "activation": ["onView:github.pullRequests"],
+  "views": [
+    {
+      "id": "github.pullRequests",
+      "title": "Pull Requests",
+      "icon": "symbol-github",
+      "kind": "virtualDom"
+    }
+  ]
+}
