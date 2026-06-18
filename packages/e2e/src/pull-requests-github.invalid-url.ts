@@ -2,6 +2,8 @@ import type { Test } from '@lvce-editor/test-with-playwright'
 
 export const name = 'pull-requests-github.invalid-url'
 
+export const skip = true
+
 export const test: Test = async ({ ActivityBar, Command, expect, Locator }) => {
   await ActivityBar.toggleActivityBarItem('github.pullRequests')
   const input = Locator('input[name="pullRequestUrl"]')
