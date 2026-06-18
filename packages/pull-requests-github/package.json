@@ -4,7 +4,7 @@
   "description": "Pull Request View",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lvce-editor/pull-request-github.git"
+    "url": "git+https://github.com/lvce-editor/pull-requests-github.git"
   },
   "license": "MIT",
   "author": "Lvce Editor",

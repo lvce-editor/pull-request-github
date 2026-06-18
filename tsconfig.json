@@ -3,7 +3,7 @@
   "include": [],
   "references": [
     {
-      "path": "./packages/explorer-view"
+      "path": "./packages/pull-requests-github"
     },
     {
       "path": "./packages/build"

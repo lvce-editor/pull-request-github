@@ -6,7 +6,7 @@ const threshold = 570_000
 
 const instantiations = 9000
 
-const instantiationsPath = join(root, 'packages', 'explorer-view')
+const instantiationsPath = join(root, 'packages', 'pull-requests-github')
 
 const workerPath = join(root, '.tmp/dist/dist/pullRequestWorkerMain.js')
 

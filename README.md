@@ -1,12 +1,12 @@
-# Explorer View
+# Pull Requests GitHub View
 
-WebWorker for the explorer view functionality in Lvce Editor.
+WebWorker for the pull requests github view functionality in Lvce Editor.
 
 ## Contributing
 
 ```sh
-git clone git@github.com:lvce-editor/explorer-view.git &&
-cd explorer-view &&
+git clone git@github.com:lvce-editor/pull-requests-github-view.git &&
+cd pull-requests-github-view &&
 npm ci &&
 npm test
 ```
