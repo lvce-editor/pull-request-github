@@ -1,15 +1,15 @@
 {
-  "name": "@lvce-editor/explorer-view",
+  "name": "@lvce-editor/pull-request-view",
   "version": "0.0.0-dev",
-  "description": "Explorer Worker",
+  "description": "Pull Request View",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lvce-editor/explorer-view.git"
+    "url": "git+https://github.com/lvce-editor/pull-request-github.git"
   },
   "license": "MIT",
   "author": "Lvce Editor",
   "type": "module",
-  "main": "src/explorerViewWorkerMain.ts",
+  "main": "src/pullRequestWorkerMain.ts",
   "scripts": {
     "build:watch": "cd ../../ && npm run build:watch",
     "dev": "cd ../../ && npm run dev",
