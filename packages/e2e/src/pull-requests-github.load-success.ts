@@ -2,13 +2,8 @@ import type { Test } from '@lvce-editor/test-with-playwright'
 
 export const name = 'pull-requests-github.load-success'
 
-export const skip = true
-
-export const test: Test = async ({ ActivityBar, Command, expect, Locator }) => {
+export const test: Test = async ({ Command, expect, Locator }) => {
   const url = 'https://github.com/lvce-editor/lvce-editor/pull/123'
-  await ActivityBar.toggleActivityBarItem('github.pullRequests')
-  const input = Locator('input[name="pullRequestUrl"]')
-  await expect(input).toBeVisible()
   await Command.executeExtensionCommand('PullRequestsGithub.clearPullRequestData')
   await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestData', url, {
     baseBranch: 'release/e2e-base',
@@ -16,15 +11,11 @@ export const test: Test = async ({ ActivityBar, Command, expect, Locator }) => {
     headBranch: 'feature/e2e-head',
     title: 'Add deterministic pull request e2e coverage',
   })
-
-  await Command.execute('Extensions.dispatchViewEvent', 'github.pullRequests', 1, {
-    name: 'pullRequestUrl',
-    type: 'input',
-    value: url,
-  })
-  await Command.execute('Extensions.dispatchViewEvent', 'github.pullRequests', 1, {
-    type: 'submit',
-  })
+  await Command.executeExtensionCommand('PullRequestsGithub.show')
+  const input = Locator('input[name="pullRequestUrl"]')
+  await expect(input).toBeVisible()
+  await input.type(url)
+  await Locator('form[name="pullRequestForm"]').dispatchEvent('submit', {} as any)
 
   const title = Locator('text=Add deterministic pull request e2e coverage')
   const headBranch = Locator('text=feature/e2e-head')
