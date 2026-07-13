@@ -1,9 +1,11 @@
 import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
 import { text, VirtualDomElements } from '@lvce-editor/virtual-dom-worker'
 import type { PullRequestViewState } from '../PullRequestViewState/PullRequestViewState.ts'
+import * as DomEventListenerFunctions from '../DomEventListenerFunctions/DomEventListenerFunctions.ts'
 import { renderStatus } from '../RenderStatus/RenderStatus.ts'
 
 export const getPullRequestVirtualDom = (state: PullRequestViewState): readonly VirtualDomNode[] => {
+  const { url } = state
   const statusDom = renderStatus(state)
   return [
     {
@@ -15,25 +17,25 @@ export const getPullRequestVirtualDom = (state: PullRequestViewState): readonly 
       childCount: 2,
       className: 'PullRequestForm',
       name: 'pullRequestForm',
-      onSubmit: 'handleSubmit',
+      onSubmit: DomEventListenerFunctions.HandleSubmit,
       type: VirtualDomElements.Form,
     },
     {
       childCount: 0,
       className: 'PullRequestInput',
       name: 'pullRequestUrl',
-      onBlur: 'handleBlur',
-      onFocus: 'handleFocus',
-      onInput: 'handleInput',
+      onBlur: DomEventListenerFunctions.HandleBlur,
+      onFocus: DomEventListenerFunctions.HandleFocus,
+      onInput: DomEventListenerFunctions.HandleInput,
       placeholder: 'https://github.com/owner/repo/pull/123',
       type: VirtualDomElements.Input,
-      value: state.url,
+      value: url,
     },
     {
       childCount: 1,
       className: 'PullRequestButton',
       name: 'loadPullRequest',
-      onClick: 'handleClick',
+      onClick: DomEventListenerFunctions.HandleClick,
       type: VirtualDomElements.Button,
     },
     text('Load'),

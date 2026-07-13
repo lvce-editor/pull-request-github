@@ -1,0 +1,5 @@
+export const HandleBlur = 'handleBlur'
+export const HandleClick = 'handleClick'
+export const HandleFocus = 'handleFocus'
+export const HandleInput = 'handleInput'
+export const HandleSubmit = 'handleSubmit'

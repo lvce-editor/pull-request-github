@@ -1,4 +1,5 @@
 import { expect, test } from '@jest/globals'
+import { mergeClassNames } from '@lvce-editor/virtual-dom-worker'
 import * as PullRequestViewStatus from '../src/parts/PullRequestViewState/PullRequestViewState.ts'
 import { renderStatus } from '../src/parts/RenderStatus/RenderStatus.ts'
 
@@ -23,6 +24,7 @@ test('renderStatus renders loading state', () => {
 })
 
 test('renderStatus renders error state', () => {
+  const className = mergeClassNames('PullRequestMessage', 'PullRequestMessageError')
   const dom = renderStatus({
     error: 'Not Found',
     pullRequest: undefined,
@@ -33,7 +35,7 @@ test('renderStatus renders error state', () => {
   expect(dom).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        className: 'PullRequestMessage PullRequestMessageError',
+        className,
       }),
       expect.objectContaining({
         text: 'Not Found',

@@ -33,14 +33,16 @@ test('listen', async () => {
       headBranch: 'feature',
       title: 'Add feature',
     })
-    expect(getMockPullRequest('https://github.com/owner/repo/pull/7')).toEqual({
-      data: {
-        baseBranch: 'main',
-        description: 'description',
-        headBranch: 'feature',
-        title: 'Add feature',
-      },
-      type: 'data',
+    const mockPullRequest = getMockPullRequest('https://github.com/owner/repo/pull/7')
+    expect(mockPullRequest?.type).toBe('data')
+    if (mockPullRequest?.type !== 'data') {
+      throw new Error('expected mock pull request data')
+    }
+    expect(mockPullRequest.data).toEqual({
+      baseBranch: 'main',
+      description: 'description',
+      headBranch: 'feature',
+      title: 'Add feature',
     })
     PullRequestCommands.setPullRequestError('https://github.com/owner/repo/pull/7', 'Not Found')
     expect(getMockPullRequest('https://github.com/owner/repo/pull/7')).toEqual({
