@@ -9,8 +9,8 @@ export const test: Test = async ({ ActivityBar, Command, expect, Locator }) => {
   await ActivityBar.toggleActivityBarItem('github.pullRequests')
   const input = Locator('input[name="pullRequestUrl"]')
   await expect(input).toBeVisible()
-  await Command.execute('ExtensionHost.executeCommand', 'PullRequestsGithub.clearPullRequestData')
-  await Command.execute('ExtensionHost.executeCommand', 'PullRequestsGithub.setPullRequestError', url, 'Not Found')
+  await Command.executeExtensionCommand('PullRequestsGithub.clearPullRequestData')
+  await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestError', url, 'Not Found')
 
   await Command.execute('Extensions.dispatchViewEvent', 'github.pullRequests', 1, {
     name: 'pullRequestUrl',
