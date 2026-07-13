@@ -20,6 +20,9 @@ test('listen', async () => {
     start()
     await expect(listenPromise).resolves.toBeUndefined()
     expect(PullRequestCommands.commandIds).toEqual([
+      'PullRequestsGithub.show',
+      'PullRequestsGithub.refresh',
+      'PullRequestsGithub.openOnGitHub',
       'PullRequestsGithub.setPullRequestData',
       'PullRequestsGithub.setPullRequestError',
       'PullRequestsGithub.clearPullRequestData',

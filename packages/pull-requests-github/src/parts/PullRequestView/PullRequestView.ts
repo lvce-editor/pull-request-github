@@ -1,30 +1,42 @@
+import type { ViewContext, ViewEvent, VirtualDomViewInstance } from '@lvce-editor/api'
 import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
 import type { PullRequestViewSavedState, PullRequestViewState } from '../PullRequestViewState/PullRequestViewState.ts'
 import { getPullRequestVirtualDom } from '../GetPullRequestVirtualDom/GetPullRequestVirtualDom.ts'
 import { fetchPullRequest } from '../GitHubPullRequest/GitHubPullRequest.ts'
 import * as PullRequestViewStatus from '../PullRequestViewState/PullRequestViewState.ts'
 
-interface ViewContext {
-  readonly state?: unknown
-}
-
-interface ViewEvent {
-  readonly name?: string
-  readonly type: string
-  readonly value?: unknown
-}
-
-interface VirtualDomViewInstance {
+interface PullRequestViewInstance extends VirtualDomViewInstance {
+  readonly dispose: () => void
   readonly handleEvent: (event: ViewEvent) => Promise<void>
+  readonly openOnGitHub: (open: (url: string) => Promise<void>) => Promise<void>
+  readonly refresh: () => Promise<void>
   readonly render: () => readonly VirtualDomNode[]
   readonly saveState: () => PullRequestViewSavedState
+}
+
+type PullRequestViewContext = Partial<ViewContext>
+
+export const viewId = 'github.pullRequests'
+
+const activeInstances = new Set<PullRequestViewInstance>()
+
+const getActiveInstance = (): PullRequestViewInstance | undefined => {
+  return [...activeInstances].at(-1)
+}
+
+export const refreshActiveInstance = async (): Promise<void> => {
+  await getActiveInstance()?.refresh()
+}
+
+export const openActiveInstance = async (open: (url: string) => Promise<void>): Promise<void> => {
+  await getActiveInstance()?.openOnGitHub(open)
 }
 
 const isSavedState = (value: unknown): value is PullRequestViewSavedState => {
   return Boolean(value && typeof value === 'object')
 }
 
-const getSavedState = (context: ViewContext | undefined): PullRequestViewSavedState | undefined => {
+const getSavedState = (context: PullRequestViewContext | undefined): PullRequestViewSavedState | undefined => {
   if (!isSavedState(context?.state)) {
     return undefined
   }
@@ -50,9 +62,33 @@ const loadPullRequest = async (state: PullRequestViewState): Promise<PullRequest
   }
 }
 
-export const create = (context?: ViewContext): VirtualDomViewInstance => {
+export const create = (context?: PullRequestViewContext): PullRequestViewInstance => {
   let state = PullRequestViewStatus.createDefaultState(getSavedState(context))
-  return {
+
+  const requestRerender = async (): Promise<void> => {
+    await context?.requestRerender?.()
+  }
+
+  const refresh = async (rerender: boolean): Promise<void> => {
+    state = {
+      ...state,
+      error: '',
+      pullRequest: undefined,
+      status: PullRequestViewStatus.Loading,
+    }
+    if (rerender) {
+      await requestRerender()
+    }
+    state = await loadPullRequest(state)
+    if (rerender) {
+      await requestRerender()
+    }
+  }
+
+  const instance: PullRequestViewInstance = {
+    dispose(): void {
+      activeInstances.delete(instance)
+    },
     async handleEvent(event: ViewEvent): Promise<void> {
       if (event.type === 'input' && event.name === 'pullRequestUrl') {
         state = {
@@ -62,14 +98,17 @@ export const create = (context?: ViewContext): VirtualDomViewInstance => {
         return
       }
       if ((event.type === 'click' && event.name === 'loadPullRequest') || event.type === 'submit') {
-        state = {
-          ...state,
-          error: '',
-          pullRequest: undefined,
-          status: PullRequestViewStatus.Loading,
-        }
-        state = await loadPullRequest(state)
+        await refresh(false)
       }
+    },
+    async openOnGitHub(open: (url: string) => Promise<void>): Promise<void> {
+      if (!state.url) {
+        return
+      }
+      await open(state.url)
+    },
+    async refresh(): Promise<void> {
+      await refresh(true)
     },
     render(): readonly VirtualDomNode[] {
       return getPullRequestVirtualDom(state)
@@ -80,4 +119,6 @@ export const create = (context?: ViewContext): VirtualDomViewInstance => {
       }
     },
   }
+  activeInstances.add(instance)
+  return instance
 }
