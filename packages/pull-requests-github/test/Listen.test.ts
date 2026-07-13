@@ -49,9 +49,11 @@ test('listen', async () => {
     expect(getViewRegistrySnapshot()).toEqual({
       views: [
         {
+          displayName: 'Pull Requests',
           icon: 'symbol-github',
           id: 'github.pullRequests',
           kind: 'virtualDom',
+          name: undefined,
           title: 'Pull Requests',
         },
       ],
