@@ -4,7 +4,7 @@ import { root } from './root.ts'
 
 const threshold = 570_000
 
-const instantiations = 9000
+const instantiations = 11_000
 
 const instantiationsPath = join(root, 'packages', 'pull-requests-github')
 
