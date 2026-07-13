@@ -44,8 +44,9 @@ const getSavedState = (context: PullRequestViewContext | undefined): PullRequest
 }
 
 const loadPullRequest = async (state: PullRequestViewState): Promise<PullRequestViewState> => {
+  const { url } = state
   try {
-    const pullRequest = await fetchPullRequest(state.url)
+    const pullRequest = await fetchPullRequest(url)
     return {
       ...state,
       error: '',
@@ -102,10 +103,11 @@ export const create = (context?: PullRequestViewContext): PullRequestViewInstanc
       }
     },
     async openOnGitHub(open: (url: string) => Promise<void>): Promise<void> {
-      if (!state.url) {
+      const { url } = state
+      if (!url) {
         return
       }
-      await open(state.url)
+      await open(url)
     },
     async refresh(): Promise<void> {
       await refresh(true)
@@ -114,8 +116,9 @@ export const create = (context?: PullRequestViewContext): PullRequestViewInstanc
       return getPullRequestVirtualDom(state)
     },
     saveState(): PullRequestViewSavedState {
+      const { url } = state
       return {
-        url: state.url,
+        url,
       }
     },
   }

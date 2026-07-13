@@ -33,7 +33,7 @@
       ]
     },
     "testMatch": [
-      "**/test/**"
+      "**/test/**/*.test.ts"
     ],
     "collectCoverage": true,
     "coverageThreshold": {
