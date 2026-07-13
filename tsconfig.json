@@ -6,6 +6,9 @@
       "path": "./packages/pull-requests-github"
     },
     {
+      "path": "./packages/pull-requests-github/test"
+    },
+    {
       "path": "./packages/build"
     },
     {
