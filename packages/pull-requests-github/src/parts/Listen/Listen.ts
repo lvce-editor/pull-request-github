@@ -3,7 +3,7 @@ import * as PullRequestCommands from '../PullRequestCommands/PullRequestCommands
 import * as PullRequestView from '../PullRequestView/PullRequestView.ts'
 
 export const listen = async (): Promise<void> => {
-  void activateExtensionApi()
+  await activateExtensionApi()
   PullRequestCommands.registerCommands()
   registerView({
     create: PullRequestView.create,
