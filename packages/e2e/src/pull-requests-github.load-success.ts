@@ -9,8 +9,8 @@ export const test: Test = async ({ ActivityBar, Command, expect, Locator }) => {
   await ActivityBar.toggleActivityBarItem('github.pullRequests')
   const input = Locator('input[name="pullRequestUrl"]')
   await expect(input).toBeVisible()
-  await Command.execute('ExtensionHost.executeCommand', 'PullRequestsGithub.clearPullRequestData')
-  await Command.execute('ExtensionHost.executeCommand', 'PullRequestsGithub.setPullRequestData', url, {
+  await Command.executeExtensionCommand('PullRequestsGithub.clearPullRequestData')
+  await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestData', url, {
     baseBranch: 'release/e2e-base',
     description: 'Plain text description from deterministic e2e data.',
     headBranch: 'feature/e2e-head',
