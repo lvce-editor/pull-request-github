@@ -8,7 +8,7 @@ export const listen = async (): Promise<void> => {
   registerView({
     create: PullRequestView.create,
     icon: 'symbol-github',
-    id: 'github.pullRequests',
+    id: PullRequestView.viewId,
     kind: 'virtualDom',
     title: 'Pull Requests',
   } as any)

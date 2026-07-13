@@ -2,8 +2,25 @@
   "id": "github.pull-requests",
   "browser": "dist/pullRequestWorkerMain.js",
   "isolated": true,
-  "activation": ["onView:github.pullRequests"],
+  "activation": [
+    "onView:github.pullRequests",
+    "onCommand:PullRequestsGithub.openOnGitHub",
+    "onCommand:PullRequestsGithub.refresh",
+    "onCommand:PullRequestsGithub.show"
+  ],
   "commands": [
+    {
+      "id": "PullRequestsGithub.show",
+      "label": "GitHub Pull Requests: Focus on Pull Requests View"
+    },
+    {
+      "id": "PullRequestsGithub.refresh",
+      "label": "GitHub Pull Requests: Refresh Pull Request"
+    },
+    {
+      "id": "PullRequestsGithub.openOnGitHub",
+      "label": "GitHub Pull Requests: Open Pull Request on GitHub"
+    },
     {
       "id": "PullRequestsGithub.clearPullRequestData",
       "label": "Clear Pull Requests GitHub Mock Data"
