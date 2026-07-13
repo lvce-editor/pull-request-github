@@ -5,8 +5,9 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "e2e": "node ./node_modules/@lvce-editor/test-with-playwright/bin/test-with-playwright.js  --only-extension=. --test-path=.",
-    "e2e:headless": "node ./node_modules/@lvce-editor/test-with-playwright/bin/test-with-playwright.js  --only-extension=. --test-path=. --headless",
+    "build:extension": "node ../build/src/build-extension.ts",
+    "e2e": "npm run build:extension && node ./node_modules/@lvce-editor/test-with-playwright/bin/test-with-playwright.js --only-extension=../pull-requests-github --test-path=.",
+    "e2e:headless": "npm run build:extension && node ./node_modules/@lvce-editor/test-with-playwright/bin/test-with-playwright.js --only-extension=../pull-requests-github --test-path=. --headless",
     "type-check": "tsc"
   },
   "devDependencies": {
