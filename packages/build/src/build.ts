@@ -1,3 +1,4 @@
+import { packageExtension } from '@lvce-editor/package-extension'
 import { execa } from 'execa'
 import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -73,3 +74,9 @@ await writeJson(join(dist, 'package.json'), packageJson)
 await cp(join(root, 'packages', 'pull-requests-github', 'extension.json'), join(dist, 'extension.json'))
 await cp(join(root, 'README.md'), join(dist, 'README.md'))
 await cp(join(root, 'LICENSE'), join(dist, 'LICENSE'))
+
+await packageExtension({
+  highestCompression: true,
+  inDir: dist,
+  outFile: join(root, 'extension.tar.br'),
+})
