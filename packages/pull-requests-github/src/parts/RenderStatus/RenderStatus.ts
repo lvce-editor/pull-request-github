@@ -4,37 +4,28 @@ import type { PullRequestViewState } from '../PullRequestViewState/PullRequestVi
 import * as PullRequestViewStatus from '../PullRequestViewState/PullRequestViewState.ts'
 import { renderPullRequest } from '../RenderPullRequest/RenderPullRequest.ts'
 
+const messageNode: VirtualDomNode = {
+  childCount: 1,
+  className: 'PullRequestMessage',
+  type: VirtualDomElements.Div,
+}
+
+const errorMessageNode: VirtualDomNode = {
+  childCount: 1,
+  className: mergeClassNames('PullRequestMessage', 'PullRequestMessageError'),
+  type: VirtualDomElements.Div,
+}
+
 export const renderStatus = (state: PullRequestViewState): readonly VirtualDomNode[] => {
   const { error, pullRequest, status } = state
   if (status === PullRequestViewStatus.Loading) {
-    return [
-      {
-        childCount: 1,
-        className: 'PullRequestMessage',
-        type: VirtualDomElements.Div,
-      },
-      text('Loading pull request...'),
-    ]
+    return [messageNode, text('Loading pull request...')]
   }
   if (status === PullRequestViewStatus.Error) {
-    return [
-      {
-        childCount: 1,
-        className: mergeClassNames('PullRequestMessage', 'PullRequestMessageError'),
-        type: VirtualDomElements.Div,
-      },
-      text(error),
-    ]
+    return [errorMessageNode, text(error)]
   }
   if (status === PullRequestViewStatus.Ready && pullRequest) {
     return renderPullRequest(pullRequest)
   }
-  return [
-    {
-      childCount: 1,
-      className: 'PullRequestMessage',
-      type: VirtualDomElements.Div,
-    },
-    text('Enter a GitHub pull request URL.'),
-  ]
+  return [messageNode, text('Enter a GitHub pull request URL.')]
 }
