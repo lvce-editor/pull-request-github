@@ -2,6 +2,7 @@
   "id": "github.pull-requests",
   "browser": "dist/pullRequestWorkerMain.js",
   "isolated": true,
+  "contentSecurityPolicy": ["default-src 'none'", "connect-src https://api.github.com", "script-src 'self'"],
   "activation": [
     "onView:github.pullRequests",
     "onCommand:PullRequestsGithub.openOnGitHub",
