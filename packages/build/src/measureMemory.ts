@@ -10,7 +10,7 @@ const instantiationsPath = join(root, 'packages', 'pull-requests-github')
 
 const workerPath = join(root, '.tmp/dist/dist/pullRequestWorkerMain.js')
 
-const playwrightPath = import.meta.resolve('../../e2e/node_modules/playwright/index.mjs')
+const playwrightPath = import.meta.resolve('../../../node_modules/playwright/index.mjs')
 
 await measureMemory({
   playwrightPath,
