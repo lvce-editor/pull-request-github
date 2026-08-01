@@ -59,6 +59,7 @@ test('listen', async () => {
           id: 'github.pullRequests',
           kind: 'virtualDom',
           name: undefined,
+          preferredLocation: 'sideBar',
           title: 'Pull Requests',
         },
       ],
