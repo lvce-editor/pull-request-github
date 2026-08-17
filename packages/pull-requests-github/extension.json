@@ -7,7 +7,10 @@
     "onView:github.pullRequests",
     "onCommand:PullRequestsGithub.openOnGitHub",
     "onCommand:PullRequestsGithub.refresh",
-    "onCommand:PullRequestsGithub.show"
+    "onCommand:PullRequestsGithub.show",
+    "onCommand:PullRequestsGithub.clearPullRequestData",
+    "onCommand:PullRequestsGithub.setPullRequestData",
+    "onCommand:PullRequestsGithub.setPullRequestError"
   ],
   "commands": [
     {
