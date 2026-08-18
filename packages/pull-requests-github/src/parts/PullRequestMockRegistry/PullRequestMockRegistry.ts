@@ -1,4 +1,6 @@
 import type { PullRequestData } from '../PullRequestData/PullRequestData.ts'
+import type { PullRequestFilter } from '../PullRequestFilter/PullRequestFilter.ts'
+import type { PullRequestListItem } from '../PullRequestListItem/PullRequestListItem.ts'
 import { parsePullRequestUrl } from '../PullRequestUrl/PullRequestUrl.ts'
 
 export interface PullRequestMockData {
@@ -11,7 +13,12 @@ export interface PullRequestMockError {
   readonly type: 'error'
 }
 
-export type PullRequestMock = PullRequestMockData | PullRequestMockError
+export interface PullRequestListMockData {
+  readonly data: readonly PullRequestListItem[]
+  readonly type: 'listData'
+}
+
+export type PullRequestMock = PullRequestListMockData | PullRequestMockData | PullRequestMockError
 
 const mocks = new Map<string, PullRequestMock>()
 
@@ -34,10 +41,32 @@ export const setPullRequestError = (url: string, message: string): void => {
   })
 }
 
+const getPullRequestListApiUrl = (owner: string, repo: string, state: PullRequestFilter): string => {
+  return `https://api.github.com/repos/${owner}/${repo}/pulls?state=${state}&per_page=100`
+}
+
+export const setPullRequestListData = (owner: string, repo: string, state: PullRequestFilter, data: readonly PullRequestListItem[]): void => {
+  mocks.set(getPullRequestListApiUrl(owner, repo, state), {
+    data,
+    type: 'listData',
+  })
+}
+
+export const setPullRequestListError = (owner: string, repo: string, state: PullRequestFilter, message: string): void => {
+  mocks.set(getPullRequestListApiUrl(owner, repo, state), {
+    message,
+    type: 'error',
+  })
+}
+
 export const clearPullRequestData = (): void => {
   mocks.clear()
 }
 
 export const getMockPullRequest = (url: string): PullRequestMock | undefined => {
   return mocks.get(getPullRequestApiUrl(url))
+}
+
+export const getMockPullRequestList = (owner: string, repo: string, state: PullRequestFilter): PullRequestMock | undefined => {
+  return mocks.get(getPullRequestListApiUrl(owner, repo, state))
 }

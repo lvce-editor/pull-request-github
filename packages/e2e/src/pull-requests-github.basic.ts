@@ -8,25 +8,35 @@ const toExtensionBaseUrl = (uri: string): string => {
   return url.href.endsWith('/') ? url.href : `${url.href}/`
 }
 
-export const name = 'pull-requests-github.empty-description'
+export const name = 'pull-requests-github.basic'
 
-export const test: Test = async ({ Command, expect, Locator }) => {
+export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspace }) => {
+  const tmpDir = await FileSystem.getTmpDir()
+  await FileSystem.mkdir(`${tmpDir}/.git`)
+  await FileSystem.writeFile(
+    `${tmpDir}/.git/config`,
+    `[remote "origin"]
+  url = https://github.com/lvce-editor/pull-request-github.git
+`,
+  )
+  await Workspace.setPath(tmpDir)
+  await Command.executeExtensionCommand('PullRequestsGithub.clearPullRequestData')
+  await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestListData', 'lvce-editor', 'pull-request-github', 'open', [])
+  await Command.executeExtensionCommand('PullRequestsGithub.show')
+
   const extensionUri = import.meta.resolve('../../pull-requests-github')
   const iconUrl = new URL('media/git-pull-request.svg', toExtensionBaseUrl(extensionUri)).href
   const activityBarItem = Locator('.ActivityBarItem[title="Pull Requests"]')
-  await expect(activityBarItem).toHaveCSS('mask-image', `url("${iconUrl}")`)
-  await Command.executeExtensionCommand('PullRequestsGithub.show')
   const view = Locator('.PullRequestView')
-  const form = Locator('form[name="pullRequestForm"]')
   const icon = activityBarItem.locator('.MaskIcon')
+  const tabs = Locator('.PullRequestTabs')
+  const openTab = Locator('button[name="showOpenPullRequests"]')
+  const message = Locator('.PullRequestMessage')
   await expect(icon).toBeVisible()
   await expect(icon).toHaveCSS('mask-image', `url("${iconUrl}")`)
-  const input = Locator('input[name="pullRequestUrl"]')
-  const button = Locator('button[name="loadPullRequest"]')
   await expect(view).toBeVisible()
   await expect(view).toHaveCSS('padding-left', '12px')
-  await expect(form).toHaveCSS('display', 'flex')
-  await expect(input).toBeVisible()
-  await expect(input).toHaveCSS('height', '30px')
-  await expect(button).toHaveCSS('border-radius', '6px')
+  await expect(tabs).toHaveCSS('display', 'grid')
+  await expect(openTab).toHaveCSS('height', '28px')
+  await expect(message).toContainText('No open pull requests.')
 }
