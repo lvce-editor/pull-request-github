@@ -1,4 +1,5 @@
-import { ModuleWorkerRpcParent, type Rpc } from '@lvce-editor/rpc'
+import type { Rpc } from '@lvce-editor/rpc'
+import { createRpc as createExtensionRpc } from '@lvce-editor/api'
 import type { PullRequestData } from '../PullRequestData/PullRequestData.ts'
 
 type GetRpc = () => Promise<Pick<Rpc, 'invoke'>>
@@ -41,8 +42,9 @@ const githubWorkerRpcState: { rpcPromise: Promise<Rpc> | undefined } = {
 }
 
 const getRpc = (): Promise<Rpc> => {
-  githubWorkerRpcState.rpcPromise ||= ModuleWorkerRpcParent.create({
+  githubWorkerRpcState.rpcPromise ||= createExtensionRpc({
     commandMap: {},
+    contentSecurityPolicy: ["default-src 'none'", 'connect-src https://api.github.com', "script-src 'self'"],
     name: 'GitHub Worker',
     url: new URL('githubWorkerMain.js', import.meta.url).href,
   })
