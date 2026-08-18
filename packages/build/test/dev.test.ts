@@ -19,3 +19,13 @@ test('writes the development bundle next to the extension manifest', async () =>
 
   match(packageJson.scripts['build:watch'], /--outdir=packages\/pull-requests-github\/dist(?:\s|$)/)
 })
+
+test('ships the pull requests view icon', async () => {
+  const extensionPath = join(root, 'packages', 'pull-requests-github')
+  const manifestContent = await readFile(join(extensionPath, 'extension.json'), 'utf8')
+  const manifest = JSON.parse(manifestContent)
+  const iconPath = manifest.views.find((view: { id?: string }) => view.id === 'github.pullRequests')?.icon
+  const iconContent = await readFile(join(extensionPath, iconPath), 'utf8')
+
+  match(iconContent, /^<svg\b/)
+})

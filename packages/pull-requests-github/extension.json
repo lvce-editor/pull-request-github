@@ -43,7 +43,7 @@
       "css": "media/pullRequests.css",
       "id": "github.pullRequests",
       "title": "Pull Requests",
-      "icon": "/icons/git-pull-request.svg",
+      "icon": "media/git-pull-request.svg",
       "kind": "virtualDom"
     }
   ]
