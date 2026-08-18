@@ -33,24 +33,14 @@ test('handleEvent updates url from input', async () => {
 })
 
 test('handleEvent loads pull request on button click', async () => {
-  jest.spyOn(globalThis, 'fetch').mockImplementation(async () => {
-    return {
-      json: async () => ({
-        base: {
-          ref: 'main',
-        },
-        body: 'description',
-        head: {
-          ref: 'feature',
-        },
-        title: 'Add feature',
-      }),
-      ok: true,
-      status: 200,
-    } as Response
+  const fetchPullRequest = jest.fn<(url: string) => Promise<any>>().mockResolvedValue({
+    baseBranch: 'main',
+    description: 'description',
+    headBranch: 'feature',
+    title: 'Add feature',
   })
 
-  const view = create()
+  const view = create(undefined, fetchPullRequest)
   await view.handleEvent({
     name: 'pullRequestUrl',
     type: 'input',
@@ -66,7 +56,8 @@ test('handleEvent loads pull request on button click', async () => {
 })
 
 test('handleEvent renders error on invalid submit', async () => {
-  const view = create()
+  const fetchPullRequest = jest.fn<(url: string) => Promise<any>>().mockRejectedValue(new Error('Enter a valid GitHub pull request URL'))
+  const view = create(undefined, fetchPullRequest)
   await view.handleEvent({
     type: 'submit',
   })
@@ -77,31 +68,28 @@ test('handleEvent renders error on invalid submit', async () => {
 
 test('refreshActiveInstance reloads the current pull request', async () => {
   const requestRerender = jest.fn<() => Promise<void>>().mockResolvedValue()
-  const fetchMock = jest.spyOn(globalThis, 'fetch').mockImplementation(async () => {
-    return {
-      json: async () => ({
-        base: { ref: 'main' },
-        body: 'updated description',
-        head: { ref: 'feature' },
-        title: 'Updated title',
-      }),
-      ok: true,
-      status: 200,
-    } as Response
+  const fetchPullRequest = jest.fn<(url: string) => Promise<any>>().mockResolvedValue({
+    baseBranch: 'main',
+    description: 'updated description',
+    headBranch: 'feature',
+    title: 'Updated title',
   })
-  const view = create({
-    requestRerender,
-    showContextMenu: jest.fn<() => Promise<void>>().mockResolvedValue(),
-    state: {
-      url: 'https://github.com/owner/repo/pull/3',
+  const view = create(
+    {
+      requestRerender,
+      showContextMenu: jest.fn<() => Promise<void>>().mockResolvedValue(),
+      state: {
+        url: 'https://github.com/owner/repo/pull/3',
+      },
+      uid: 1,
+      viewId: 'github.pullRequests',
     },
-    uid: 1,
-    viewId: 'github.pullRequests',
-  })
+    fetchPullRequest,
+  )
 
   await refreshActiveInstance()
 
-  expect(fetchMock).toHaveBeenCalledTimes(1)
+  expect(fetchPullRequest).toHaveBeenCalledTimes(1)
   expect(requestRerender).toHaveBeenCalledTimes(2)
   expect(view.render().some((node) => node.text === 'Updated title')).toBe(true)
   view.dispose()

@@ -2,7 +2,7 @@ import type { ViewContext, ViewEvent, VirtualDomViewInstance } from '@lvce-edito
 import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
 import type { PullRequestViewSavedState, PullRequestViewState } from '../PullRequestViewState/PullRequestViewState.ts'
 import { getPullRequestVirtualDom } from '../GetPullRequestVirtualDom/GetPullRequestVirtualDom.ts'
-import { fetchPullRequest } from '../GitHubPullRequest/GitHubPullRequest.ts'
+import * as GitHubWorkerRpc from '../GitHubWorkerRpc/GitHubWorkerRpc.ts'
 import * as PullRequestViewStatus from '../PullRequestViewState/PullRequestViewState.ts'
 
 interface PullRequestViewInstance extends VirtualDomViewInstance {
@@ -15,6 +15,8 @@ interface PullRequestViewInstance extends VirtualDomViewInstance {
 }
 
 type PullRequestViewContext = Partial<ViewContext>
+
+type FetchPullRequest = typeof GitHubWorkerRpc.fetchPullRequest
 
 export const viewId = 'github.pullRequests'
 
@@ -43,7 +45,7 @@ const getSavedState = (context: PullRequestViewContext | undefined): PullRequest
   return context.state
 }
 
-const loadPullRequest = async (state: PullRequestViewState): Promise<PullRequestViewState> => {
+const loadPullRequest = async (state: PullRequestViewState, fetchPullRequest: FetchPullRequest): Promise<PullRequestViewState> => {
   const { url } = state
   try {
     const pullRequest = await fetchPullRequest(url)
@@ -63,7 +65,10 @@ const loadPullRequest = async (state: PullRequestViewState): Promise<PullRequest
   }
 }
 
-export const create = (context?: PullRequestViewContext): PullRequestViewInstance => {
+export const create = (
+  context?: PullRequestViewContext,
+  fetchPullRequest: FetchPullRequest = GitHubWorkerRpc.fetchPullRequest,
+): PullRequestViewInstance => {
   let state = PullRequestViewStatus.createDefaultState(getSavedState(context))
 
   const requestRerender = async (): Promise<void> => {
@@ -80,7 +85,7 @@ export const create = (context?: PullRequestViewContext): PullRequestViewInstanc
     if (rerender) {
       await requestRerender()
     }
-    state = await loadPullRequest(state)
+    state = await loadPullRequest(state, fetchPullRequest)
     if (rerender) {
       await requestRerender()
     }
