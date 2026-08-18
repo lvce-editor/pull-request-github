@@ -1,7 +1,7 @@
 import type { GitHubRepository } from '../GitHubRepository/GitHubRepository.ts'
 
 const remoteSectionRegex = /^\s*\[remote\s+"([^"]+)"\]\s*$/
-const scpRemoteRegex = /^(?:[^@\s]+@)?github\.com:([^\s]+)$/i
+const scpRemoteRegex = /^(?:[^@\s]+@)?([^:\s]+):([^\s]+)$/
 const sectionRegex = /^\s*\[/
 const newLineRegex = /\r?\n/
 
@@ -38,6 +38,11 @@ const normalizeRepositoryName = (value: string): string => {
   return value.endsWith('.git') ? value.slice(0, -4) : value
 }
 
+const isGitHubHostname = (value: string): boolean => {
+  const hostname = value.toLowerCase()
+  return hostname === 'github.com' || hostname.endsWith('.github.com')
+}
+
 const fromPath = (path: string): GitHubRepository | undefined => {
   const parts = path.split('/').filter(Boolean)
   if (parts.length !== 2) {
@@ -56,8 +61,8 @@ const fromPath = (path: string): GitHubRepository | undefined => {
 export const parseGitHubRemoteUrl = (value: string): GitHubRepository | undefined => {
   const remoteUrl = value.trim()
   const scpMatch = remoteUrl.match(scpRemoteRegex)
-  if (scpMatch) {
-    return fromPath(scpMatch[1])
+  if (scpMatch && isGitHubHostname(scpMatch[1])) {
+    return fromPath(scpMatch[2])
   }
   let url: URL
   try {
@@ -65,7 +70,7 @@ export const parseGitHubRemoteUrl = (value: string): GitHubRepository | undefine
   } catch {
     return undefined
   }
-  if (url.hostname.toLowerCase() !== 'github.com') {
+  if (!isGitHubHostname(url.hostname)) {
     return undefined
   }
   return fromPath(url.pathname)

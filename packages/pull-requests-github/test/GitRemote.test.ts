@@ -21,8 +21,10 @@ test('getRemoteUrl falls back to the first remote', () => {
 
 test.each([
   'git@github.com:owner/repo.git',
+  'git@levivilet.github.com:owner/repo.git',
   'https://github.com/owner/repo.git',
   'ssh://git@github.com/owner/repo.git',
+  'ssh://git@levivilet.github.com/owner/repo.git',
   'git://github.com/owner/repo.git',
 ])('parseGitHubRemoteUrl parses %s', (remoteUrl) => {
   expect(parseGitHubRemoteUrl(remoteUrl)).toEqual({
@@ -33,6 +35,7 @@ test.each([
 
 test('parseGitHubRemoteUrl rejects non-GitHub remotes', () => {
   expect(parseGitHubRemoteUrl('git@gitlab.com:owner/repo.git')).toBeUndefined()
+  expect(parseGitHubRemoteUrl('git@github.com.example.com:owner/repo.git')).toBeUndefined()
   expect(parseGitHubRemoteUrl('not a remote')).toBeUndefined()
   expect(parseGitHubRemoteUrl('https://github.com/owner')).toBeUndefined()
 })
