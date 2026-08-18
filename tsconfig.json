@@ -3,6 +3,15 @@
   "include": [],
   "references": [
     {
+      "path": "./packages/shared"
+    },
+    {
+      "path": "./packages/github-worker"
+    },
+    {
+      "path": "./packages/github-worker/test"
+    },
+    {
       "path": "./packages/pull-requests-github"
     },
     {

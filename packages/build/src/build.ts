@@ -66,6 +66,7 @@ delete packageJson.jest
 delete packageJson.xo
 delete packageJson.directories
 delete packageJson.nodemonConfig
+delete packageJson.dependencies['@lvce-editor/pull-request-shared']
 packageJson.version = version
 packageJson.main = 'dist/pullRequestWorkerMain.js'
 

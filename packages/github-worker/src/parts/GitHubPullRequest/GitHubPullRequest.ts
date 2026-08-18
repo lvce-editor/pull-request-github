@@ -1,4 +1,4 @@
-import type { PullRequestCommit, PullRequestData, PullRequestFile } from '../PullRequestData/PullRequestData.ts'
+import type { PullRequestCommit, PullRequestData, PullRequestFile } from '@lvce-editor/pull-request-shared'
 import * as PullRequestMockRegistry from '../PullRequestMockRegistry/PullRequestMockRegistry.ts'
 import { parsePullRequestUrl } from '../PullRequestUrl/PullRequestUrl.ts'
 

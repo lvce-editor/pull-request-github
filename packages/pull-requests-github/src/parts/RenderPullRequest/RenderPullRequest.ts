@@ -1,6 +1,6 @@
+import type { PullRequestData } from '@lvce-editor/pull-request-shared'
 import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
 import { AriaRoles, VirtualDomElements } from '@lvce-editor/virtual-dom-worker'
-import type { PullRequestData } from '../PullRequestData/PullRequestData.ts'
 import { renderField } from '../RenderField/RenderField.ts'
 
 const detailsNode: VirtualDomNode = {

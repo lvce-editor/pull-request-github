@@ -1,7 +1,7 @@
 import { expect, test } from '@jest/globals'
+import * as PullRequestFilters from '@lvce-editor/pull-request-shared'
 import type { PullRequestViewState, PullRequestViewStatus } from '../src/parts/PullRequestViewState/PullRequestViewState.ts'
 import { getPullRequestVirtualDom } from '../src/parts/GetPullRequestVirtualDom/GetPullRequestVirtualDom.ts'
-import * as PullRequestFilters from '../src/parts/PullRequestFilter/PullRequestFilter.ts'
 import { createDefaultState, Detail, Error, Loading, Ready, Unavailable } from '../src/parts/PullRequestViewState/PullRequestViewState.ts'
 
 const createState = (overrides: Partial<PullRequestViewState> = {}): PullRequestViewState => {

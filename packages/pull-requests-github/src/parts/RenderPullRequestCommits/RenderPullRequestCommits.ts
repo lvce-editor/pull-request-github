@@ -1,6 +1,6 @@
+import type { PullRequestCommit } from '@lvce-editor/pull-request-shared'
 import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
 import { AriaRoles, text, VirtualDomElements } from '@lvce-editor/virtual-dom-worker'
-import type { PullRequestCommit } from '../PullRequestData/PullRequestData.ts'
 
 const commitNode: VirtualDomNode = {
   childCount: 3,
