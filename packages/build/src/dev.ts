@@ -1,4 +1,5 @@
 import { execa } from 'execa'
+import { getServerArgs } from './getServerArgs.ts'
 import { root } from './root.ts'
 
 const main = async (): Promise<void> => {
@@ -6,7 +7,7 @@ const main = async (): Promise<void> => {
     cwd: root,
     stdio: 'inherit',
   })
-  execa('node', ['node_modules/@lvce-editor/server/bin/server.js', '--test-path=packages/e2e'], {
+  execa('node', getServerArgs(), {
     cwd: root,
     stdio: 'inherit',
   })
