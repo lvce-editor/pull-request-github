@@ -10,12 +10,30 @@ const sharedProcessUrl = pathToFileURL(sharedProcessPath).toString()
 
 const sharedProcess = await import(sharedProcessUrl)
 
+const extensionId = 'github.pull-requests'
+
 process.env.PATH_PREFIX = githubPagesPath
 const { commitHash } = await sharedProcess.exportStatic({
   root,
-  extensionPath: '',
+  extensionPath: 'packages/pull-requests-github',
   testPath: 'packages/e2e',
 })
+
+const staticExtensionPath = join(root, 'dist', commitHash, 'extensions', extensionId)
+await cp(join(root, '.tmp', 'dist'), staticExtensionPath, { recursive: true, force: true })
+
+const extensionJsonPath = join(staticExtensionPath, 'extension.json')
+const extensionJson = JSON.parse(await readFile(extensionJsonPath, 'utf8'))
+if (extensionJson.id !== extensionId || typeof extensionJson.browser !== 'string' || !extensionJson.browser) {
+  throw new Error(`Expected ${extensionJsonPath} to define the ${extensionId} browser extension`)
+}
+await readFile(join(staticExtensionPath, extensionJson.browser))
+
+const webExtensionsPath = join(root, 'dist', commitHash, 'config', 'webExtensions.json')
+const webExtensions = JSON.parse(await readFile(webExtensionsPath, 'utf8'))
+if (!webExtensions.some((extension: { id?: string }) => extension.id === extensionId)) {
+  throw new Error(`Expected ${webExtensionsPath} to include ${extensionId}`)
+}
 
 const rendererWorkerPath = join(root, 'dist', commitHash, 'packages', 'renderer-worker', 'dist', 'rendererWorkerMain.js')
 
