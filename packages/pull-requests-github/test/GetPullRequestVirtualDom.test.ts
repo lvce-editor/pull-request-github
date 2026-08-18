@@ -59,7 +59,23 @@ test('renders pull request detail with back navigation', () => {
     createState({
       pullRequest: {
         baseBranch: 'main',
+        commits: [
+          {
+            author: 'test-user',
+            message: 'Add feature',
+            sha: '1234567890abcdef',
+          },
+        ],
         description: 'description',
+        files: [
+          {
+            additions: 2,
+            deletions: 1,
+            filename: 'src/feature.ts',
+            patch: '@@ -1 +1 @@',
+            status: 'modified',
+          },
+        ],
         headBranch: 'feature',
         title: 'Add feature',
       },
@@ -75,8 +91,69 @@ test('renders pull request detail with back navigation', () => {
 
   expect(dom.some((node) => node.name === 'showPullRequestList')).toBe(true)
   expect(dom.some((node) => node.text === 'Pull request details')).toBe(true)
+  expect(dom.some((node) => node.text === 'Overview')).toBe(true)
+  expect(dom.some((node) => node.text === 'Commits 1')).toBe(true)
+  expect(dom.some((node) => node.text === 'Changes 1')).toBe(true)
   expect(dom.some((node) => node.text === 'Add feature')).toBe(true)
   expect(dom.some((node) => node.text === 'description')).toBe(true)
+})
+
+test('renders selected commits detail tab', () => {
+  const dom = getPullRequestVirtualDom(
+    createState({
+      detailTab: 'commits',
+      pullRequest: {
+        baseBranch: 'main',
+        commits: [
+          {
+            author: 'test-user',
+            message: 'Add detail tabs',
+            sha: '1234567890abcdef',
+          },
+        ],
+        description: 'description',
+        files: [],
+        headBranch: 'feature',
+        title: 'Add feature',
+      },
+      screen: Detail,
+      status: Ready,
+    }),
+  )
+
+  expect(dom.some((node) => node.name === 'showPullRequestCommits' && node.ariaSelected === true)).toBe(true)
+  expect(dom.some((node) => node.text === 'Add detail tabs')).toBe(true)
+  expect(dom.some((node) => node.text === '1234567')).toBe(true)
+})
+
+test('renders selected changes detail tab', () => {
+  const dom = getPullRequestVirtualDom(
+    createState({
+      detailTab: 'changes',
+      pullRequest: {
+        baseBranch: 'main',
+        commits: [],
+        description: 'description',
+        files: [
+          {
+            additions: 2,
+            deletions: 1,
+            filename: 'src/detail.ts',
+            patch: '@@ -1 +1 @@\n-old\n+new',
+            status: 'modified',
+          },
+        ],
+        headBranch: 'feature',
+        title: 'Add feature',
+      },
+      screen: Detail,
+      status: Ready,
+    }),
+  )
+
+  expect(dom.some((node) => node.name === 'showPullRequestChanges' && node.ariaSelected === true)).toBe(true)
+  expect(dom.some((node) => node.text === 'src/detail.ts')).toBe(true)
+  expect(dom.some((node) => node.text === '+new')).toBe(true)
 })
 
 test.each<readonly [PullRequestViewStatus, string, string]>([

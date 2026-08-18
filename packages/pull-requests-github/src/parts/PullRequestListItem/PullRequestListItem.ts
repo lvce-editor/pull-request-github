@@ -1,6 +1,6 @@
-import type { PullRequestData } from '../PullRequestData/PullRequestData.ts'
+import type { PullRequestSummary } from '../PullRequestData/PullRequestData.ts'
 
-export interface PullRequestListItem extends PullRequestData {
+export interface PullRequestListItem extends PullRequestSummary {
   readonly number: number
   readonly url: string
 }

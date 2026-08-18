@@ -4,7 +4,9 @@ import { renderPullRequest } from '../src/parts/RenderPullRequest/RenderPullRequ
 test('renderPullRequest renders pull request fields', () => {
   const dom = renderPullRequest({
     baseBranch: 'main',
+    commits: [],
     description: 'description',
+    files: [],
     headBranch: 'feature',
     title: 'Add feature',
   })
@@ -46,7 +48,9 @@ test('renderPullRequest renders pull request fields', () => {
 test('renderPullRequest renders default description', () => {
   const dom = renderPullRequest({
     baseBranch: 'main',
+    commits: [],
     description: '',
+    files: [],
     headBranch: 'feature',
     title: 'Add feature',
   })

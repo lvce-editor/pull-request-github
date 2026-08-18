@@ -14,7 +14,9 @@ afterEach(() => {
 test('setPullRequestData stores mock data by normalized api url', () => {
   const data = {
     baseBranch: 'main',
+    commits: [],
     description: 'description',
+    files: [],
     headBranch: 'feature',
     title: 'Add feature',
   }
@@ -48,7 +50,9 @@ test('clearPullRequestData removes mock data', () => {
 test('getMockPullRequest normalizes equivalent urls', () => {
   const data = {
     baseBranch: 'main',
+    commits: [],
     description: 'description',
+    files: [],
     headBranch: 'feature',
     title: 'Add feature',
   }

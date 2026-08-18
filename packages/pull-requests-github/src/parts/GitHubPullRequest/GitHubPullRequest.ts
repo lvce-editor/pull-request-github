@@ -1,4 +1,4 @@
-import type { PullRequestData } from '../PullRequestData/PullRequestData.ts'
+import type { PullRequestCommit, PullRequestData, PullRequestFile } from '../PullRequestData/PullRequestData.ts'
 import * as PullRequestMockRegistry from '../PullRequestMockRegistry/PullRequestMockRegistry.ts'
 import { parsePullRequestUrl } from '../PullRequestUrl/PullRequestUrl.ts'
 
@@ -14,6 +14,27 @@ interface GitHubPullResponse {
   readonly title?: unknown
 }
 
+interface GitHubCommitResponse {
+  readonly author?: {
+    readonly login?: unknown
+  } | null
+  readonly commit?: {
+    readonly author?: {
+      readonly name?: unknown
+    } | null
+    readonly message?: unknown
+  }
+  readonly sha?: unknown
+}
+
+interface GitHubFileResponse {
+  readonly additions?: unknown
+  readonly deletions?: unknown
+  readonly filename?: unknown
+  readonly patch?: unknown
+  readonly status?: unknown
+}
+
 const assertString = (value: unknown): string => {
   if (typeof value === 'string') {
     return value
@@ -21,10 +42,38 @@ const assertString = (value: unknown): string => {
   return ''
 }
 
-export const toPullRequestData = (response: GitHubPullResponse): PullRequestData => {
+const assertNumber = (value: unknown): number => {
+  return typeof value === 'number' ? value : 0
+}
+
+export const toPullRequestCommit = (response: GitHubCommitResponse): PullRequestCommit => {
+  return {
+    author: assertString(response.author?.login) || assertString(response.commit?.author?.name) || 'Unknown author',
+    message: assertString(response.commit?.message),
+    sha: assertString(response.sha),
+  }
+}
+
+export const toPullRequestFile = (response: GitHubFileResponse): PullRequestFile => {
+  return {
+    additions: assertNumber(response.additions),
+    deletions: assertNumber(response.deletions),
+    filename: assertString(response.filename),
+    patch: assertString(response.patch),
+    status: assertString(response.status),
+  }
+}
+
+export const toPullRequestData = (
+  response: GitHubPullResponse,
+  commits: readonly PullRequestCommit[] = [],
+  files: readonly PullRequestFile[] = [],
+): PullRequestData => {
   return {
     baseBranch: assertString(response.base?.ref),
+    commits,
     description: assertString(response.body),
+    files,
     headBranch: assertString(response.head?.ref),
     title: assertString(response.title),
   }
@@ -47,14 +96,30 @@ export const fetchPullRequest = async (url: string, fetchFn: typeof fetch = fetc
   }
   const location = parsePullRequestUrl(url)
   const apiUrl = `https://api.github.com/repos/${location.owner}/${location.repo}/pulls/${location.number}`
-  const response = await fetchFn(apiUrl, {
-    headers: {
-      Accept: 'application/vnd.github+json',
-    },
-  })
-  const json = (await response.json()) as GitHubPullResponse
-  if (!response.ok) {
-    throw new Error(getErrorMessage(json, response.status))
+  const fetchJson = async (requestUrl: string): Promise<unknown> => {
+    const response = await fetchFn(requestUrl, {
+      headers: {
+        Accept: 'application/vnd.github+json',
+      },
+    })
+    const json = (await response.json()) as GitHubPullResponse
+    if (!response.ok) {
+      throw new Error(getErrorMessage(json, response.status))
+    }
+    return json
   }
-  return toPullRequestData(json)
+  const [pullRequestResponse, commitResponse, fileResponse] = await Promise.all([
+    fetchJson(apiUrl),
+    fetchJson(`${apiUrl}/commits?per_page=100`),
+    fetchJson(`${apiUrl}/files?per_page=100`),
+  ])
+  if (!Array.isArray(commitResponse)) {
+    throw new TypeError('GitHub returned an invalid pull request commit list.')
+  }
+  if (!Array.isArray(fileResponse)) {
+    throw new TypeError('GitHub returned an invalid pull request file list.')
+  }
+  const commits = commitResponse.map(toPullRequestCommit)
+  const files = fileResponse.map(toPullRequestFile)
+  return toPullRequestData(pullRequestResponse as GitHubPullResponse, commits, files)
 }

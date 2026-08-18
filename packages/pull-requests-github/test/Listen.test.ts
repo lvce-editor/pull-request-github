@@ -32,6 +32,12 @@ test('listen', async () => {
       views: [
         {
           displayName: 'Pull Requests',
+          eventListeners: [
+            {
+              name: 'handlePullRequestClick',
+              params: ['handlePullRequestClick', 'event.currentTarget.name'],
+            },
+          ],
           icon: 'media/git-pull-request.svg',
           id: 'github.pullRequests',
           kind: 'virtualDom',
