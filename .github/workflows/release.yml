@@ -29,6 +29,7 @@ jobs:
         with:
           tag_name: ${{ env.RG_VERSION }}
           name: ${{ env.RG_VERSION }}
+          draft: true
           prerelease: true
           make_latest: false
 
@@ -91,4 +92,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="${{ needs.create-release.outputs.rg_version }}"
-          gh release edit "$VERSION" --prerelease=false --latest --repo "$GITHUB_REPOSITORY"
+          gh release edit "$VERSION" --draft=false --prerelease=false --latest --repo "$GITHUB_REPOSITORY"
