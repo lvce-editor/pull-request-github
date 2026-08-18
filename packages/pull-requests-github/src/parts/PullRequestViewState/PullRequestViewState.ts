@@ -1,4 +1,4 @@
-import type { PullRequestData } from '../GitHubPullRequest/GitHubPullRequest.ts'
+import type { PullRequestData } from '../PullRequestData/PullRequestData.ts'
 
 export const Empty = 'empty'
 export const Error = 'error'

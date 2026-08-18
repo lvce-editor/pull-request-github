@@ -11,16 +11,21 @@ test('show focuses the pull requests view', async () => {
 
 test('openOnGitHub opens the pull request externally', async () => {
   const execute = jest.fn<(...args: readonly unknown[]) => Promise<unknown>>().mockResolvedValue(undefined)
+  const validatePullRequestUrl = jest.fn<(url: string) => Promise<void>>().mockResolvedValue(undefined)
 
-  await openOnGitHub('https://github.com/owner/repo/pull/5', execute)
+  await openOnGitHub('https://github.com/owner/repo/pull/5', execute, validatePullRequestUrl)
 
+  expect(validatePullRequestUrl).toHaveBeenCalledWith('https://github.com/owner/repo/pull/5')
   expect(execute).toHaveBeenCalledWith('Open.openExternal', 'https://github.com/owner/repo/pull/5')
 })
 
 test('openOnGitHub rejects a non-GitHub url', async () => {
   const execute = jest.fn<(...args: readonly unknown[]) => Promise<unknown>>().mockResolvedValue(undefined)
+  const validatePullRequestUrl = jest
+    .fn<(url: string) => Promise<void>>()
+    .mockRejectedValue(new Error('Only https://github.com pull request URLs are supported'))
 
-  await expect(openOnGitHub('https://example.com/owner/repo/pull/5', execute)).rejects.toThrow(
+  await expect(openOnGitHub('https://example.com/owner/repo/pull/5', execute, validatePullRequestUrl)).rejects.toThrow(
     'Only https://github.com pull request URLs are supported',
   )
 

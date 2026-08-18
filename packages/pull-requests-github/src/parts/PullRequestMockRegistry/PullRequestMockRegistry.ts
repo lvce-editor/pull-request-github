@@ -1,4 +1,4 @@
-import type { PullRequestData } from '../GitHubPullRequest/GitHubPullRequest.ts'
+import type { PullRequestData } from '../PullRequestData/PullRequestData.ts'
 import { parsePullRequestUrl } from '../PullRequestUrl/PullRequestUrl.ts'
 
 export interface PullRequestMockData {

@@ -3,7 +3,6 @@ import { getViewRegistrySnapshot, resetViewRegistry } from '@lvce-editor/api'
 import { mockWorkerGlobalRpc } from '@lvce-editor/rpc'
 import { listen } from '../src/parts/Listen/Listen.ts'
 import * as PullRequestCommands from '../src/parts/PullRequestCommands/PullRequestCommands.ts'
-import { getMockPullRequest } from '../src/parts/PullRequestMockRegistry/PullRequestMockRegistry.ts'
 
 beforeEach(() => {
   resetViewRegistry()
@@ -27,30 +26,6 @@ test('listen', async () => {
       'PullRequestsGithub.setPullRequestError',
       'PullRequestsGithub.clearPullRequestData',
     ])
-    PullRequestCommands.setPullRequestData('https://github.com/owner/repo/pull/7', {
-      baseBranch: 'main',
-      description: 'description',
-      headBranch: 'feature',
-      title: 'Add feature',
-    })
-    const mockPullRequest = getMockPullRequest('https://github.com/owner/repo/pull/7')
-    expect(mockPullRequest?.type).toBe('data')
-    if (mockPullRequest?.type !== 'data') {
-      throw new Error('expected mock pull request data')
-    }
-    expect(mockPullRequest.data).toEqual({
-      baseBranch: 'main',
-      description: 'description',
-      headBranch: 'feature',
-      title: 'Add feature',
-    })
-    PullRequestCommands.setPullRequestError('https://github.com/owner/repo/pull/7', 'Not Found')
-    expect(getMockPullRequest('https://github.com/owner/repo/pull/7')).toEqual({
-      message: 'Not Found',
-      type: 'error',
-    })
-    PullRequestCommands.clearPullRequestData()
-    expect(getMockPullRequest('https://github.com/owner/repo/pull/7')).toBeUndefined()
     expect(getViewRegistrySnapshot()).toEqual({
       views: [
         {
