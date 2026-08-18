@@ -2,8 +2,6 @@ import type { Test } from '@lvce-editor/test-with-playwright'
 
 export const name = 'pull-requests-github.load-success'
 
-export const skip = 1
-
 export const test: Test = async ({ Command, expect, Locator }) => {
   const url = 'https://github.com/lvce-editor/lvce-editor/pull/123'
   await Command.executeExtensionCommand('PullRequestsGithub.clearPullRequestData')
@@ -17,7 +15,7 @@ export const test: Test = async ({ Command, expect, Locator }) => {
   const input = Locator('input[name="pullRequestUrl"]')
   await expect(input).toBeVisible()
   await input.type(url)
-  await Locator('form[name="pullRequestForm"]').dispatchEvent('submit', {} as any)
+  await Command.executeExtensionCommand('PullRequestsGithub.refresh')
 
   const title = Locator('text=Add deterministic pull request e2e coverage')
   const headBranch = Locator('text=feature/e2e-head')
