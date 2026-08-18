@@ -2,7 +2,7 @@
 
 import type { Test } from '@lvce-editor/test-with-playwright'
 
-export const name = 'pull-requests-github.not-found'
+export const name = 'pull-requests-github.missing-file-data'
 
 export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspace }) => {
   const url = 'https://github.com/lvce-editor/pull-request-github/pull/404'
@@ -11,14 +11,25 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await FileSystem.writeFile(`${tmpDir}/.git/config`, '[remote "origin"]\n  url = https://github.com/lvce-editor/pull-request-github.git\n')
   await Workspace.setPath(tmpDir)
   await Command.executeExtensionCommand('PullRequestsGithub.clearPullRequestData')
-  await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestError', url, 'Not Found')
+  await Command.executeExtensionCommand(
+    'PullRequestsGithub.setPullRequestResponse',
+    url,
+    {
+      base: { ref: 'main' },
+      body: 'Missing file fields.',
+      head: { ref: 'feature/missing-file-data' },
+      title: 'Missing file data',
+    },
+    [],
+    [{ additions: 'many', deletions: null, filename: 'src/generated.ts', patch: null, status: null }],
+  )
   await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestListData', 'lvce-editor', 'pull-request-github', 'open', [
     {
       baseBranch: 'main',
-      description: 'Missing pull request.',
-      headBranch: 'feature/missing',
+      description: 'Missing file fields.',
+      headBranch: 'feature/missing-file-data',
       number: 404,
-      title: 'Missing pull request',
+      title: 'Missing file data',
       url,
     },
   ])
@@ -26,6 +37,12 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await Locator('button[name="openPullRequest:404"]').click()
   await Command.execute('Timeout.sleep', 200)
 
-  const error = Locator('.PullRequestMessageError')
-  await expect(error).toHaveText('Not Found')
+  await Locator('button[name="showPullRequestChanges"]').click()
+  await Command.execute('Timeout.sleep', 200)
+  const file = Locator('.PullRequestFile')
+  await expect(file).toContainText('src/generated.ts')
+  await expect(file).toContainText('modified')
+  await expect(file).toContainText('+0')
+  await expect(file).toContainText('−0')
+  await expect(file).toContainText('Diff not available for this file.')
 }

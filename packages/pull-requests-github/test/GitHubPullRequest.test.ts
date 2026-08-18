@@ -1,6 +1,11 @@
 import { afterEach, expect, test } from '@jest/globals'
 import { fetchPullRequest, toPullRequestCommit, toPullRequestData, toPullRequestFile } from '../src/parts/GitHubPullRequest/GitHubPullRequest.ts'
-import { clearPullRequestData, setPullRequestData, setPullRequestError } from '../src/parts/PullRequestMockRegistry/PullRequestMockRegistry.ts'
+import {
+  clearPullRequestData,
+  setPullRequestData,
+  setPullRequestError,
+  setPullRequestResponse,
+} from '../src/parts/PullRequestMockRegistry/PullRequestMockRegistry.ts'
 
 afterEach(() => {
   clearPullRequestData()
@@ -208,4 +213,16 @@ test('fetchPullRequest throws mock error without fetching', async () => {
 
   await expect(fetchPullRequest('https://github.com/owner/repo/pull/7', fetchFn)).rejects.toThrow('Not Found')
   expect(calls).toEqual([])
+})
+
+test('fetchPullRequest validates deterministic raw commit data', async () => {
+  setPullRequestResponse('https://github.com/owner/repo/pull/7', {}, { commits: [] }, [])
+
+  await expect(fetchPullRequest('https://github.com/owner/repo/pull/7')).rejects.toThrow('GitHub returned an invalid pull request commit list.')
+})
+
+test('fetchPullRequest validates deterministic raw file data', async () => {
+  setPullRequestResponse('https://github.com/owner/repo/pull/7', {}, [], { files: [] })
+
+  await expect(fetchPullRequest('https://github.com/owner/repo/pull/7')).rejects.toThrow('GitHub returned an invalid pull request file list.')
 })

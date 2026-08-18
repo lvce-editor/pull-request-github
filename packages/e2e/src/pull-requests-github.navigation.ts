@@ -1,25 +1,8 @@
+/* eslint-disable e2e/no-direct-click */
+
 import type { Test } from '@lvce-editor/test-with-playwright'
 
 export const name = 'pull-requests-github.navigation'
-
-// The current test editor does not expose Viewlet.setPatches for extension view events.
-export const skip = 1
-
-interface ExtensionViewState {
-  readonly uid: number
-  readonly viewId: string
-}
-
-const isPullRequestViewState = (value: unknown): value is ExtensionViewState => {
-  return Boolean(
-    value &&
-    typeof value === 'object' &&
-    'uid' in value &&
-    typeof value.uid === 'number' &&
-    'viewId' in value &&
-    value.viewId === 'github.pullRequests',
-  )
-}
 
 export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspace }) => {
   const tmpDir = await FileSystem.getTmpDir()
@@ -43,33 +26,29 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
       url: 'https://github.com/lvce-editor/pull-request-github/pull/122',
     },
   ])
+  await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestData', 'https://github.com/lvce-editor/pull-request-github/pull/122', {
+    baseBranch: 'main',
+    commits: [],
+    description: 'A completed pull request.',
+    files: [],
+    headBranch: 'feature/completed',
+    title: 'Completed pull request',
+  })
   await Command.executeExtensionCommand('PullRequestsGithub.show')
 
-  const viewletStates = (await Command.execute('Viewlet.getAllStates')) as Readonly<Record<string, unknown>>
-  const pullRequestViewState = Object.values(viewletStates).find(isPullRequestViewState)
-  if (!pullRequestViewState) {
-    throw new Error('Pull request view state not found')
-  }
-  const { uid } = pullRequestViewState
-  await Command.execute('Extensions.dispatchViewEvent', 'github.pullRequests', uid, {
-    name: 'showClosedPullRequests',
-    type: 'click',
-  })
+  await Locator('button[name="showClosedPullRequests"]').click()
+  await Command.execute('Timeout.sleep', 200)
   const closedPullRequestTitle = Locator('.PullRequestListItemTitle')
   await expect(closedPullRequestTitle).toContainText('Completed pull request')
 
-  await Command.execute('Extensions.dispatchViewEvent', 'github.pullRequests', uid, {
-    name: 'openPullRequest:122',
-    type: 'click',
-  })
+  await Locator('button[name="openPullRequest:122"]').click()
+  await Command.execute('Timeout.sleep', 200)
   const detailTitle = Locator('text=Pull request details')
   const detailDescription = Locator('text=A completed pull request.')
   await expect(detailTitle).toBeVisible()
   await expect(detailDescription).toBeVisible()
 
-  await Command.execute('Extensions.dispatchViewEvent', 'github.pullRequests', uid, {
-    name: 'showPullRequestList',
-    type: 'click',
-  })
+  await Locator('button[name="showPullRequestList"]').click()
+  await Command.execute('Timeout.sleep', 200)
   await expect(closedPullRequestTitle).toBeVisible()
 }

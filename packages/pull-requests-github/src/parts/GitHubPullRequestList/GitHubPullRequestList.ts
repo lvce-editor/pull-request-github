@@ -51,15 +51,20 @@ export const fetchPullRequests = async (
   if (mock?.type === 'error') {
     throw new Error(mock.message)
   }
-  const apiUrl = `https://api.github.com/repos/${repository.owner}/${repository.name}/pulls?state=${state}&per_page=100`
-  const response = await fetchFn(apiUrl, {
-    headers: {
-      Accept: 'application/vnd.github+json',
-    },
-  })
-  const json = (await response.json()) as GitHubPullRequestListResponse[] | GitHubPullRequestListResponse
-  if (!response.ok) {
-    throw new Error(getErrorMessage(json as GitHubPullRequestListResponse, response.status))
+  let json: unknown
+  if (mock?.type === 'listResponse') {
+    json = mock.data
+  } else {
+    const apiUrl = `https://api.github.com/repos/${repository.owner}/${repository.name}/pulls?state=${state}&per_page=100`
+    const response = await fetchFn(apiUrl, {
+      headers: {
+        Accept: 'application/vnd.github+json',
+      },
+    })
+    json = await response.json()
+    if (!response.ok) {
+      throw new Error(getErrorMessage(json as GitHubPullRequestListResponse, response.status))
+    }
   }
   if (!Array.isArray(json)) {
     throw new TypeError('GitHub returned an invalid pull request list.')

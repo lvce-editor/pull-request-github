@@ -94,25 +94,33 @@ export const fetchPullRequest = async (url: string, fetchFn: typeof fetch = fetc
   if (mock?.type === 'error') {
     throw new Error(mock.message)
   }
-  const location = parsePullRequestUrl(url)
-  const apiUrl = `https://api.github.com/repos/${location.owner}/${location.repo}/pulls/${location.number}`
-  const fetchJson = async (requestUrl: string): Promise<unknown> => {
-    const response = await fetchFn(requestUrl, {
-      headers: {
-        Accept: 'application/vnd.github+json',
-      },
-    })
-    const json = (await response.json()) as GitHubPullResponse
-    if (!response.ok) {
-      throw new Error(getErrorMessage(json, response.status))
+  let pullRequestResponse: unknown
+  let commitResponse: unknown
+  let fileResponse: unknown
+  if (mock?.type === 'response') {
+    pullRequestResponse = mock.pullRequest
+    commitResponse = mock.commits
+    fileResponse = mock.files
+  } else {
+    const location = parsePullRequestUrl(url)
+    const apiUrl = `https://api.github.com/repos/${location.owner}/${location.repo}/pulls/${location.number}`
+    const fetchJson = async (requestUrl: string): Promise<unknown> => {
+      const response = await fetchFn(requestUrl, {
+        headers: {
+          Accept: 'application/vnd.github+json',
+        },
+      })
+      const json = (await response.json()) as GitHubPullResponse
+      if (!response.ok) {
+        throw new Error(getErrorMessage(json, response.status))
+      }
+      return json
     }
-    return json
+    const responses = await Promise.all([fetchJson(apiUrl), fetchJson(`${apiUrl}/commits?per_page=100`), fetchJson(`${apiUrl}/files?per_page=100`)])
+    pullRequestResponse = responses[0]
+    commitResponse = responses[1]
+    fileResponse = responses[2]
   }
-  const [pullRequestResponse, commitResponse, fileResponse] = await Promise.all([
-    fetchJson(apiUrl),
-    fetchJson(`${apiUrl}/commits?per_page=100`),
-    fetchJson(`${apiUrl}/files?per_page=100`),
-  ])
   if (!Array.isArray(commitResponse)) {
     throw new TypeError('GitHub returned an invalid pull request commit list.')
   }

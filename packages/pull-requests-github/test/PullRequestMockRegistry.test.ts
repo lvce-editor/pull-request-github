@@ -1,10 +1,13 @@
 import { afterEach, expect, test } from '@jest/globals'
 import {
   clearPullRequestData,
+  getMockPullRequestList,
   getMockPullRequest,
   getPullRequestApiUrl,
   setPullRequestData,
   setPullRequestError,
+  setPullRequestListResponse,
+  setPullRequestResponse,
 } from '../src/parts/PullRequestMockRegistry/PullRequestMockRegistry.ts'
 
 afterEach(() => {
@@ -61,5 +64,25 @@ test('getMockPullRequest normalizes equivalent urls', () => {
   expect(getMockPullRequest('https://github.com/owner/repo/pull/7')).toEqual({
     data,
     type: 'data',
+  })
+})
+
+test('setPullRequestResponse stores raw github responses', () => {
+  setPullRequestResponse('https://github.com/owner/repo/pull/7', { title: 'Title' }, [], [])
+
+  expect(getMockPullRequest('https://github.com/owner/repo/pull/7')).toEqual({
+    commits: [],
+    files: [],
+    pullRequest: { title: 'Title' },
+    type: 'response',
+  })
+})
+
+test('setPullRequestListResponse stores a raw github list response', () => {
+  setPullRequestListResponse('owner', 'repo', 'open', { items: [] })
+
+  expect(getMockPullRequestList('owner', 'repo', 'open')).toEqual({
+    data: { items: [] },
+    type: 'listResponse',
   })
 })
