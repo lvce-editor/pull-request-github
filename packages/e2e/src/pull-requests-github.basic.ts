@@ -1,14 +1,26 @@
 import type { Test } from '@lvce-editor/test-with-playwright'
 
+const toExtensionBaseUrl = (uri: string): string => {
+  const url = new URL(uri, import.meta.url)
+  if (url.protocol === 'file:') {
+    return `${location.origin}/remote/${url.href.slice('file://'.length)}/`
+  }
+  return url.href.endsWith('/') ? url.href : `${url.href}/`
+}
+
 export const name = 'pull-requests-github.empty-description'
 
 export const test: Test = async ({ Command, expect, Locator }) => {
+  const extensionUri = import.meta.resolve('../../pull-requests-github')
+  const iconUrl = new URL('media/git-pull-request.svg', toExtensionBaseUrl(extensionUri)).href
+  const activityBarItem = Locator('.ActivityBarItem[title="Pull Requests"]')
+  await expect(activityBarItem).toHaveCSS('mask-image', `url("${iconUrl}")`)
   await Command.executeExtensionCommand('PullRequestsGithub.show')
   const view = Locator('.PullRequestView')
   const form = Locator('form[name="pullRequestForm"]')
-  const icon = Locator('.ActivityBarItem[title="Pull Requests"] .MaskIcon')
+  const icon = activityBarItem.locator('.MaskIcon')
   await expect(icon).toBeVisible()
-  await expect(icon).toHaveCSS('mask-image', `url("${location.origin}/icons/git-pull-request.svg")`)
+  await expect(icon).toHaveCSS('mask-image', `url("${iconUrl}")`)
   const input = Locator('input[name="pullRequestUrl"]')
   const button = Locator('button[name="loadPullRequest"]')
   await expect(view).toBeVisible()

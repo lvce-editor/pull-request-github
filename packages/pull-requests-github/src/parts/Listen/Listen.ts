@@ -7,7 +7,7 @@ export const listen = async (): Promise<void> => {
   PullRequestCommands.registerCommands()
   registerView({
     create: PullRequestView.create,
-    icon: '/icons/git-pull-request.svg',
+    icon: 'media/git-pull-request.svg',
     id: PullRequestView.viewId,
     kind: 'virtualDom',
     title: 'Pull Requests',

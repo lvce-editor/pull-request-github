@@ -30,7 +30,7 @@ test('listen', async () => {
       views: [
         {
           displayName: 'Pull Requests',
-          icon: '/icons/git-pull-request.svg',
+          icon: 'media/git-pull-request.svg',
           id: 'github.pullRequests',
           kind: 'virtualDom',
           name: undefined,
