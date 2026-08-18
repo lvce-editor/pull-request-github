@@ -171,6 +171,29 @@ test.each<readonly [PullRequestViewStatus, string, string]>([
   expect(dom.some((node) => node.text === message)).toBe(true)
 })
 
+test.each<readonly [PullRequestViewStatus, string, string]>([
+  [Loading, '', 'Loading pull request...'],
+  [Error, 'GitHub returned an invalid response.', 'GitHub returned an invalid response.'],
+])('renders %s detail status', (status, error, message) => {
+  const dom = getPullRequestVirtualDom(
+    createState({
+      error,
+      pullRequest: {
+        baseBranch: 'main',
+        commits: [],
+        description: 'description',
+        files: [],
+        headBranch: 'feature',
+        title: 'Add feature',
+      },
+      screen: Detail,
+      status,
+    }),
+  )
+
+  expect(dom.some((node) => node.text === message)).toBe(true)
+})
+
 test('renders a fallback title for an untitled pull request', () => {
   const dom = getPullRequestVirtualDom(
     createState({

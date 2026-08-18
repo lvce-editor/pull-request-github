@@ -4,6 +4,7 @@ import {
   clearPullRequestData,
   setPullRequestListData,
   setPullRequestListError,
+  setPullRequestListResponse,
 } from '../src/parts/PullRequestMockRegistry/PullRequestMockRegistry.ts'
 
 afterEach(() => {
@@ -98,4 +99,10 @@ test('fetchPullRequests rejects an invalid GitHub response', async () => {
   } as unknown as Response)
 
   await expect(fetchPullRequests({ name: 'repo', owner: 'owner' }, 'open', fetchFn)).rejects.toThrow('GitHub returned an invalid pull request list.')
+})
+
+test('fetchPullRequests validates a deterministic raw response', async () => {
+  setPullRequestListResponse('owner', 'repo', 'open', { items: [] })
+
+  await expect(fetchPullRequests({ name: 'repo', owner: 'owner' }, 'open')).rejects.toThrow('GitHub returned an invalid pull request list.')
 })

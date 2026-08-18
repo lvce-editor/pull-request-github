@@ -13,12 +13,25 @@ export interface PullRequestMockError {
   readonly type: 'error'
 }
 
+export interface PullRequestMockResponse {
+  readonly commits: unknown
+  readonly files: unknown
+  readonly pullRequest: unknown
+  readonly type: 'response'
+}
+
 export interface PullRequestListMockData {
   readonly data: readonly PullRequestListItem[]
   readonly type: 'listData'
 }
 
-export type PullRequestMock = PullRequestListMockData | PullRequestMockData | PullRequestMockError
+export interface PullRequestListMockResponse {
+  readonly data: unknown
+  readonly type: 'listResponse'
+}
+
+export type PullRequestMock =
+  PullRequestListMockData | PullRequestListMockResponse | PullRequestMockData | PullRequestMockError | PullRequestMockResponse
 
 const mocks = new Map<string, PullRequestMock>()
 
@@ -41,6 +54,15 @@ export const setPullRequestError = (url: string, message: string): void => {
   })
 }
 
+export const setPullRequestResponse = (url: string, pullRequest: unknown, commits: unknown, files: unknown): void => {
+  mocks.set(getPullRequestApiUrl(url), {
+    commits,
+    files,
+    pullRequest,
+    type: 'response',
+  })
+}
+
 const getPullRequestListApiUrl = (owner: string, repo: string, state: PullRequestFilter): string => {
   return `https://api.github.com/repos/${owner}/${repo}/pulls?state=${state}&per_page=100`
 }
@@ -56,6 +78,13 @@ export const setPullRequestListError = (owner: string, repo: string, state: Pull
   mocks.set(getPullRequestListApiUrl(owner, repo, state), {
     message,
     type: 'error',
+  })
+}
+
+export const setPullRequestListResponse = (owner: string, repo: string, state: PullRequestFilter, data: unknown): void => {
+  mocks.set(getPullRequestListApiUrl(owner, repo, state), {
+    data,
+    type: 'listResponse',
   })
 }
 

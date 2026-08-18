@@ -36,6 +36,8 @@ test('forwards github operations to the worker', async () => {
   await githubWorker.setPullRequestError('https://github.com/owner/repo/pull/7', 'Not Found')
   await githubWorker.setPullRequestListData('owner', 'repo', 'open', listData)
   await githubWorker.setPullRequestListError('owner', 'repo', 'closed', 'Not Found')
+  await githubWorker.setPullRequestListResponse('owner', 'repo', 'open', { items: [] })
+  await githubWorker.setPullRequestResponse('https://github.com/owner/repo/pull/7', {}, [], [])
   await githubWorker.clearPullRequestData()
 
   expect(invoke.mock.calls).toEqual([
@@ -46,6 +48,8 @@ test('forwards github operations to the worker', async () => {
     ['GitHub.setPullRequestError', 'https://github.com/owner/repo/pull/7', 'Not Found'],
     ['GitHub.setPullRequestListData', 'owner', 'repo', 'open', listData],
     ['GitHub.setPullRequestListError', 'owner', 'repo', 'closed', 'Not Found'],
+    ['GitHub.setPullRequestListResponse', 'owner', 'repo', 'open', { items: [] }],
+    ['GitHub.setPullRequestResponse', 'https://github.com/owner/repo/pull/7', {}, [], []],
     ['GitHub.clearPullRequestData'],
   ])
 })

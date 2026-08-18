@@ -1,5 +1,5 @@
 import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
-import { mergeClassNames, text, VirtualDomElements } from '@lvce-editor/virtual-dom-worker'
+import { AriaRoles, mergeClassNames, text, VirtualDomElements } from '@lvce-editor/virtual-dom-worker'
 import type { PullRequestViewState } from '../PullRequestViewState/PullRequestViewState.ts'
 import * as DomEventListenerFunctions from '../DomEventListenerFunctions/DomEventListenerFunctions.ts'
 import * as PullRequestDetailTabs from '../PullRequestDetailTab/PullRequestDetailTab.ts'
@@ -23,8 +23,26 @@ const detailViewNode: VirtualDomNode = {
   type: VirtualDomElements.Div,
 }
 
+const renderDetailMessage = (message: string, error = false): readonly VirtualDomNode[] => {
+  return [
+    {
+      childCount: 1,
+      className: mergeClassNames('PullRequestMessage', error ? 'PullRequestMessageError' : ''),
+      role: error ? AriaRoles.Alert : AriaRoles.Status,
+      type: VirtualDomElements.Div,
+    },
+    text(message),
+  ]
+}
+
 const renderDetailContent = (state: PullRequestViewState): readonly VirtualDomNode[] => {
-  const { detailTab, pullRequest } = state
+  const { detailTab, error, pullRequest, status } = state
+  if (status === PullRequestViewStates.Loading) {
+    return renderDetailMessage('Loading pull request...')
+  }
+  if (status === PullRequestViewStates.Error) {
+    return renderDetailMessage(error, true)
+  }
   if (!pullRequest) {
     return []
   }

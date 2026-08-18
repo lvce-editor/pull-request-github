@@ -11,5 +11,7 @@ export const commandMap = {
   'GitHub.setPullRequestError': PullRequestMockRegistry.setPullRequestError,
   'GitHub.setPullRequestListData': PullRequestMockRegistry.setPullRequestListData,
   'GitHub.setPullRequestListError': PullRequestMockRegistry.setPullRequestListError,
+  'GitHub.setPullRequestListResponse': PullRequestMockRegistry.setPullRequestListResponse,
+  'GitHub.setPullRequestResponse': PullRequestMockRegistry.setPullRequestResponse,
   'GitHub.validatePullRequestUrl': PullRequestUrl.validatePullRequestUrl,
 }

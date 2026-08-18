@@ -10,6 +10,8 @@ test('exposes github logic over rpc', () => {
     'GitHub.setPullRequestError',
     'GitHub.setPullRequestListData',
     'GitHub.setPullRequestListError',
+    'GitHub.setPullRequestListResponse',
+    'GitHub.setPullRequestResponse',
     'GitHub.validatePullRequestUrl',
   ])
 })

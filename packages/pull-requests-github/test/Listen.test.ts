@@ -26,6 +26,8 @@ test('listen', async () => {
       'PullRequestsGithub.setPullRequestError',
       'PullRequestsGithub.setPullRequestListData',
       'PullRequestsGithub.setPullRequestListError',
+      'PullRequestsGithub.setPullRequestListResponse',
+      'PullRequestsGithub.setPullRequestResponse',
       'PullRequestsGithub.clearPullRequestData',
     ])
     expect(getViewRegistrySnapshot()).toEqual({
