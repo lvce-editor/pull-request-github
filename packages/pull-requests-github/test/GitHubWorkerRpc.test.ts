@@ -14,7 +14,12 @@ test('forwards github operations to the worker', async () => {
   const listData = [
     {
       ...data,
+      author: 'mira.k',
+      comments: 12,
+      draft: false,
+      labels: [{ color: '1d76db', name: 'feature' }],
       number: 7,
+      updatedAt: '2026-08-18T10:00:00.000Z',
       url: 'https://github.com/owner/repo/pull/7',
     },
   ]

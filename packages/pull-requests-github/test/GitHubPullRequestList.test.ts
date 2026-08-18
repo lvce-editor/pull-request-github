@@ -17,17 +17,27 @@ test('toPullRequestListItem maps GitHub response data', () => {
     toPullRequestListItem({
       base: { ref: 'main' },
       body: 'description',
+      comments: 12,
+      draft: false,
       head: { ref: 'feature' },
       html_url: 'https://github.com/owner/repo/pull/42',
+      labels: [{ color: '1d76db', name: 'feature' }],
       number: 42,
       title: 'Add feature',
+      updated_at: '2026-08-18T10:00:00.000Z',
+      user: { login: 'mira.k' },
     }),
   ).toEqual({
+    author: 'mira.k',
     baseBranch: 'main',
+    comments: 12,
     description: 'description',
+    draft: false,
     headBranch: 'feature',
+    labels: [{ color: '1d76db', name: 'feature' }],
     number: 42,
     title: 'Add feature',
+    updatedAt: '2026-08-18T10:00:00.000Z',
     url: 'https://github.com/owner/repo/pull/42',
   })
 })
@@ -60,11 +70,16 @@ test('fetchPullRequests requests the selected state', async () => {
 test('fetchPullRequests returns deterministic mock data without fetching', async () => {
   const data = [
     {
+      author: 'mira.k',
       baseBranch: 'main',
+      comments: 12,
       description: '',
+      draft: false,
       headBranch: 'feature',
+      labels: [],
       number: 42,
       title: 'Add feature',
+      updatedAt: '',
       url: 'https://github.com/owner/repo/pull/42',
     },
   ]

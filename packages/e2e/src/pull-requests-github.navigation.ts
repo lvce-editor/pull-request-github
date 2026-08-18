@@ -2,6 +2,8 @@
 
 import type { Test } from '@lvce-editor/test-with-playwright'
 
+// cspell:ignore priya
+
 export const name = 'pull-requests-github.navigation'
 
 export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspace }) => {
@@ -18,11 +20,16 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestListData', 'lvce-editor', 'pull-request-github', 'open', [])
   await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestListData', 'lvce-editor', 'pull-request-github', 'closed', [
     {
+      author: 'priya.s',
       baseBranch: 'main',
+      comments: 2,
       description: 'A completed pull request.',
+      draft: false,
       headBranch: 'feature/completed',
+      labels: [{ color: '1d76db', name: 'ui' }],
       number: 122,
       title: 'Completed pull request',
+      updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
       url: 'https://github.com/lvce-editor/pull-request-github/pull/122',
     },
   ])

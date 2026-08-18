@@ -12,7 +12,7 @@ import { renderPullRequestListStatus } from '../RenderPullRequestListStatus/Rend
 import { renderPullRequestTabs } from '../RenderPullRequestTabs/RenderPullRequestTabs.ts'
 
 const listViewNode: VirtualDomNode = {
-  childCount: 3,
+  childCount: 2,
   className: mergeClassNames('Viewlet', 'PullRequestView'),
   type: VirtualDomElements.Div,
 }
@@ -61,6 +61,53 @@ const introNode: VirtualDomNode = {
   type: VirtualDomElements.Div,
 }
 
+const listHeaderNode: VirtualDomNode = {
+  childCount: 2,
+  className: 'PullRequestListHeader',
+  type: VirtualDomElements.Header,
+}
+
+const listActionsNode: VirtualDomNode = {
+  childCount: 2,
+  className: 'PullRequestListActions',
+  type: VirtualDomElements.Div,
+}
+
+const searchNode: VirtualDomNode = {
+  childCount: 2,
+  className: 'PullRequestSearch',
+  type: VirtualDomElements.Div,
+}
+
+const searchIconNode: VirtualDomNode = {
+  childCount: 0,
+  className: mergeClassNames('MaskIcon', 'MaskIconSearch', 'PullRequestSearchIcon'),
+  type: VirtualDomElements.Span,
+}
+
+const refreshButtonNode: VirtualDomNode = {
+  ariaLabel: 'Refresh pull requests',
+  childCount: 1,
+  className: 'PullRequestRefreshButton',
+  name: 'refreshPullRequests',
+  onClick: DomEventListenerFunctions.HandleClick,
+  title: 'Refresh pull requests',
+  type: VirtualDomElements.Button,
+}
+
+const refreshIconNode: VirtualDomNode = {
+  childCount: 0,
+  className: mergeClassNames('MaskIcon', 'MaskIconRefresh', 'PullRequestRefreshIcon'),
+  name: 'refreshPullRequests',
+  type: VirtualDomElements.Span,
+}
+
+const listCardNode: VirtualDomNode = {
+  childCount: 2,
+  className: 'PullRequestListCard',
+  type: VirtualDomElements.Div,
+}
+
 const titleNode: VirtualDomNode = {
   childCount: 1,
   className: 'PullRequestTitle',
@@ -95,17 +142,33 @@ const backButtonLabelNode: VirtualDomNode = {
 }
 
 const renderListView = (state: PullRequestViewState): readonly VirtualDomNode[] => {
-  const { filter, repository } = state
-  const repositoryLabel = repository ? `${repository.owner}/${repository.name}` : 'Pull requests'
-  const description = repository ? 'Pull requests for the current GitHub repository.' : 'Reading the Git remote for the current workspace.'
+  const { closedPullRequests, filter, openPullRequests, query, repository } = state
+  const repositoryLabel = repository ? `${repository.owner} / ${repository.name}` : 'Reading the current workspace repository…'
   return [
     listViewNode,
+    listHeaderNode,
     introNode,
     titleNode,
-    text(repositoryLabel),
+    text('Pull Requests'),
     descriptionNode,
-    text(description),
-    ...renderPullRequestTabs(filter),
+    text(repositoryLabel),
+    listActionsNode,
+    searchNode,
+    searchIconNode,
+    {
+      ariaLabel: 'Filter pull requests',
+      childCount: 0,
+      className: 'PullRequestSearchInput',
+      name: 'filterPullRequests',
+      onInput: DomEventListenerFunctions.HandleInput,
+      placeholder: 'Filter pull requests',
+      type: VirtualDomElements.Input,
+      value: query,
+    },
+    refreshButtonNode,
+    refreshIconNode,
+    listCardNode,
+    ...renderPullRequestTabs(filter, openPullRequests.length, closedPullRequests.length),
     ...renderPullRequestListStatus(state),
   ]
 }

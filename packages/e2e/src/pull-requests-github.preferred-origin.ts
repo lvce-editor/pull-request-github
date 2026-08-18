@@ -18,6 +18,6 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestListData', 'lvce-editor', 'pull-request-github', 'open', [])
   await Command.executeExtensionCommand('PullRequestsGithub.show')
 
-  const repository = Locator('text=lvce-editor/pull-request-github')
+  const repository = Locator('text=lvce-editor / pull-request-github')
   await expect(repository).toBeVisible()
 }

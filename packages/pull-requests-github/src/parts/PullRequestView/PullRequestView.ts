@@ -16,6 +16,7 @@ export interface PullRequestViewInstance extends VirtualDomViewInstance {
   readonly dispose: () => void
   readonly handleEvent: (event: ViewEvent) => Promise<void>
   readonly handlePullRequestClick: (name: unknown) => Promise<void>
+  readonly handlePullRequestFilterInput: (value: unknown) => void
   readonly openOnGitHub: (open: (url: string) => Promise<void>) => Promise<void>
   readonly refresh: () => Promise<void>
   readonly render: () => readonly VirtualDomNode[]
@@ -77,12 +78,14 @@ export const create = (
     await context?.requestRerender?.()
   }
 
-  const loadList = async (repository: GitHubRepository, filter: PullRequestFilter, rerender: boolean): Promise<void> => {
+  const loadLists = async (repository: GitHubRepository, filter: PullRequestFilter, rerender: boolean): Promise<void> => {
     state = {
       ...state,
+      closedPullRequests: [],
       detailTab: PullRequestDetailTabs.Overview,
       error: '',
       filter,
+      openPullRequests: [],
       pullRequest: undefined,
       pullRequests: [],
       repository,
@@ -94,10 +97,26 @@ export const create = (
       await requestRerender()
     }
     try {
-      const pullRequests = await dependencies.fetchPullRequests(repository, filter)
+      const fetchList = async (listFilter: PullRequestFilter): Promise<readonly PullRequestListItem[]> => {
+        const pullRequests = await dependencies.fetchPullRequests(repository, listFilter)
+        return Array.isArray(pullRequests) ? pullRequests : []
+      }
+      const secondaryFilter = filter === PullRequestFilters.Open ? PullRequestFilters.Closed : PullRequestFilters.Open
+      const fetchSecondaryList = async (): Promise<readonly PullRequestListItem[]> => {
+        try {
+          return await fetchList(secondaryFilter)
+        } catch {
+          return []
+        }
+      }
+      const [primaryPullRequests, secondaryPullRequests] = await Promise.all([fetchList(filter), fetchSecondaryList()])
+      const openPullRequests = filter === PullRequestFilters.Open ? primaryPullRequests : secondaryPullRequests
+      const closedPullRequests = filter === PullRequestFilters.Closed ? primaryPullRequests : secondaryPullRequests
       state = {
         ...state,
-        pullRequests,
+        closedPullRequests,
+        openPullRequests,
+        pullRequests: filter === PullRequestFilters.Closed ? closedPullRequests : openPullRequests,
         status: PullRequestViewStates.Ready,
       }
     } catch (error) {
@@ -142,7 +161,7 @@ export const create = (
       return
     }
     const { filter } = state
-    await loadList(repository, filter, rerender)
+    await loadLists(repository, filter, rerender)
   }
 
   const loadDetail = async (rerender: boolean): Promise<void> => {
@@ -182,17 +201,25 @@ export const create = (
   const createInstance = async (): Promise<PullRequestViewInstance> => {
     await loadRepository(false)
     const handleClick = async (name: string): Promise<void> => {
-      const { pullRequests, repository } = state
+      const { closedPullRequests, openPullRequests, pullRequests } = state
       if (name === 'showOpenPullRequests') {
-        if (repository) {
-          await loadList(repository, PullRequestFilters.Open, false)
+        state = {
+          ...state,
+          filter: PullRequestFilters.Open,
+          pullRequests: openPullRequests,
         }
         return
       }
       if (name === 'showClosedPullRequests') {
-        if (repository) {
-          await loadList(repository, PullRequestFilters.Closed, false)
+        state = {
+          ...state,
+          filter: PullRequestFilters.Closed,
+          pullRequests: closedPullRequests,
         }
+        return
+      }
+      if (name === 'refreshPullRequests') {
+        await loadRepository(false)
         return
       }
       if (name === 'showPullRequestList') {
@@ -253,6 +280,10 @@ export const create = (
         activeInstances.delete(instance)
       },
       async handleEvent(event: ViewEvent): Promise<void> {
+        if (event.type === 'input' && event.name === 'filterPullRequests') {
+          instance.handlePullRequestFilterInput(event.value)
+          return
+        }
         if (event.type !== 'click') {
           return
         }
@@ -261,6 +292,12 @@ export const create = (
       async handlePullRequestClick(name: unknown): Promise<void> {
         if (typeof name === 'string') {
           await handleClick(name)
+        }
+      },
+      handlePullRequestFilterInput(value: unknown): void {
+        state = {
+          ...state,
+          query: typeof value === 'string' ? value : '',
         }
       },
       async openOnGitHub(open: (url: string) => Promise<void>): Promise<void> {
@@ -300,6 +337,10 @@ export const view: View<PullRequestViewInstance> = {
     {
       name: 'handlePullRequestClick',
       params: ['handlePullRequestClick', 'event.currentTarget.name'],
+    },
+    {
+      name: 'handlePullRequestFilterInput',
+      params: ['handlePullRequestFilterInput', 'event.currentTarget.value'],
     },
   ],
   icon: 'media/git-pull-request.svg',

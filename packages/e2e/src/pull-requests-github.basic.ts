@@ -22,6 +22,7 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await Workspace.setPath(tmpDir)
   await Command.executeExtensionCommand('PullRequestsGithub.clearPullRequestData')
   await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestListData', 'lvce-editor', 'pull-request-github', 'open', [])
+  await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestListData', 'lvce-editor', 'pull-request-github', 'closed', [])
   await Command.executeExtensionCommand('PullRequestsGithub.show')
 
   const extensionUri = import.meta.resolve('../../pull-requests-github')
@@ -36,7 +37,7 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await expect(icon).toHaveCSS('mask-image', `url("${iconUrl}")`)
   await expect(view).toBeVisible()
   await expect(view).toHaveCSS('padding-left', '12px')
-  await expect(tabs).toHaveCSS('display', 'grid')
-  await expect(openTab).toHaveCSS('height', '28px')
+  await expect(tabs).toHaveCSS('display', 'flex')
+  await expect(openTab).toHaveCSS('height', '24px')
   await expect(message).toContainText('No open pull requests.')
 }

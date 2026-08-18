@@ -8,26 +8,55 @@ interface GitHubPullRequestListResponse {
     readonly ref?: unknown
   }
   readonly body?: unknown
+  readonly comments?: unknown
+  readonly draft?: unknown
   readonly head?: {
     readonly ref?: unknown
   }
   readonly html_url?: unknown
+  readonly labels?: unknown
   readonly message?: unknown
   readonly number?: unknown
   readonly title?: unknown
+  readonly updated_at?: unknown
+  readonly user?: {
+    readonly login?: unknown
+  }
 }
 
 const assertString = (value: unknown): string => {
   return typeof value === 'string' ? value : ''
 }
 
+const toLabels = (value: unknown): PullRequestListItem['labels'] => {
+  if (!Array.isArray(value)) {
+    return []
+  }
+  return value.flatMap((label) => {
+    if (!label || typeof label !== 'object' || !('name' in label) || typeof label.name !== 'string' || !label.name) {
+      return []
+    }
+    return [
+      {
+        color: 'color' in label && typeof label.color === 'string' ? label.color : '',
+        name: label.name,
+      },
+    ]
+  })
+}
+
 export const toPullRequestListItem = (response: GitHubPullRequestListResponse): PullRequestListItem => {
   return {
+    author: assertString(response.user?.login),
     baseBranch: assertString(response.base?.ref),
+    comments: typeof response.comments === 'number' ? response.comments : 0,
     description: assertString(response.body),
+    draft: response.draft === true,
     headBranch: assertString(response.head?.ref),
+    labels: toLabels(response.labels),
     number: typeof response.number === 'number' ? response.number : 0,
     title: assertString(response.title),
+    updatedAt: assertString(response.updated_at),
     url: assertString(response.html_url),
   }
 }

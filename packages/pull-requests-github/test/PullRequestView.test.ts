@@ -11,11 +11,16 @@ const repository: GitHubRepository = {
 }
 
 const pullRequest: PullRequestListItem = {
+  author: 'mira.k',
   baseBranch: 'main',
+  comments: 12,
   description: 'description',
+  draft: false,
   headBranch: 'feature',
+  labels: [{ color: '1d76db', name: 'feature' }],
   number: 42,
   title: 'Add feature',
+  updatedAt: '2026-08-18T10:00:00.000Z',
   url: 'https://github.com/owner/repo/pull/42',
 }
 
@@ -63,15 +68,33 @@ afterEach(() => {
   jest.restoreAllMocks()
 })
 
-test('loads open pull requests from the current repository on create', async () => {
+test('loads open and closed pull requests from the current repository on create', async () => {
   const dependencies = createDependencies()
   const view = await create(undefined, dependencies)
 
   expect(dependencies.getRepository).toHaveBeenCalledTimes(1)
   expect(dependencies.fetchPullRequests).toHaveBeenCalledWith(repository, 'open')
-  expect(view.render().some((node) => node.text === 'owner/repo')).toBe(true)
+  expect(dependencies.fetchPullRequests).toHaveBeenCalledWith(repository, 'closed')
+  expect(view.render().some((node) => node.text === 'owner / repo')).toBe(true)
   expect(view.render().some((node) => node.text === 'Add feature')).toBe(true)
   expect(view.saveState()).toEqual({ filter: 'open' })
+  view.dispose()
+})
+
+test('keeps the active pull request list when the background count request fails', async () => {
+  const fetchPullRequests = jest
+    .fn<(repository: GitHubRepository, filter: PullRequestFilter) => Promise<readonly PullRequestListItem[]>>()
+    .mockImplementation(async (currentRepository, filter) => {
+      expect(currentRepository).toEqual(repository)
+      if (filter === 'closed') {
+        throw new Error('Failed to load the closed pull request count')
+      }
+      return [pullRequest]
+    })
+  const view = await create(undefined, createDependencies({ fetchPullRequests }))
+
+  expect(view.render().some((node) => node.text === 'Add feature')).toBe(true)
+  expect(view.render().some((node) => node.text === 'Failed to load the closed pull request count')).toBe(false)
   view.dispose()
 })
 
@@ -83,7 +106,7 @@ test('switches between open and closed pull requests', async () => {
     type: 'click',
   })
 
-  expect(dependencies.fetchPullRequests).toHaveBeenLastCalledWith(repository, 'closed')
+  expect(dependencies.fetchPullRequests).toHaveBeenCalledTimes(2)
   expect(view.saveState()).toEqual({ filter: 'closed' })
   view.dispose()
 })
@@ -156,8 +179,21 @@ test('refresh reloads the current repository list', async () => {
   await refreshActiveInstance()
 
   expect(dependencies.getRepository).toHaveBeenCalledTimes(2)
-  expect(dependencies.fetchPullRequests).toHaveBeenCalledTimes(2)
+  expect(dependencies.fetchPullRequests).toHaveBeenCalledTimes(4)
   expect(requestRerender).toHaveBeenCalled()
+  view.dispose()
+})
+
+test('filters pull requests using visible list metadata', async () => {
+  const view = await create(undefined, createDependencies())
+
+  view.handlePullRequestFilterInput('mira.k')
+
+  expect(view.render().some((node) => node.text === 'Add feature')).toBe(true)
+
+  view.handlePullRequestFilterInput('not-found')
+
+  expect(view.render().some((node) => node.text === 'No pull requests match “not-found”.')).toBe(true)
   view.dispose()
 })
 

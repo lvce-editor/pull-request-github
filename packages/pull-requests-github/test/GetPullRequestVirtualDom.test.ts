@@ -16,11 +16,16 @@ test('renders repository pull request list with open and closed tabs', () => {
     createState({
       pullRequests: [
         {
+          author: 'mira.k',
           baseBranch: 'main',
+          comments: 12,
           description: 'description',
+          draft: false,
           headBranch: 'feature',
+          labels: [{ color: '1d76db', name: 'feature' }],
           number: 42,
           title: 'Add feature',
+          updatedAt: '2026-08-18T10:00:00.000Z',
           url: 'https://github.com/owner/repo/pull/42',
         },
       ],
@@ -32,7 +37,7 @@ test('renders repository pull request list with open and closed tabs', () => {
     }),
   )
 
-  expect(dom.some((node) => node.text === 'owner/repo')).toBe(true)
+  expect(dom.some((node) => node.text === 'owner / repo')).toBe(true)
   expect(dom.some((node) => node.text === 'Open')).toBe(true)
   expect(dom.some((node) => node.text === 'Closed')).toBe(true)
   expect(dom.some((node) => node.name === 'openPullRequest:42')).toBe(true)
@@ -199,11 +204,16 @@ test('renders a fallback title for an untitled pull request', () => {
     createState({
       pullRequests: [
         {
+          author: '',
           baseBranch: '',
+          comments: 0,
           description: '',
+          draft: false,
           headBranch: '',
+          labels: [],
           number: 7,
           title: '',
+          updatedAt: '',
           url: 'https://github.com/owner/repo/pull/7',
         },
       ],
