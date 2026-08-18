@@ -42,7 +42,7 @@
     {
       "id": "github.pullRequests",
       "title": "Pull Requests",
-      "icon": "symbol-github",
+      "icon": "/icons/git-pull-request.svg",
       "kind": "virtualDom"
     }
   ]
