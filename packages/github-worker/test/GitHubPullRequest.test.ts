@@ -1,4 +1,4 @@
-import { afterEach, expect, test } from '@jest/globals'
+import { afterEach, expect, jest, test } from '@jest/globals'
 import { fetchPullRequest, toPullRequestCommit, toPullRequestData, toPullRequestFile } from '../src/parts/GitHubPullRequest/GitHubPullRequest.ts'
 import {
   clearPullRequestData,
@@ -180,7 +180,19 @@ test('fetchPullRequest fetches public github pull request', async () => {
 })
 
 test('fetchPullRequest reports github error message', async () => {
-  await expect(fetchPullRequest('https://github.com/owner/repo/pull/7', createNotFoundFetch)).rejects.toThrow('Not Found')
+  await expect(fetchPullRequest('https://github.com/owner/repo/pull/7', createNotFoundFetch)).rejects.toMatchObject({
+    code: 'E_GITHUB_REQUEST_FAILED',
+    message: 'Not Found',
+  })
+})
+
+test('fetchPullRequest reports a network error with a code', async () => {
+  const fetchFn = jest.fn<typeof fetch>().mockRejectedValue(new TypeError('Failed to fetch'))
+
+  await expect(fetchPullRequest('https://github.com/owner/repo/pull/7', fetchFn)).rejects.toMatchObject({
+    code: 'E_GITHUB_REQUEST_FAILED',
+    message: 'Failed to fetch',
+  })
 })
 
 test('fetchPullRequest returns mock data without fetching', async () => {
@@ -211,18 +223,27 @@ test('fetchPullRequest throws mock error without fetching', async () => {
   }
   setPullRequestError('https://github.com/owner/repo/pull/7', 'Not Found')
 
-  await expect(fetchPullRequest('https://github.com/owner/repo/pull/7', fetchFn)).rejects.toThrow('Not Found')
+  await expect(fetchPullRequest('https://github.com/owner/repo/pull/7', fetchFn)).rejects.toMatchObject({
+    code: 'E_GITHUB_REQUEST_FAILED',
+    message: 'Not Found',
+  })
   expect(calls).toEqual([])
 })
 
 test('fetchPullRequest validates deterministic raw commit data', async () => {
   setPullRequestResponse('https://github.com/owner/repo/pull/7', {}, { commits: [] }, [])
 
-  await expect(fetchPullRequest('https://github.com/owner/repo/pull/7')).rejects.toThrow('GitHub returned an invalid pull request commit list.')
+  await expect(fetchPullRequest('https://github.com/owner/repo/pull/7')).rejects.toMatchObject({
+    code: 'E_GITHUB_INVALID_COMMIT_DATA',
+    message: 'GitHub returned an invalid pull request commit list.',
+  })
 })
 
 test('fetchPullRequest validates deterministic raw file data', async () => {
   setPullRequestResponse('https://github.com/owner/repo/pull/7', {}, [], { files: [] })
 
-  await expect(fetchPullRequest('https://github.com/owner/repo/pull/7')).rejects.toThrow('GitHub returned an invalid pull request file list.')
+  await expect(fetchPullRequest('https://github.com/owner/repo/pull/7')).rejects.toMatchObject({
+    code: 'E_GITHUB_INVALID_FILE_DATA',
+    message: 'GitHub returned an invalid pull request file list.',
+  })
 })

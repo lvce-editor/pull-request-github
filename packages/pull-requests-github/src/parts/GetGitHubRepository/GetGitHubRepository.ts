@@ -1,5 +1,5 @@
-import type { GitHubRepository } from '@lvce-editor/pull-request-shared'
 import { getWorkspaceUri, readFile } from '@lvce-editor/api'
+import { ErrorCodes, type GitHubRepository, PullRequestError } from '@lvce-editor/pull-request-shared'
 import { getRemoteUrl, parseGitHubRemoteUrl } from '../GitRemote/GitRemote.ts'
 
 // cspell:ignore commondir gitdir
@@ -40,11 +40,11 @@ const readGitConfig = async (workspaceUri: string, read: ReadFile): Promise<stri
     try {
       dotGitFile = await read(dotGitUri)
     } catch {
-      throw new Error('No Git repository was found in the current workspace.')
+      throw new PullRequestError('No Git repository was found in the current workspace.', ErrorCodes.GitRepositoryNotFound)
     }
     const gitDirectoryLine = dotGitFile.split('\n').find((line) => line.trimStart().startsWith('gitdir:'))
     if (!gitDirectoryLine) {
-      throw new Error('No Git repository was found in the current workspace.')
+      throw new PullRequestError('No Git repository was found in the current workspace.', ErrorCodes.GitRepositoryNotFound)
     }
     const gitDirectory = resolveGitDirectory(workspaceUri, gitDirectoryLine.slice(gitDirectoryLine.indexOf(':') + 1))
     try {
@@ -54,7 +54,7 @@ const readGitConfig = async (workspaceUri: string, read: ReadFile): Promise<stri
         const commonDirectory = await read(joinUri(gitDirectory, 'commondir'))
         return await read(joinUri(resolveGitDirectory(gitDirectory, commonDirectory), 'config'))
       } catch {
-        throw new Error('No Git repository was found in the current workspace.')
+        throw new PullRequestError('No Git repository was found in the current workspace.', ErrorCodes.GitRepositoryNotFound)
       }
     }
   }
@@ -63,16 +63,16 @@ const readGitConfig = async (workspaceUri: string, read: ReadFile): Promise<stri
 export const getGitHubRepository = async (getWorkspace: GetWorkspaceUri = getWorkspaceUri, read: ReadFile = readFile): Promise<GitHubRepository> => {
   const workspaceUri = await getWorkspace()
   if (!workspaceUri) {
-    throw new Error('Open a folder containing a GitHub repository to view pull requests.')
+    throw new PullRequestError('Open a folder containing a GitHub repository to view pull requests.', ErrorCodes.GitRepositoryNotFound)
   }
   const config = await readGitConfig(workspaceUri, read)
   const remoteUrl = getRemoteUrl(config)
   if (!remoteUrl) {
-    throw new Error('No Git remote was found in the current workspace.')
+    throw new PullRequestError('No Git remote was found in the current workspace.', ErrorCodes.GitRemoteNotFound)
   }
   const repository = parseGitHubRemoteUrl(remoteUrl)
   if (!repository) {
-    throw new Error('The current repository remote is not hosted on GitHub.')
+    throw new PullRequestError('The current repository remote is not hosted on GitHub.', ErrorCodes.GitHubRemoteRequired)
   }
   return repository
 }

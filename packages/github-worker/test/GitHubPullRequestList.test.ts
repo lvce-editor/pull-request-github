@@ -97,13 +97,28 @@ test('fetchPullRequests reports a GitHub error', async () => {
     status: 404,
   } as unknown as Response)
 
-  await expect(fetchPullRequests({ name: 'repo', owner: 'owner' }, 'open', fetchFn)).rejects.toThrow('Not Found')
+  await expect(fetchPullRequests({ name: 'repo', owner: 'owner' }, 'open', fetchFn)).rejects.toMatchObject({
+    code: 'E_GITHUB_REQUEST_FAILED',
+    message: 'Not Found',
+  })
+})
+
+test('fetchPullRequests reports a network error with a code', async () => {
+  const fetchFn = jest.fn<typeof fetch>().mockRejectedValue(new TypeError('Failed to fetch'))
+
+  await expect(fetchPullRequests({ name: 'repo', owner: 'owner' }, 'open', fetchFn)).rejects.toMatchObject({
+    code: 'E_GITHUB_REQUEST_FAILED',
+    message: 'Failed to fetch',
+  })
 })
 
 test('fetchPullRequests reports a deterministic mock error', async () => {
   setPullRequestListError('owner', 'repo', 'open', 'Mock error')
 
-  await expect(fetchPullRequests({ name: 'repo', owner: 'owner' }, 'open')).rejects.toThrow('Mock error')
+  await expect(fetchPullRequests({ name: 'repo', owner: 'owner' }, 'open')).rejects.toMatchObject({
+    code: 'E_GITHUB_REQUEST_FAILED',
+    message: 'Mock error',
+  })
 })
 
 test('fetchPullRequests rejects an invalid GitHub response', async () => {
@@ -113,11 +128,17 @@ test('fetchPullRequests rejects an invalid GitHub response', async () => {
     status: 200,
   } as unknown as Response)
 
-  await expect(fetchPullRequests({ name: 'repo', owner: 'owner' }, 'open', fetchFn)).rejects.toThrow('GitHub returned an invalid pull request list.')
+  await expect(fetchPullRequests({ name: 'repo', owner: 'owner' }, 'open', fetchFn)).rejects.toMatchObject({
+    code: 'E_GITHUB_INVALID_LIST_DATA',
+    message: 'GitHub returned an invalid pull request list.',
+  })
 })
 
 test('fetchPullRequests validates a deterministic raw response', async () => {
   setPullRequestListResponse('owner', 'repo', 'open', { items: [] })
 
-  await expect(fetchPullRequests({ name: 'repo', owner: 'owner' }, 'open')).rejects.toThrow('GitHub returned an invalid pull request list.')
+  await expect(fetchPullRequests({ name: 'repo', owner: 'owner' }, 'open')).rejects.toMatchObject({
+    code: 'E_GITHUB_INVALID_LIST_DATA',
+    message: 'GitHub returned an invalid pull request list.',
+  })
 })

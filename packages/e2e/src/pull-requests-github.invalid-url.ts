@@ -25,5 +25,6 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await Command.execute('Timeout.sleep', 200)
 
   const error = Locator('.PullRequestMessageError')
-  await expect(error).toHaveText('Enter a valid GitHub pull request URL')
+  await expect(error).toContainText('Enter a valid GitHub pull request URL')
+  await expect(error).toContainText('Error code: E_GITHUB_INVALID_PULL_REQUEST_URL')
 }

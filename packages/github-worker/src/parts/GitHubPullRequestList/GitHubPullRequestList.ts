@@ -1,4 +1,11 @@
-import type { GitHubRepository, PullRequestFilter, PullRequestListItem } from '@lvce-editor/pull-request-shared'
+import {
+  ErrorCodes,
+  type GitHubRepository,
+  PullRequestError,
+  type PullRequestFilter,
+  type PullRequestListItem,
+  toPullRequestError,
+} from '@lvce-editor/pull-request-shared'
 import * as PullRequestMockRegistry from '../PullRequestMockRegistry/PullRequestMockRegistry.ts'
 
 interface GitHubPullRequestListResponse {
@@ -76,25 +83,29 @@ export const fetchPullRequests = async (
     return mock.data
   }
   if (mock?.type === 'error') {
-    throw new Error(mock.message)
+    throw new PullRequestError(mock.message, ErrorCodes.GitHubRequestFailed)
   }
   let json: unknown
   if (mock?.type === 'listResponse') {
     json = mock.data
   } else {
-    const apiUrl = `https://api.github.com/repos/${repository.owner}/${repository.name}/pulls?state=${state}&per_page=100`
-    const response = await fetchFn(apiUrl, {
-      headers: {
-        Accept: 'application/vnd.github+json',
-      },
-    })
-    json = await response.json()
-    if (!response.ok) {
-      throw new Error(getErrorMessage(json as GitHubPullRequestListResponse, response.status))
+    try {
+      const apiUrl = `https://api.github.com/repos/${repository.owner}/${repository.name}/pulls?state=${state}&per_page=100`
+      const response = await fetchFn(apiUrl, {
+        headers: {
+          Accept: 'application/vnd.github+json',
+        },
+      })
+      json = await response.json()
+      if (!response.ok) {
+        throw new PullRequestError(getErrorMessage(json as GitHubPullRequestListResponse, response.status), ErrorCodes.GitHubRequestFailed)
+      }
+    } catch (error) {
+      throw toPullRequestError(error, ErrorCodes.GitHubRequestFailed)
     }
   }
   if (!Array.isArray(json)) {
-    throw new TypeError('GitHub returned an invalid pull request list.')
+    throw new PullRequestError('GitHub returned an invalid pull request list.', ErrorCodes.GitHubInvalidListData)
   }
   return json.map(toPullRequestListItem)
 }

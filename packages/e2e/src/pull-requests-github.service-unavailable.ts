@@ -15,5 +15,6 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await Command.executeExtensionCommand('PullRequestsGithub.show')
 
   const error = Locator('.PullRequestMessageError')
-  await expect(error).toHaveText('GitHub request failed with status 503')
+  await expect(error).toContainText('GitHub request failed with status 503')
+  await expect(error).toContainText('Error code: E_GITHUB_REQUEST_FAILED')
 }

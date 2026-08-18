@@ -176,6 +176,30 @@ test.each<readonly [PullRequestViewStatus, string, string]>([
   expect(dom.some((node) => node.text === message)).toBe(true)
 })
 
+test('renders a list error message and code', () => {
+  const dom = getPullRequestVirtualDom(
+    createState({
+      error: 'GitHub returned an invalid pull request list.',
+      errorCode: 'E_GITHUB_INVALID_LIST_DATA',
+      status: Error,
+    }),
+  )
+
+  expect(dom.some((node) => node.text === 'GitHub returned an invalid pull request list.')).toBe(true)
+  expect(dom.some((node) => node.text === 'Error code: E_GITHUB_INVALID_LIST_DATA')).toBe(true)
+})
+
+test('renders an unknown error message and code when error details are empty', () => {
+  const dom = getPullRequestVirtualDom(
+    createState({
+      status: Error,
+    }),
+  )
+
+  expect(dom.some((node) => node.text === 'An unknown error occurred.')).toBe(true)
+  expect(dom.some((node) => node.text === 'Error code: E_UNKNOWN')).toBe(true)
+})
+
 test.each<readonly [PullRequestViewStatus, string, string]>([
   [Loading, '', 'Loading pull request...'],
   [Error, 'GitHub returned an invalid response.', 'GitHub returned an invalid response.'],
@@ -197,6 +221,20 @@ test.each<readonly [PullRequestViewStatus, string, string]>([
   )
 
   expect(dom.some((node) => node.text === message)).toBe(true)
+})
+
+test('renders a detail error message and code', () => {
+  const dom = getPullRequestVirtualDom(
+    createState({
+      error: 'GitHub returned an invalid pull request file list.',
+      errorCode: 'E_GITHUB_INVALID_FILE_DATA',
+      screen: Detail,
+      status: Error,
+    }),
+  )
+
+  expect(dom.some((node) => node.text === 'GitHub returned an invalid pull request file list.')).toBe(true)
+  expect(dom.some((node) => node.text === 'Error code: E_GITHUB_INVALID_FILE_DATA')).toBe(true)
 })
 
 test('renders a fallback title for an untitled pull request', () => {

@@ -29,6 +29,7 @@ export interface PullRequestViewState {
   readonly closedPullRequests: readonly PullRequestListItem[]
   readonly detailTab: PullRequestDetailTab
   readonly error: string
+  readonly errorCode: string
   readonly filter: PullRequestFilter
   readonly openPullRequests: readonly PullRequestListItem[]
   readonly pullRequest: PullRequestData | undefined
@@ -45,6 +46,7 @@ export const createDefaultState = (savedState: PullRequestViewSavedState | undef
     closedPullRequests: [],
     detailTab: PullRequestDetailTabs.Overview,
     error: '',
+    errorCode: '',
     filter: savedState?.filter === Closed ? Closed : Open,
     openPullRequests: [],
     pullRequest: undefined,

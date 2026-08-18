@@ -38,5 +38,6 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await Command.execute('Timeout.sleep', 200)
 
   const error = Locator('.PullRequestMessageError')
-  await expect(error).toHaveText('GitHub returned an invalid pull request commit list.')
+  await expect(error).toContainText('GitHub returned an invalid pull request commit list.')
+  await expect(error).toContainText('Error code: E_GITHUB_INVALID_COMMIT_DATA')
 }

@@ -9,6 +9,7 @@ import {
   type PullRequestListItem,
 } from '@lvce-editor/pull-request-shared'
 import type { PullRequestViewSavedState } from '../PullRequestViewState/PullRequestViewState.ts'
+import { getErrorInfo } from '../GetErrorInfo/GetErrorInfo.ts'
 import { getGitHubRepository } from '../GetGitHubRepository/GetGitHubRepository.ts'
 import { getPullRequestVirtualDom } from '../GetPullRequestVirtualDom/GetPullRequestVirtualDom.ts'
 import * as GitHubWorkerRpc from '../GitHubWorkerRpc/GitHubWorkerRpc.ts'
@@ -67,10 +68,6 @@ const getSavedState = (context: PullRequestViewContext | undefined): PullRequest
   return context.state
 }
 
-const getErrorMessage = (error: unknown): string => {
-  return error instanceof Error ? error.message : String(error)
-}
-
 export const create = (
   context?: PullRequestViewContext,
   dependencies: PullRequestViewDependencies = defaultDependencies,
@@ -87,6 +84,7 @@ export const create = (
       closedPullRequests: [],
       detailTab: PullRequestDetailTabs.Overview,
       error: '',
+      errorCode: '',
       filter,
       openPullRequests: [],
       pullRequest: undefined,
@@ -123,9 +121,11 @@ export const create = (
         status: PullRequestViewStates.Ready,
       }
     } catch (error) {
+      const errorInfo = getErrorInfo(error)
       state = {
         ...state,
-        error: getErrorMessage(error),
+        error: errorInfo.message,
+        errorCode: errorInfo.code,
         status: PullRequestViewStates.Error,
       }
     }
@@ -139,6 +139,7 @@ export const create = (
       ...state,
       detailTab: PullRequestDetailTabs.Overview,
       error: '',
+      errorCode: '',
       pullRequest: undefined,
       pullRequests: [],
       repository: undefined,
@@ -153,9 +154,11 @@ export const create = (
     try {
       repository = await dependencies.getRepository()
     } catch (error) {
+      const errorInfo = getErrorInfo(error)
       state = {
         ...state,
-        error: getErrorMessage(error),
+        error: errorInfo.message,
+        errorCode: errorInfo.code,
         status: PullRequestViewStates.Unavailable,
       }
       if (rerender) {
@@ -176,6 +179,7 @@ export const create = (
     state = {
       ...state,
       error: '',
+      errorCode: '',
       screen: PullRequestViewStates.Detail,
       status: PullRequestViewStates.Loading,
     }
@@ -194,9 +198,11 @@ export const create = (
         status: PullRequestViewStates.Ready,
       }
     } catch (error) {
+      const errorInfo = getErrorInfo(error)
       state = {
         ...state,
-        error: getErrorMessage(error),
+        error: errorInfo.message,
+        errorCode: errorInfo.code,
         status: PullRequestViewStates.Error,
       }
     }

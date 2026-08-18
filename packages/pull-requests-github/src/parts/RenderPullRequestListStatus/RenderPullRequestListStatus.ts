@@ -3,6 +3,7 @@ import { Open } from '@lvce-editor/pull-request-shared'
 import { AriaRoles, mergeClassNames, text, VirtualDomElements } from '@lvce-editor/virtual-dom-worker'
 import type { PullRequestViewState } from '../PullRequestViewState/PullRequestViewState.ts'
 import * as PullRequestViewStatus from '../PullRequestViewState/PullRequestViewState.ts'
+import { renderErrorMessage } from '../RenderErrorMessage/RenderErrorMessage.ts'
 import { renderPullRequestList } from '../RenderPullRequestList/RenderPullRequestList.ts'
 
 const matchesQuery = (pullRequest: PullRequestViewState['pullRequests'][number], query: string): boolean => {
@@ -32,15 +33,15 @@ const renderMessage = (message: string, error = false): readonly VirtualDomNode[
 }
 
 export const renderPullRequestListStatus = (state: PullRequestViewState): readonly VirtualDomNode[] => {
-  const { error, filter, pullRequests, query, status } = state
+  const { error, errorCode, filter, pullRequests, query, status } = state
   if (status === PullRequestViewStatus.Loading) {
     return renderMessage('Loading pull requests...')
   }
   if (status === PullRequestViewStatus.Error) {
-    return renderMessage(error, true)
+    return renderErrorMessage(error, errorCode)
   }
   if (status === PullRequestViewStatus.Unavailable) {
-    return renderMessage(error)
+    return renderErrorMessage(error, errorCode, false)
   }
   const normalizedQuery = query.trim().toLowerCase()
   const filteredPullRequests = normalizedQuery ? pullRequests.filter((pullRequest) => matchesQuery(pullRequest, normalizedQuery)) : pullRequests
