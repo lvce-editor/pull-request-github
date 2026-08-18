@@ -1,6 +1,6 @@
+import type { PullRequestFile } from '@lvce-editor/pull-request-shared'
 import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
 import { AriaRoles, mergeClassNames, text, VirtualDomElements } from '@lvce-editor/virtual-dom-worker'
-import type { PullRequestFile } from '../PullRequestData/PullRequestData.ts'
 
 const diffUnavailableNode: VirtualDomNode = {
   childCount: 1,

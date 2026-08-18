@@ -1,4 +1,4 @@
-import type { PullRequestSummary } from '../PullRequestData/PullRequestData.ts'
+import type { PullRequestSummary } from './PullRequestData.ts'
 
 export interface PullRequestLabel {
   readonly color: string

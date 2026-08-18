@@ -1,13 +1,12 @@
 import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
+import { Open, type PullRequestFilter } from '@lvce-editor/pull-request-shared'
 import { AriaRoles, mergeClassNames, text, VirtualDomElements } from '@lvce-editor/virtual-dom-worker'
-import type { PullRequestFilter } from '../PullRequestFilter/PullRequestFilter.ts'
 import * as DomEventListenerFunctions from '../DomEventListenerFunctions/DomEventListenerFunctions.ts'
-import * as PullRequestFilters from '../PullRequestFilter/PullRequestFilter.ts'
 
 export const renderPullRequestTab = (filter: PullRequestFilter, activeFilter: PullRequestFilter, count: number): readonly VirtualDomNode[] => {
   const active = filter === activeFilter
-  const label = filter === PullRequestFilters.Open ? 'Open' : 'Closed'
-  const name = filter === PullRequestFilters.Open ? 'showOpenPullRequests' : 'showClosedPullRequests'
+  const label = filter === Open ? 'Open' : 'Closed'
+  const name = filter === Open ? 'showOpenPullRequests' : 'showClosedPullRequests'
   return [
     {
       ariaSelected: active,

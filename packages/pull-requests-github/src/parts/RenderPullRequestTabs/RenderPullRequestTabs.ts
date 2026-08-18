@@ -1,7 +1,6 @@
 import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
+import { Closed, Open, type PullRequestFilter } from '@lvce-editor/pull-request-shared'
 import { AriaRoles, VirtualDomElements } from '@lvce-editor/virtual-dom-worker'
-import type { PullRequestFilter } from '../PullRequestFilter/PullRequestFilter.ts'
-import * as PullRequestFilters from '../PullRequestFilter/PullRequestFilter.ts'
 import { renderPullRequestTab } from '../RenderPullRequestTab/RenderPullRequestTab.ts'
 
 const tabListNode: VirtualDomNode = {
@@ -13,9 +12,5 @@ const tabListNode: VirtualDomNode = {
 }
 
 export const renderPullRequestTabs = (activeFilter: PullRequestFilter, openCount: number, closedCount: number): readonly VirtualDomNode[] => {
-  return [
-    tabListNode,
-    ...renderPullRequestTab(PullRequestFilters.Open, activeFilter, openCount),
-    ...renderPullRequestTab(PullRequestFilters.Closed, activeFilter, closedCount),
-  ]
+  return [tabListNode, ...renderPullRequestTab(Open, activeFilter, openCount), ...renderPullRequestTab(Closed, activeFilter, closedCount)]
 }

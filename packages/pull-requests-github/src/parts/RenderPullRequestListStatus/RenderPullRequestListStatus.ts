@@ -1,7 +1,7 @@
 import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
+import { Open } from '@lvce-editor/pull-request-shared'
 import { AriaRoles, mergeClassNames, text, VirtualDomElements } from '@lvce-editor/virtual-dom-worker'
 import type { PullRequestViewState } from '../PullRequestViewState/PullRequestViewState.ts'
-import * as PullRequestFilters from '../PullRequestFilter/PullRequestFilter.ts'
 import * as PullRequestViewStatus from '../PullRequestViewState/PullRequestViewState.ts'
 import { renderPullRequestList } from '../RenderPullRequestList/RenderPullRequestList.ts'
 
@@ -50,6 +50,6 @@ export const renderPullRequestListStatus = (state: PullRequestViewState): readon
   if (status === PullRequestViewStatus.Ready && normalizedQuery && pullRequests.length > 0) {
     return renderMessage(`No pull requests match “${query.trim()}”.`)
   }
-  const stateLabel = filter === PullRequestFilters.Open ? 'open' : 'closed'
+  const stateLabel = filter === Open ? 'open' : 'closed'
   return renderMessage(`No ${stateLabel} pull requests.`)
 }

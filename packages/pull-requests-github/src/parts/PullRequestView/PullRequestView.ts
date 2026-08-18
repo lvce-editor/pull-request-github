@@ -1,15 +1,18 @@
 import type { View, ViewContext, ViewEvent, VirtualDomViewInstance } from '@lvce-editor/api'
 import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
-import type { GitHubRepository } from '../GitHubRepository/GitHubRepository.ts'
-import type { PullRequestData } from '../PullRequestData/PullRequestData.ts'
-import type { PullRequestFilter } from '../PullRequestFilter/PullRequestFilter.ts'
-import type { PullRequestListItem } from '../PullRequestListItem/PullRequestListItem.ts'
+import {
+  Closed,
+  Open,
+  type GitHubRepository,
+  type PullRequestData,
+  type PullRequestFilter,
+  type PullRequestListItem,
+} from '@lvce-editor/pull-request-shared'
 import type { PullRequestViewSavedState } from '../PullRequestViewState/PullRequestViewState.ts'
 import { getGitHubRepository } from '../GetGitHubRepository/GetGitHubRepository.ts'
 import { getPullRequestVirtualDom } from '../GetPullRequestVirtualDom/GetPullRequestVirtualDom.ts'
 import * as GitHubWorkerRpc from '../GitHubWorkerRpc/GitHubWorkerRpc.ts'
 import * as PullRequestDetailTabs from '../PullRequestDetailTab/PullRequestDetailTab.ts'
-import * as PullRequestFilters from '../PullRequestFilter/PullRequestFilter.ts'
 import * as PullRequestViewStates from '../PullRequestViewState/PullRequestViewState.ts'
 
 export interface PullRequestViewInstance extends VirtualDomViewInstance {
@@ -101,7 +104,7 @@ export const create = (
         const pullRequests = await dependencies.fetchPullRequests(repository, listFilter)
         return Array.isArray(pullRequests) ? pullRequests : []
       }
-      const secondaryFilter = filter === PullRequestFilters.Open ? PullRequestFilters.Closed : PullRequestFilters.Open
+      const secondaryFilter = filter === Open ? Closed : Open
       const fetchSecondaryList = async (): Promise<readonly PullRequestListItem[]> => {
         try {
           return await fetchList(secondaryFilter)
@@ -110,13 +113,13 @@ export const create = (
         }
       }
       const [primaryPullRequests, secondaryPullRequests] = await Promise.all([fetchList(filter), fetchSecondaryList()])
-      const openPullRequests = filter === PullRequestFilters.Open ? primaryPullRequests : secondaryPullRequests
-      const closedPullRequests = filter === PullRequestFilters.Closed ? primaryPullRequests : secondaryPullRequests
+      const openPullRequests = filter === Open ? primaryPullRequests : secondaryPullRequests
+      const closedPullRequests = filter === Closed ? primaryPullRequests : secondaryPullRequests
       state = {
         ...state,
         closedPullRequests,
         openPullRequests,
-        pullRequests: filter === PullRequestFilters.Closed ? closedPullRequests : openPullRequests,
+        pullRequests: filter === Closed ? closedPullRequests : openPullRequests,
         status: PullRequestViewStates.Ready,
       }
     } catch (error) {
@@ -205,7 +208,7 @@ export const create = (
       if (name === 'showOpenPullRequests') {
         state = {
           ...state,
-          filter: PullRequestFilters.Open,
+          filter: Open,
           pullRequests: openPullRequests,
         }
         return
@@ -213,7 +216,7 @@ export const create = (
       if (name === 'showClosedPullRequests') {
         state = {
           ...state,
-          filter: PullRequestFilters.Closed,
+          filter: Closed,
           pullRequests: closedPullRequests,
         }
         return

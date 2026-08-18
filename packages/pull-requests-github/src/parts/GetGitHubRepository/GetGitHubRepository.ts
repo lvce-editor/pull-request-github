@@ -1,5 +1,5 @@
+import type { GitHubRepository } from '@lvce-editor/pull-request-shared'
 import { getWorkspaceUri, readFile } from '@lvce-editor/api'
-import type { GitHubRepository } from '../GitHubRepository/GitHubRepository.ts'
 import { getRemoteUrl, parseGitHubRemoteUrl } from '../GitRemote/GitRemote.ts'
 
 // cspell:ignore commondir gitdir

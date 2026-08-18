@@ -1,4 +1,4 @@
-import type { GitHubRepository } from '../GitHubRepository/GitHubRepository.ts'
+import type { GitHubRepository } from '@lvce-editor/pull-request-shared'
 
 const remoteSectionRegex = /^\s*\[remote\s+"([^"]+)"\]\s*$/
 const scpRemoteRegex = /^(?:[^@\s]+@)?([^:\s]+):([^\s]+)$/

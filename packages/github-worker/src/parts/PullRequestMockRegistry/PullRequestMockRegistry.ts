@@ -1,6 +1,4 @@
-import type { PullRequestData } from '../PullRequestData/PullRequestData.ts'
-import type { PullRequestFilter } from '../PullRequestFilter/PullRequestFilter.ts'
-import type { PullRequestListItem } from '../PullRequestListItem/PullRequestListItem.ts'
+import type { PullRequestData, PullRequestFilter, PullRequestListItem } from '@lvce-editor/pull-request-shared'
 import { parsePullRequestUrl } from '../PullRequestUrl/PullRequestUrl.ts'
 
 export interface PullRequestMockData {

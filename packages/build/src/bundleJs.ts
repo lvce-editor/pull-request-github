@@ -42,6 +42,6 @@ const bundleEntryPoint = async (inputFile: string, outputFile: string): Promise<
 export const bundleJs = async (outDir = join(root, '.tmp/dist/dist')): Promise<void> => {
   await Promise.all([
     bundleEntryPoint(join(root, 'packages/pull-requests-github/src/pullRequestWorkerMain.ts'), join(outDir, 'pullRequestWorkerMain.js')),
-    bundleEntryPoint(join(root, 'packages/pull-requests-github/src/githubWorkerMain.ts'), join(outDir, 'githubWorkerMain.js')),
+    bundleEntryPoint(join(root, 'packages/github-worker/src/githubWorkerMain.ts'), join(outDir, 'githubWorkerMain.js')),
   ])
 }

@@ -1,6 +1,4 @@
-import type { GitHubRepository } from '../GitHubRepository/GitHubRepository.ts'
-import type { PullRequestFilter } from '../PullRequestFilter/PullRequestFilter.ts'
-import type { PullRequestListItem } from '../PullRequestListItem/PullRequestListItem.ts'
+import type { GitHubRepository, PullRequestFilter, PullRequestListItem } from '@lvce-editor/pull-request-shared'
 import * as PullRequestMockRegistry from '../PullRequestMockRegistry/PullRequestMockRegistry.ts'
 
 interface GitHubPullRequestListResponse {

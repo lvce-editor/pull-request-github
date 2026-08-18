@@ -1,9 +1,6 @@
+import type { GitHubRepository, PullRequestData, PullRequestFilter, PullRequestListItem } from '@lvce-editor/pull-request-shared'
 import type { Rpc } from '@lvce-editor/rpc'
 import { createRpc as createExtensionRpc } from '@lvce-editor/api'
-import type { GitHubRepository } from '../GitHubRepository/GitHubRepository.ts'
-import type { PullRequestData } from '../PullRequestData/PullRequestData.ts'
-import type { PullRequestFilter } from '../PullRequestFilter/PullRequestFilter.ts'
-import type { PullRequestListItem } from '../PullRequestListItem/PullRequestListItem.ts'
 
 type GetRpc = () => Promise<Pick<Rpc, 'invoke'>>
 

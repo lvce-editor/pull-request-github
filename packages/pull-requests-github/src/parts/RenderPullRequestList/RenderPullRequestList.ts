@@ -1,9 +1,7 @@
 import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
+import { Closed, type PullRequestFilter, type PullRequestLabel, type PullRequestListItem } from '@lvce-editor/pull-request-shared'
 import { mergeClassNames, text, VirtualDomElements } from '@lvce-editor/virtual-dom-worker'
-import type { PullRequestFilter } from '../PullRequestFilter/PullRequestFilter.ts'
-import type { PullRequestLabel, PullRequestListItem } from '../PullRequestListItem/PullRequestListItem.ts'
 import * as DomEventListenerFunctions from '../DomEventListenerFunctions/DomEventListenerFunctions.ts'
-import * as PullRequestFilters from '../PullRequestFilter/PullRequestFilter.ts'
 
 const listItemNode: VirtualDomNode = {
   childCount: 1,
@@ -86,7 +84,7 @@ const getStateClass = (pullRequest: PullRequestListItem, filter: PullRequestFilt
   if (pullRequest.draft) {
     return 'PullRequestStateDraft'
   }
-  if (filter === PullRequestFilters.Closed) {
+  if (filter === Closed) {
     return 'PullRequestStateClosed'
   }
   return 'PullRequestStateOpen'

@@ -1,10 +1,13 @@
-import type { GitHubRepository } from '../GitHubRepository/GitHubRepository.ts'
-import type { PullRequestData } from '../PullRequestData/PullRequestData.ts'
+import {
+  Closed,
+  Open,
+  type GitHubRepository,
+  type PullRequestData,
+  type PullRequestFilter,
+  type PullRequestListItem,
+} from '@lvce-editor/pull-request-shared'
 import type { PullRequestDetailTab } from '../PullRequestDetailTab/PullRequestDetailTab.ts'
-import type { PullRequestFilter } from '../PullRequestFilter/PullRequestFilter.ts'
-import type { PullRequestListItem } from '../PullRequestListItem/PullRequestListItem.ts'
 import * as PullRequestDetailTabs from '../PullRequestDetailTab/PullRequestDetailTab.ts'
-import * as PullRequestFilters from '../PullRequestFilter/PullRequestFilter.ts'
 
 export const Error = 'error'
 export const Loading = 'loading'
@@ -42,7 +45,7 @@ export const createDefaultState = (savedState: PullRequestViewSavedState | undef
     closedPullRequests: [],
     detailTab: PullRequestDetailTabs.Overview,
     error: '',
-    filter: savedState?.filter === PullRequestFilters.Closed ? PullRequestFilters.Closed : PullRequestFilters.Open,
+    filter: savedState?.filter === Closed ? Closed : Open,
     openPullRequests: [],
     pullRequest: undefined,
     pullRequests: [],

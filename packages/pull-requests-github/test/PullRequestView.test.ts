@@ -1,8 +1,5 @@
+import type { GitHubRepository, PullRequestData, PullRequestFilter, PullRequestListItem } from '@lvce-editor/pull-request-shared'
 import { afterEach, expect, jest, test } from '@jest/globals'
-import type { GitHubRepository } from '../src/parts/GitHubRepository/GitHubRepository.ts'
-import type { PullRequestData } from '../src/parts/PullRequestData/PullRequestData.ts'
-import type { PullRequestFilter } from '../src/parts/PullRequestFilter/PullRequestFilter.ts'
-import type { PullRequestListItem } from '../src/parts/PullRequestListItem/PullRequestListItem.ts'
 import { create, openActiveInstance, refreshActiveInstance } from '../src/parts/PullRequestView/PullRequestView.ts'
 
 const repository: GitHubRepository = {
