@@ -2,11 +2,20 @@ import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
 import { mergeClassNames, text, VirtualDomElements } from '@lvce-editor/virtual-dom-worker'
 import type { PullRequestViewState } from '../PullRequestViewState/PullRequestViewState.ts'
 import * as DomEventListenerFunctions from '../DomEventListenerFunctions/DomEventListenerFunctions.ts'
-import { renderStatus } from '../RenderStatus/RenderStatus.ts'
+import * as PullRequestViewStates from '../PullRequestViewState/PullRequestViewState.ts'
+import { renderPullRequest } from '../RenderPullRequest/RenderPullRequest.ts'
+import { renderPullRequestListStatus } from '../RenderPullRequestListStatus/RenderPullRequestListStatus.ts'
+import { renderPullRequestTabs } from '../RenderPullRequestTabs/RenderPullRequestTabs.ts'
 
-const viewNode: VirtualDomNode = {
+const listViewNode: VirtualDomNode = {
   childCount: 3,
   className: mergeClassNames('Viewlet', 'PullRequestView'),
+  type: VirtualDomElements.Div,
+}
+
+const detailViewNode: VirtualDomNode = {
+  childCount: 2,
+  className: mergeClassNames('Viewlet', 'PullRequestView', 'PullRequestDetailView'),
   type: VirtualDomElements.Div,
 }
 
@@ -28,63 +37,65 @@ const descriptionNode: VirtualDomNode = {
   type: VirtualDomElements.P,
 }
 
-const formNode: VirtualDomNode = {
+const detailHeaderNode: VirtualDomNode = {
   childCount: 2,
-  className: 'PullRequestForm',
-  name: 'pullRequestForm',
-  onSubmit: DomEventListenerFunctions.HandleSubmit,
-  type: VirtualDomElements.Form,
-}
-
-const labelNode: VirtualDomNode = {
-  childCount: 1,
-  className: 'PullRequestLabel',
-  htmlFor: 'pullRequestUrl',
-  type: VirtualDomElements.Label,
-}
-
-const controlsNode: VirtualDomNode = {
-  childCount: 2,
-  className: 'PullRequestControls',
+  className: 'PullRequestDetailHeader',
   type: VirtualDomElements.Div,
 }
 
-const buttonNode: VirtualDomNode = {
+const backButtonNode: VirtualDomNode = {
+  ariaLabel: 'Back to pull requests',
   childCount: 1,
-  className: 'PullRequestButton',
-  name: 'loadPullRequest',
+  className: 'PullRequestBackButton',
+  name: 'showPullRequestList',
   onClick: DomEventListenerFunctions.HandleClick,
   type: VirtualDomElements.Button,
 }
 
-export const getPullRequestVirtualDom = (state: PullRequestViewState): readonly VirtualDomNode[] => {
-  const { url } = state
-  const statusDom = renderStatus(state)
+const backButtonLabelNode: VirtualDomNode = {
+  childCount: 1,
+  name: 'showPullRequestList',
+  type: VirtualDomElements.Span,
+}
+
+const renderListView = (state: PullRequestViewState): readonly VirtualDomNode[] => {
+  const { filter, repository } = state
+  const repositoryLabel = repository ? `${repository.owner}/${repository.name}` : 'Pull requests'
+  const description = repository ? 'Pull requests for the current GitHub repository.' : 'Reading the Git remote for the current workspace.'
   return [
-    viewNode,
+    listViewNode,
     introNode,
     titleNode,
-    text('Inspect a pull request'),
+    text(repositoryLabel),
     descriptionNode,
-    text('Paste a GitHub pull request URL to view its title, branches, and description.'),
-    formNode,
-    labelNode,
-    text('Pull request URL'),
-    controlsNode,
-    {
-      childCount: 0,
-      className: 'PullRequestInput',
-      id: 'pullRequestUrl',
-      name: 'pullRequestUrl',
-      onBlur: DomEventListenerFunctions.HandleBlur,
-      onFocus: DomEventListenerFunctions.HandleFocus,
-      onInput: DomEventListenerFunctions.HandleInput,
-      placeholder: 'https://github.com/owner/repo/pull/123',
-      type: VirtualDomElements.Input,
-      value: url,
-    },
-    buttonNode,
-    text('Load'),
-    ...statusDom,
+    text(description),
+    ...renderPullRequestTabs(filter),
+    ...renderPullRequestListStatus(state),
   ]
+}
+
+const renderDetailView = (state: PullRequestViewState): readonly VirtualDomNode[] => {
+  const { pullRequest, repository } = state
+  if (!pullRequest) {
+    return renderListView(state)
+  }
+  const repositoryLabel = repository ? `${repository.owner}/${repository.name}` : 'Pull request'
+  return [
+    detailViewNode,
+    detailHeaderNode,
+    backButtonNode,
+    backButtonLabelNode,
+    text('‹'),
+    introNode,
+    titleNode,
+    text('Pull request details'),
+    descriptionNode,
+    text(repositoryLabel),
+    ...renderPullRequest(pullRequest),
+  ]
+}
+
+export const getPullRequestVirtualDom = (state: PullRequestViewState): readonly VirtualDomNode[] => {
+  const { screen } = state
+  return screen === PullRequestViewStates.Detail ? renderDetailView(state) : renderListView(state)
 }

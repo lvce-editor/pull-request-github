@@ -7,9 +7,20 @@ export const Refresh = 'PullRequestsGithub.refresh'
 export const OpenOnGitHub = 'PullRequestsGithub.openOnGitHub'
 export const SetPullRequestData = 'PullRequestsGithub.setPullRequestData'
 export const SetPullRequestError = 'PullRequestsGithub.setPullRequestError'
+export const SetPullRequestListData = 'PullRequestsGithub.setPullRequestListData'
+export const SetPullRequestListError = 'PullRequestsGithub.setPullRequestListError'
 export const ClearPullRequestData = 'PullRequestsGithub.clearPullRequestData'
 
-export const commandIds = [Show, Refresh, OpenOnGitHub, SetPullRequestData, SetPullRequestError, ClearPullRequestData]
+export const commandIds = [
+  Show,
+  Refresh,
+  OpenOnGitHub,
+  SetPullRequestData,
+  SetPullRequestError,
+  SetPullRequestListData,
+  SetPullRequestListError,
+  ClearPullRequestData,
+]
 
 type ExecuteCommand = (id: string, ...args: readonly unknown[]) => Promise<unknown>
 type ValidatePullRequestUrl = (url: string) => Promise<void>
@@ -27,7 +38,7 @@ export const openOnGitHub = async (
   await execute('Open.openExternal', url)
 }
 
-export const { clearPullRequestData, setPullRequestData, setPullRequestError } = GitHubWorkerRpc
+export const { clearPullRequestData, setPullRequestData, setPullRequestError, setPullRequestListData, setPullRequestListError } = GitHubWorkerRpc
 
 export const registerCommands = (): void => {
   registerCommand({
@@ -51,6 +62,14 @@ export const registerCommands = (): void => {
   registerCommand({
     execute: setPullRequestError,
     id: SetPullRequestError,
+  })
+  registerCommand({
+    execute: setPullRequestListData,
+    id: SetPullRequestListData,
+  })
+  registerCommand({
+    execute: setPullRequestListError,
+    id: SetPullRequestListError,
   })
   registerCommand({
     execute: clearPullRequestData,

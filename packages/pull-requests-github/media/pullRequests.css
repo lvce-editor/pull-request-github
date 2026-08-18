@@ -5,8 +5,6 @@
   --PullRequestSurface: color-mix(in srgb, var(--PullRequestBackground) 88%, var(--PullRequestForeground) 12%);
   --PullRequestBorder: color-mix(in srgb, var(--PullRequestForeground) 18%, transparent);
   --PullRequestAccent: var(--FocusBorder, #007fd4);
-  --PullRequestInputBackground: var(--InputBoxBackground, color-mix(in srgb, var(--PullRequestBackground) 82%, black 18%));
-  --PullRequestInputForeground: var(--InputBoxForeground, var(--PullRequestForeground));
   box-sizing: border-box;
   container-type: inline-size;
   display: flex;
@@ -52,74 +50,131 @@
   line-height: 1.5;
 }
 
-.PullRequestForm {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  padding: 12px;
+.PullRequestTabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 3px;
   background: color-mix(in srgb, var(--PullRequestSurface) 72%, transparent);
   border: 1px solid var(--PullRequestBorder);
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+  border-radius: 7px;
 }
 
-.PullRequestLabel {
-  color: var(--PullRequestMuted);
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.PullRequestControls {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 7px;
-}
-
-.PullRequestInput {
-  width: 100%;
+.PullRequestTab {
   min-width: 0;
-  height: 30px;
-  margin: 0;
-  padding: 4px 8px;
-  color: var(--PullRequestInputForeground);
-  background: var(--PullRequestInputBackground);
-  border: 1px solid var(--InputBoxBorder, var(--PullRequestBorder));
-  border-radius: 6px;
-  outline: none;
-  font: inherit;
-}
-
-.PullRequestInput::placeholder {
-  color: var(--InputBoxPlaceholderForeground, color-mix(in srgb, var(--PullRequestInputForeground) 54%, transparent));
-  text-overflow: ellipsis;
-}
-
-.PullRequestInput:focus {
-  border-color: var(--PullRequestAccent);
-  box-shadow: 0 0 0 1px var(--PullRequestAccent);
-}
-
-.PullRequestButton {
-  min-width: 54px;
-  min-height: 30px;
-  padding: 4px 11px;
-  color: var(--ButtonForeground, #ffffff);
-  background: var(--ButtonBackground, #0e639c);
-  border: 1px solid transparent;
-  border-radius: 6px;
+  height: 28px;
+  padding: 3px 10px;
+  color: var(--PullRequestMuted);
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
   cursor: pointer;
   font: inherit;
   font-size: 12px;
+}
+
+.PullRequestTab:hover {
+  color: var(--PullRequestForeground);
+  background: color-mix(in srgb, var(--PullRequestForeground) 7%, transparent);
+}
+
+.PullRequestTabActive {
+  color: var(--PullRequestForeground);
+  background: color-mix(in srgb, var(--PullRequestAccent) 18%, var(--PullRequestSurface));
+  box-shadow: 0 1px 3px rgb(0 0 0 / 18%);
   font-weight: 600;
 }
 
-.PullRequestButton:hover {
-  background: var(--ButtonHoverBackground, color-mix(in srgb, var(--ButtonBackground, #0e639c) 84%, white 16%));
+.PullRequestTab:focus-visible,
+.PullRequestListItemButton:focus-visible,
+.PullRequestBackButton:focus-visible {
+  outline: 1px solid var(--PullRequestAccent);
+  outline-offset: 1px;
 }
 
-.PullRequestButton:focus-visible {
-  outline: 1px solid var(--PullRequestAccent);
-  outline-offset: 2px;
+.PullRequestList {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.PullRequestListItem {
+  min-width: 0;
+}
+
+.PullRequestListItemButton {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 5px 10px;
+  padding: 11px 12px;
+  color: var(--PullRequestForeground);
+  background: color-mix(in srgb, var(--PullRequestSurface) 58%, transparent);
+  border: 1px solid var(--PullRequestBorder);
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.PullRequestListItemButton:hover {
+  background: color-mix(in srgb, var(--PullRequestSurface) 82%, var(--PullRequestAccent) 8%);
+  border-color: color-mix(in srgb, var(--PullRequestAccent) 55%, var(--PullRequestBorder));
+}
+
+.PullRequestListItemTitle {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.PullRequestListItemNumber {
+  color: var(--PullRequestMuted);
+  font-size: 11px;
+}
+
+.PullRequestListItemBranches {
+  min-width: 0;
+  grid-column: 1 / -1;
+  overflow: hidden;
+  color: color-mix(in srgb, var(--PullRequestAccent) 68%, var(--PullRequestForeground));
+  font-family: var(--EditorFontFamily, monospace);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.PullRequestDetailHeader {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 9px;
+  align-items: start;
+}
+
+.PullRequestBackButton {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: var(--PullRequestForeground);
+  background: color-mix(in srgb, var(--PullRequestSurface) 72%, transparent);
+  border: 1px solid var(--PullRequestBorder);
+  border-radius: 6px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 22px;
+  line-height: 22px;
+}
+
+.PullRequestBackButton:hover {
+  background: color-mix(in srgb, var(--PullRequestSurface) 82%, var(--PullRequestAccent) 8%);
 }
 
 .PullRequestMessage,
@@ -213,14 +268,4 @@
   font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-@container (max-width: 240px) {
-  .PullRequestControls {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .PullRequestButton {
-    width: 100%;
-  }
 }
