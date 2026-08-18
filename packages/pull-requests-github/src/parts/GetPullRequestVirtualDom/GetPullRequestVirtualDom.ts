@@ -123,22 +123,85 @@ const descriptionNode: VirtualDomNode = {
 const detailHeaderNode: VirtualDomNode = {
   childCount: 2,
   className: 'PullRequestDetailHeader',
-  type: VirtualDomElements.Div,
+  type: VirtualDomElements.Header,
 }
 
 const backButtonNode: VirtualDomNode = {
   ariaLabel: 'Back to pull requests',
-  childCount: 1,
+  childCount: 2,
   className: 'PullRequestBackButton',
   name: 'showPullRequestList',
   onClick: DomEventListenerFunctions.HandleClick,
   type: VirtualDomElements.Button,
 }
 
-const backButtonLabelNode: VirtualDomNode = {
+const backIconNode: VirtualDomNode = {
+  childCount: 0,
+  className: 'PullRequestBackIcon',
+  name: 'showPullRequestList',
+  type: VirtualDomElements.Span,
+}
+
+const backLabelNode: VirtualDomNode = {
   childCount: 1,
   name: 'showPullRequestList',
   type: VirtualDomElements.Span,
+}
+
+const detailHeroNode: VirtualDomNode = {
+  childCount: 2,
+  className: 'PullRequestDetailHero',
+  type: VirtualDomElements.Div,
+}
+
+const detailIntroNode: VirtualDomNode = {
+  childCount: 2,
+  className: 'PullRequestDetailIntro',
+  type: VirtualDomElements.Div,
+}
+
+const detailNumberNode: VirtualDomNode = {
+  childCount: 1,
+  className: 'PullRequestDetailNumber',
+  type: VirtualDomElements.Span,
+}
+
+const mergeSummaryNode: VirtualDomNode = {
+  childCount: 5,
+  className: 'PullRequestMergeSummary',
+  type: VirtualDomElements.P,
+}
+
+const mergeAuthorNode: VirtualDomNode = {
+  childCount: 1,
+  className: 'PullRequestMergeAuthor',
+  type: VirtualDomElements.Span,
+}
+
+const branchNode: VirtualDomNode = {
+  childCount: 1,
+  className: 'PullRequestBranch',
+  type: VirtualDomElements.Code,
+}
+
+const detailStateIconNode: VirtualDomNode = {
+  childCount: 0,
+  className: 'PullRequestStateIcon',
+  type: VirtualDomElements.Span,
+}
+
+const renderDetailNumber = (number: number | undefined): readonly VirtualDomNode[] => {
+  return number ? [detailNumberNode, text(` #${number}`)] : []
+}
+
+const getStatePresentation = (draft: boolean | undefined, filter: string): readonly [string, string] => {
+  if (draft) {
+    return ['Draft', 'PullRequestStateDraft']
+  }
+  if (filter === 'closed') {
+    return ['Closed', 'PullRequestStateClosed']
+  }
+  return ['Open', 'PullRequestStateOpen']
 }
 
 const renderListView = (state: PullRequestViewState): readonly VirtualDomNode[] => {
@@ -174,22 +237,45 @@ const renderListView = (state: PullRequestViewState): readonly VirtualDomNode[] 
 }
 
 const renderDetailView = (state: PullRequestViewState): readonly VirtualDomNode[] => {
-  const { detailTab, pullRequest, repository } = state
+  const { detailTab, filter, pullRequest } = state
   if (!pullRequest) {
     return renderListView(state)
   }
-  const repositoryLabel = repository ? `${repository.owner}/${repository.name}` : 'Pull request'
+  const title = pullRequest.title || (pullRequest.number ? `Pull request #${pullRequest.number}` : 'Pull request')
+  const [stateLabel, stateClass] = getStatePresentation(pullRequest.draft, filter)
+  const commitLabel = `${pullRequest.commits.length} ${pullRequest.commits.length === 1 ? 'commit' : 'commits'}`
   return [
     detailViewNode,
     detailHeaderNode,
     backButtonNode,
-    backButtonLabelNode,
-    text('‹'),
-    introNode,
-    titleNode,
-    text('Pull request details'),
-    descriptionNode,
-    text(repositoryLabel),
+    backIconNode,
+    backLabelNode,
+    text('Back to list'),
+    detailHeroNode,
+    detailIntroNode,
+    {
+      childCount: pullRequest.number ? 2 : 1,
+      className: 'PullRequestDetailTitle',
+      type: VirtualDomElements.H2,
+    },
+    text(title),
+    ...renderDetailNumber(pullRequest.number),
+    mergeSummaryNode,
+    mergeAuthorNode,
+    text(pullRequest.author || 'A contributor'),
+    text(` wants to merge ${commitLabel} into `),
+    branchNode,
+    text(pullRequest.baseBranch || 'base'),
+    text(' from '),
+    branchNode,
+    text(pullRequest.headBranch || 'head'),
+    {
+      childCount: 2,
+      className: mergeClassNames('PullRequestStateBadge', stateClass),
+      type: VirtualDomElements.Span,
+    },
+    detailStateIconNode,
+    text(stateLabel),
     ...renderPullRequestDetailTabs(pullRequest, detailTab),
     ...renderDetailContent(state),
   ]

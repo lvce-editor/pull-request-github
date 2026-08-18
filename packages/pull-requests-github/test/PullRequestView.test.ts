@@ -116,7 +116,10 @@ test('opens a pull request detail and returns to the list', async () => {
     type: 'click',
   })
 
-  expect(view.render().some((node) => node.text === 'Pull request details')).toBe(true)
+  expect(view.render().some((node) => node.text === 'Back to list')).toBe(true)
+  expect(view.render().some((node) => node.text === 'mira.k')).toBe(true)
+  expect(view.render().some((node) => node.text === 'feature')).toBe(true)
+  expect(view.render().some((node) => node.text === '12 comments')).toBe(true)
   expect(dependencies.fetchPullRequest).toHaveBeenCalledWith('https://github.com/owner/repo/pull/42')
   expect(view.render().some((node) => node.text === 'description')).toBe(true)
 

@@ -39,8 +39,9 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   })
   await Command.executeExtensionCommand('PullRequestsGithub.refresh')
 
-  const details = Locator('.PullRequestDetails')
-  await expect(details).toContainText('Recovered detail view')
-  await expect(details).toContainText('The detail view recovered after refresh.')
+  const detailTitle = Locator('.PullRequestDetailTitle')
+  const overview = Locator('.PullRequestOverview')
+  await expect(detailTitle).toContainText('Recovered detail view')
+  await expect(overview).toContainText('The detail view recovered after refresh.')
   await expect(error).toBeHidden()
 }

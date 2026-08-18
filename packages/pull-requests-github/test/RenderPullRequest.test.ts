@@ -1,64 +1,73 @@
 import { expect, test } from '@jest/globals'
 import { renderPullRequest } from '../src/parts/RenderPullRequest/RenderPullRequest.ts'
 
-test('renderPullRequest renders pull request fields', () => {
+test('renderPullRequest renders a rich overview', () => {
   const dom = renderPullRequest({
+    author: 'mira.k',
     baseBranch: 'main',
+    comments: 12,
     commits: [],
-    description: 'description',
+    description: 'Review a diff directly from the editor.',
     files: [],
-    headBranch: 'feature',
-    title: 'Add feature',
+    headBranch: 'feat/inline-review-comments',
+    labels: [
+      { color: '1d76db', name: 'feature' },
+      { color: 'd4a72c', name: 'needs-review' },
+    ],
+    title: 'Add inline review comments',
   })
 
   expect(dom).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        childCount: 4,
-        className: 'PullRequestDetails',
+        childCount: 2,
+        className: 'PullRequestOverview',
       }),
       expect.objectContaining({
-        text: 'Title',
+        text: 'mira.k opened this pull request',
       }),
       expect.objectContaining({
-        text: 'Add feature',
+        text: 'Review a diff directly from the editor.',
       }),
       expect.objectContaining({
-        text: 'Head',
-      }),
-      expect.objectContaining({
-        text: 'feature',
-      }),
-      expect.objectContaining({
-        text: 'Base',
+        text: 'feat/inline-review-comments',
       }),
       expect.objectContaining({
         text: 'main',
       }),
       expect.objectContaining({
-        text: 'Description',
+        text: 'feature',
       }),
       expect.objectContaining({
-        text: 'description',
+        text: 'needs-review',
+      }),
+      expect.objectContaining({
+        text: '12 comments',
       }),
     ]),
   )
 })
 
-test('renderPullRequest renders default description', () => {
+test('renderPullRequest renders overview fallbacks', () => {
   const dom = renderPullRequest({
-    baseBranch: 'main',
+    baseBranch: '',
     commits: [],
     description: '',
     files: [],
-    headBranch: 'feature',
-    title: 'Add feature',
+    headBranch: '',
+    title: '',
   })
 
   expect(dom).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
+        text: 'A contributor opened this pull request',
+      }),
+      expect.objectContaining({
         text: 'No description',
+      }),
+      expect.objectContaining({
+        text: '0 comments',
       }),
     ]),
   )

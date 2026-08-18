@@ -95,10 +95,10 @@ test('renders pull request detail with back navigation', () => {
   )
 
   expect(dom.some((node) => node.name === 'showPullRequestList')).toBe(true)
-  expect(dom.some((node) => node.text === 'Pull request details')).toBe(true)
+  expect(dom.some((node) => node.text === 'Back to list')).toBe(true)
   expect(dom.some((node) => node.text === 'Overview')).toBe(true)
-  expect(dom.some((node) => node.text === 'Commits 1')).toBe(true)
-  expect(dom.some((node) => node.text === 'Changes 1')).toBe(true)
+  expect(dom.some((node) => node.text === 'Commits')).toBe(true)
+  expect(dom.some((node) => node.text === 'Changes')).toBe(true)
   expect(dom.some((node) => node.text === 'Add feature')).toBe(true)
   expect(dom.some((node) => node.text === 'description')).toBe(true)
 })

@@ -50,9 +50,9 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
 
   await Locator('button[name="openPullRequest:122"]').click()
   await Command.execute('Timeout.sleep', 200)
-  const detailTitle = Locator('text=Pull request details')
+  const detailTitle = Locator('.PullRequestDetailTitle')
   const detailDescription = Locator('text=A completed pull request.')
-  await expect(detailTitle).toBeVisible()
+  await expect(detailTitle).toContainText('Completed pull request #122')
   await expect(detailDescription).toBeVisible()
 
   await Locator('button[name="showPullRequestList"]').click()

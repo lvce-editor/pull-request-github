@@ -35,11 +35,10 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await Command.execute('Timeout.sleep', 200)
 
   const title = Locator('text=Render empty pull request description')
-  const headBranch = Locator('text=feature/e2e-empty-head')
-  const baseBranch = Locator('text=release/e2e-empty-base')
+  const mergeSummary = Locator('.PullRequestMergeSummary')
   const description = Locator('text=No description')
   await expect(title).toBeVisible()
-  await expect(headBranch).toBeVisible()
-  await expect(baseBranch).toBeVisible()
+  await expect(mergeSummary).toContainText('feature/e2e-empty-head')
+  await expect(mergeSummary).toContainText('release/e2e-empty-base')
   await expect(description).toBeVisible()
 }
