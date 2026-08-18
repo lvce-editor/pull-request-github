@@ -17,5 +17,5 @@ test('writes the development bundle next to the extension manifest', async () =>
   const content = await readFile(join(root, 'package.json'), 'utf8')
   const packageJson = JSON.parse(content)
 
-  match(packageJson.scripts['build:watch'], /--outfile=packages\/pull-requests-github\/dist\/pullRequestWorkerMain\.js(?:\s|$)/)
+  match(packageJson.scripts['build:watch'], /--outdir=packages\/pull-requests-github\/dist(?:\s|$)/)
 })

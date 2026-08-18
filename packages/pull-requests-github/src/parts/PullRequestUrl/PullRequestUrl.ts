@@ -28,3 +28,7 @@ export const parsePullRequestUrl = (value: string): PullRequestLocation => {
     repo: parts[1],
   }
 }
+
+export const validatePullRequestUrl = (value: string): void => {
+  parsePullRequestUrl(value)
+}

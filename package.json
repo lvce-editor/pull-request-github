@@ -9,7 +9,7 @@
   "scripts": {
     "build": "node packages/build/src/build.ts",
     "build:static": "node packages/build/src/build-static.ts",
-    "build:watch": "./node_modules/.bin/esbuild --format=esm --bundle --external:node:buffer --external:electron --external:ws --external:node:worker_threads --watch packages/pull-requests-github/src/pullRequestWorkerMain.ts --outfile=packages/pull-requests-github/dist/pullRequestWorkerMain.js",
+    "build:watch": "./node_modules/.bin/esbuild --format=esm --bundle --external:node:buffer --external:electron --external:ws --external:node:worker_threads --watch packages/pull-requests-github/src/pullRequestWorkerMain.ts packages/pull-requests-github/src/githubWorkerMain.ts --outdir=packages/pull-requests-github/dist",
     "dev": "node packages/build/src/dev.ts",
     "e2e": "cd packages/e2e && npm run e2e",
     "format": "prettier --write .",

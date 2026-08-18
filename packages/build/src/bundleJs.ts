@@ -5,9 +5,9 @@ import { join } from 'path'
 import { rollup, type RollupOptions } from 'rollup'
 import { root } from './root.ts'
 
-const getOptions = (outputFile: string): RollupOptions => {
+const getOptions = (inputFile: string, outputFile: string): RollupOptions => {
   return {
-    input: join(root, 'packages/pull-requests-github/src/pullRequestWorkerMain.ts'),
+    input: inputFile,
     preserveEntrySignatures: 'strict',
     treeshake: {
       propertyReadSideEffects: false,
@@ -33,8 +33,15 @@ const getOptions = (outputFile: string): RollupOptions => {
   }
 }
 
-export const bundleJs = async (outputFile = join(root, '.tmp/dist/dist/pullRequestWorkerMain.js')): Promise<void> => {
-  const options = getOptions(outputFile)
+const bundleEntryPoint = async (inputFile: string, outputFile: string): Promise<void> => {
+  const options = getOptions(inputFile, outputFile)
   const input = await rollup(options)
   await input.write(options.output as any)
+}
+
+export const bundleJs = async (outDir = join(root, '.tmp/dist/dist')): Promise<void> => {
+  await Promise.all([
+    bundleEntryPoint(join(root, 'packages/pull-requests-github/src/pullRequestWorkerMain.ts'), join(outDir, 'pullRequestWorkerMain.js')),
+    bundleEntryPoint(join(root, 'packages/pull-requests-github/src/githubWorkerMain.ts'), join(outDir, 'githubWorkerMain.js')),
+  ])
 }
