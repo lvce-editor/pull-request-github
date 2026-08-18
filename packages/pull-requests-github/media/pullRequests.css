@@ -1,23 +1,27 @@
 .PullRequestView {
-  --PullRequestBackground: var(--SideBarBackground, var(--MainBackground, #181b1f));
-  --PullRequestForeground: var(--WorkbenchForeground, #cccccc);
-  --PullRequestMuted: var(--DescriptionForeground, color-mix(in srgb, var(--PullRequestForeground) 68%, transparent));
-  --PullRequestSurface: color-mix(in srgb, var(--PullRequestBackground) 94%, var(--PullRequestForeground) 6%);
-  --PullRequestSurfaceRaised: color-mix(in srgb, var(--PullRequestBackground) 89%, var(--PullRequestForeground) 11%);
-  --PullRequestBorder: color-mix(in srgb, var(--PullRequestForeground) 18%, transparent);
-  --PullRequestAccent: var(--FocusBorder, #007fd4);
-  --PullRequestOpen: var(--GitDecorationAddedResourceForeground, var(--TestingIconPassed, #3fb950));
-  --PullRequestClosed: var(--GitDecorationDeletedResourceForeground, var(--TestingIconFailed, #f85149));
-  --PullRequestDraft: color-mix(in srgb, var(--PullRequestForeground) 65%, transparent);
+  --PullRequestBackground: oklch(19.6% 0.011 258);
+  --PullRequestTitlebar: oklch(17.1% 0.011 258);
+  --PullRequestSurface: oklch(22.9% 0.012 258);
+  --PullRequestSurfaceRaised: oklch(27.6% 0.014 258);
+  --PullRequestBorder: oklch(30.5% 0.014 258);
+  --PullRequestForeground: oklch(90.6% 0.008 258);
+  --PullRequestMuted: oklch(66% 0.012 258);
+  --PullRequestAccent: oklch(62% 0.15 250);
+  --PullRequestInfo: oklch(70% 0.13 235);
+  --PullRequestWarn: oklch(78% 0.13 85);
+  --PullRequestOpen: oklch(68% 0.16 150);
+  --PullRequestClosed: oklch(62% 0.19 25);
+  --PullRequestDraft: oklch(66% 0.012 258);
+  --PullRequestPurple: oklch(65% 0.18 300);
   box-sizing: border-box;
   container-type: inline-size;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   height: 100%;
   min-height: 0;
   overflow: auto;
-  padding: 16px 12px;
+  padding: 20px 16px;
   color: var(--PullRequestForeground);
   background: var(--PullRequestBackground);
   font-family: var(--FontFamily, system-ui, sans-serif);
@@ -36,14 +40,19 @@
   min-width: 0;
   align-items: baseline;
   justify-content: space-between;
-  gap: 8px;
-  padding-inline: 1px;
+  gap: 12px;
 }
 
 .PullRequestListHeader {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
+}
+
+.PullRequestListHeader .PullRequestDescription {
+  display: none;
 }
 
 .PullRequestTitle {
@@ -51,7 +60,8 @@
   color: var(--PullRequestForeground);
   font-size: 16px;
   font-weight: 600;
-  line-height: 1.4;
+  letter-spacing: -0.025em;
+  line-height: 24px;
 }
 
 .PullRequestDescription {
@@ -60,14 +70,14 @@
   margin: 0;
   color: var(--PullRequestMuted);
   font-size: 12px;
-  line-height: 1.4;
+  line-height: 18px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .PullRequestListActions {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
 .PullRequestSearch {
@@ -75,13 +85,13 @@
   min-width: 0;
   flex: 1;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   height: 30px;
-  padding: 0 9px;
+  padding: 0 10px;
   color: var(--PullRequestMuted);
   background: var(--PullRequestSurface);
   border: 1px solid var(--PullRequestBorder);
-  border-radius: 6px;
+  border-radius: 4px;
 }
 
 .PullRequestSearch:focus-within {
@@ -115,8 +125,8 @@
 
 .PullRequestRefreshButton {
   display: flex;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   flex: none;
   align-items: center;
   justify-content: center;
@@ -124,7 +134,7 @@
   color: var(--PullRequestMuted);
   background: var(--PullRequestSurface);
   border: 1px solid var(--PullRequestBorder);
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
 }
 
@@ -142,15 +152,15 @@
   overflow: hidden;
   background: var(--PullRequestSurface);
   border: 1px solid var(--PullRequestBorder);
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .PullRequestTabs {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 7px 8px;
-  background: color-mix(in srgb, var(--PullRequestBackground) 55%, var(--PullRequestSurface));
+  gap: 16px;
+  padding: 8px 12px;
+  background: var(--PullRequestTitlebar);
   border-bottom: 1px solid var(--PullRequestBorder);
 }
 
@@ -159,7 +169,7 @@
   height: 24px;
   align-items: center;
   gap: 6px;
-  padding: 3px 8px;
+  padding: 4px 8px;
   color: var(--PullRequestMuted);
   background: transparent;
   border: 0;
@@ -171,7 +181,7 @@
 
 .PullRequestTab:hover {
   color: var(--PullRequestForeground);
-  background: color-mix(in srgb, var(--PullRequestForeground) 7%, transparent);
+  background: var(--PullRequestSurfaceRaised);
 }
 
 .PullRequestTab > span,
@@ -183,35 +193,19 @@
 .PullRequestTabActive {
   color: var(--PullRequestForeground);
   background: var(--PullRequestSurfaceRaised);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .PullRequestTabCount {
   min-width: 17px;
   padding: 0 5px;
   color: var(--PullRequestMuted);
-  background: color-mix(in srgb, var(--PullRequestForeground) 9%, transparent);
+  background: var(--PullRequestSurfaceRaised);
   border-radius: 999px;
   font-size: 10px;
   font-weight: 500;
   line-height: 16px;
   text-align: center;
-}
-
-.PullRequestDetailTabs {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  padding: 3px;
-  background: color-mix(in srgb, var(--PullRequestSurface) 72%, transparent);
-  border: 1px solid var(--PullRequestBorder);
-  border-radius: 7px;
-}
-
-.PullRequestDetailTabs .PullRequestTab {
-  height: 32px;
-  padding-inline: 6px;
-  font-size: 11px;
-  white-space: nowrap;
 }
 
 .PullRequestTab:focus-visible,
@@ -246,7 +240,7 @@
   width: 100%;
   min-width: 0;
   grid-template-columns: 16px minmax(0, 1fr) auto;
-  gap: 10px;
+  gap: 12px;
   align-items: start;
   padding: 12px;
   color: var(--PullRequestForeground);
@@ -268,11 +262,15 @@
   height: 16px;
   flex: none;
   background: currentColor;
-  mask-image: url('./git-pull-request.svg');
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='5' cy='6' r='3'/%3E%3Cpath d='M5 9v6'/%3E%3Ccircle cx='5' cy='18' r='3'/%3E%3Cpath d='m15 9 3-3-3-3'/%3E%3Cpath d='M18 6h-5a2 2 0 0 0-2 2v3'/%3E%3Cpath d='M18 6v9'/%3E%3Ccircle cx='18' cy='18' r='3'/%3E%3C/svg%3E");
   mask-position: center;
   mask-repeat: no-repeat;
   mask-size: contain;
   pointer-events: none;
+}
+
+.PullRequestListItemButton > .PullRequestStateIcon {
+  margin-top: 2px;
 }
 
 .PullRequestStateOpen {
@@ -285,7 +283,7 @@
 
 .PullRequestStateDraft {
   color: var(--PullRequestDraft);
-  mask-image: url('./git-pull-request-draft.svg');
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='18' cy='18' r='3'/%3E%3Ccircle cx='6' cy='6' r='3'/%3E%3Cpath d='M18 6V5M18 11v-1M6 9v12'/%3E%3C/svg%3E");
 }
 
 .PullRequestListItemContent {
@@ -306,9 +304,9 @@
 .PullRequestListItemTitle {
   min-width: 0;
   overflow: hidden;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
-  line-height: 1.4;
+  line-height: 20px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -317,8 +315,8 @@
   min-width: 0;
   overflow: hidden;
   color: var(--PullRequestMuted);
-  font-size: 11px;
-  line-height: 1.45;
+  font-size: 12px;
+  line-height: 16px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -326,22 +324,22 @@
 .PullRequestLabel {
   max-width: 112px;
   overflow: hidden;
-  padding: 1px 7px;
-  border: 1px solid currentColor;
+  padding: 1px 8px;
+  border: 1px solid color-mix(in srgb, currentColor 40%, transparent);
   border-radius: 999px;
   font-size: 10px;
-  font-weight: 500;
-  line-height: 16px;
+  font-weight: 400;
+  line-height: 15px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .PullRequestLabelInfo {
-  color: var(--ChartsBlue, #4aa5f0);
+  color: var(--PullRequestInfo);
 }
 
 .PullRequestLabelWarn {
-  color: var(--ChartsYellow, #cca700);
+  color: var(--PullRequestWarn);
 }
 
 .PullRequestLabelDanger {
@@ -349,7 +347,7 @@
 }
 
 .PullRequestLabelPurple {
-  color: var(--ChartsPurple, #b180d7);
+  color: var(--PullRequestPurple);
 }
 
 .PullRequestListItemComments {
@@ -357,43 +355,189 @@
   align-items: center;
   gap: 4px;
   color: var(--PullRequestMuted);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 16px;
 }
 
 .PullRequestCommentIcon {
   width: 14px;
   height: 14px;
-  mask-image: url('./comment.svg');
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z'/%3E%3C/svg%3E");
 }
 
 .PullRequestDetailHeader {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 9px;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .PullRequestBackButton {
-  width: 28px;
-  height: 28px;
+  display: flex;
+  width: max-content;
+  align-items: center;
+  gap: 6px;
   padding: 0;
-  color: var(--PullRequestForeground);
-  background: color-mix(in srgb, var(--PullRequestSurface) 72%, transparent);
-  border: 1px solid var(--PullRequestBorder);
-  border-radius: 6px;
+  color: var(--PullRequestMuted);
+  background: transparent;
+  border: 0;
   cursor: pointer;
   font: inherit;
-  font-size: 22px;
-  line-height: 22px;
+  font-size: 12px;
+  line-height: 16px;
 }
 
 .PullRequestBackButton:hover {
-  background: color-mix(in srgb, var(--PullRequestSurface) 82%, var(--PullRequestAccent) 8%);
+  color: var(--PullRequestForeground);
+}
+
+.PullRequestBackIcon,
+.PullRequestDetailTabIcon {
+  display: block;
+  width: 14px;
+  height: 14px;
+  flex: none;
+  background: currentColor;
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: contain;
+}
+
+.PullRequestBackIcon {
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m12 19-7-7 7-7M19 12H5'/%3E%3C/svg%3E");
+}
+
+.PullRequestDetailHero {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.PullRequestDetailIntro {
+  min-width: 0;
+}
+
+.PullRequestDetailTitle {
+  margin: 0;
+  color: var(--PullRequestForeground);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 25px;
+}
+
+.PullRequestDetailNumber {
+  color: var(--PullRequestMuted);
+  font-weight: 400;
+}
+
+.PullRequestMergeSummary {
+  margin: 6px 0 0;
+  color: var(--PullRequestMuted);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.PullRequestMergeAuthor {
+  color: var(--PullRequestForeground);
+}
+
+.PullRequestBranch {
+  padding: 1px 4px;
+  color: var(--PullRequestMuted);
+  background: var(--PullRequestSurface);
+  border-radius: 3px;
+  font-family: var(--EditorFontFamily, monospace);
+  font-size: 11px;
+}
+
+.PullRequestStateBadge {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--PullRequestSurface);
+  border: 1px solid var(--PullRequestBorder);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.PullRequestStateBadge .PullRequestStateIcon {
+  width: 14px;
+  height: 14px;
+}
+
+.PullRequestDetailTabs {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 0;
+  background: transparent;
+  border-bottom: 1px solid var(--PullRequestBorder);
+}
+
+.PullRequestDetailTabs .PullRequestTab {
+  height: 35px;
+  gap: 6px;
+  padding: 8px 12px 7px;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.PullRequestDetailTabs .PullRequestTab:hover {
+  background: transparent;
+}
+
+.PullRequestDetailTabs .PullRequestTabActive {
+  color: var(--PullRequestForeground);
+  background: transparent;
+  border-bottom-color: var(--PullRequestAccent);
+}
+
+.PullRequestOverviewIcon {
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z'/%3E%3C/svg%3E");
+}
+
+.PullRequestCommitsIcon {
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3Cpath d='M3 12h6M15 12h6'/%3E%3C/svg%3E");
+}
+
+.PullRequestChangesIcon {
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5zM14 2v6h6M10 13H8M16 17H8M14 11v4'/%3E%3C/svg%3E");
+}
+
+.PullRequestDetailTabCount {
+  color: var(--PullRequestMuted);
+}
+
+.PullRequestDiffStats {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 12px 9px auto;
+  font-family: var(--EditorFontFamily, monospace);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.PullRequestDiffStatAdditions {
+  color: oklch(78% 0.14 150);
+}
+
+.PullRequestDiffStatDeletions {
+  color: oklch(75% 0.15 25);
 }
 
 .PullRequestMessage,
-.PullRequestDetails {
+.PullRequestOverviewCard,
+.PullRequestOverviewSideCard {
   border: 1px solid var(--PullRequestBorder);
   border-radius: 8px;
 }
@@ -426,68 +570,107 @@
   text-align: left;
 }
 
-.PullRequestDetails {
+.PullRequestOverview {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  overflow: hidden;
-  background: color-mix(in srgb, var(--PullRequestSurface) 64%, transparent);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 10%);
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 16px;
+  padding-block: 0;
 }
 
-.PullRequestField {
+.PullRequestOverviewMain,
+.PullRequestOverviewSidebar {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 5px;
-  padding: 11px 12px;
 }
 
-.PullRequestField:first-child,
-.PullRequestField:last-child {
-  grid-column: 1 / -1;
+.PullRequestOverviewMain {
+  gap: 12px;
 }
 
-.PullRequestField:first-child {
-  border-bottom: 1px solid var(--PullRequestBorder);
+.PullRequestOverviewSidebar {
+  gap: 12px;
 }
 
-.PullRequestField:nth-child(2) {
-  border-right: 1px solid var(--PullRequestBorder);
+.PullRequestOverviewCard,
+.PullRequestOverviewSideCard {
+  overflow: hidden;
+  background: var(--PullRequestSurface);
 }
 
-.PullRequestField:last-child {
-  border-top: 1px solid var(--PullRequestBorder);
-}
-
-.PullRequestFieldLabel {
+.PullRequestOverviewCardHeader {
+  padding: 8px 12px;
   color: var(--PullRequestMuted);
-  font-size: 10px;
-  font-weight: 650;
-  letter-spacing: 0.06em;
-  line-height: 1.4;
+  border-bottom: 1px solid var(--PullRequestBorder);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.PullRequestOverviewDescription {
+  padding: 12px;
+  color: var(--PullRequestForeground);
+  font-size: 14px;
+  line-height: 22px;
+  white-space: pre-wrap;
+}
+
+.PullRequestOverviewSideCard {
+  padding: 12px;
+}
+
+.PullRequestOverviewSideHeading {
+  margin: 0 0 9px;
+  color: var(--PullRequestMuted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 16px;
   text-transform: uppercase;
 }
 
-.PullRequestFieldValue {
+.PullRequestOverviewMetaRow {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 8px;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.PullRequestOverviewMetaRow + .PullRequestOverviewMetaRow {
+  margin-top: 3px;
+}
+
+.PullRequestOverviewMetaLabel {
+  color: var(--PullRequestMuted);
+}
+
+.PullRequestOverviewMetaValue {
   min-width: 0;
-  color: var(--PullRequestForeground);
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-}
-
-.PullRequestField:first-child .PullRequestFieldValue {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.PullRequestField:nth-child(2) .PullRequestFieldValue,
-.PullRequestField:nth-child(3) .PullRequestFieldValue {
   overflow: hidden;
-  color: color-mix(in srgb, var(--PullRequestAccent) 72%, var(--PullRequestForeground));
-  font-family: var(--EditorFontFamily, monospace);
-  font-size: 11px;
+  color: var(--PullRequestForeground);
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.PullRequestOverviewBranch {
+  color: var(--PullRequestMuted);
+  font-family: var(--EditorFontFamily, monospace);
+  font-size: 11px;
+}
+
+.PullRequestOverviewLabels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.PullRequestOverviewConversation {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--PullRequestMuted);
+  font-size: 12px;
+  line-height: 18px;
 }
 
 .PullRequestCommitList,
@@ -628,29 +811,25 @@
 }
 
 @container (max-width: 300px) {
-  .PullRequestIntro {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 2px;
+  .PullRequestListActions {
+    width: 100%;
   }
 
   .PullRequestLabel {
     max-width: 84px;
   }
 
-  .PullRequestDetails {
+  .PullRequestOverview {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .PullRequestField,
-  .PullRequestField:first-child,
-  .PullRequestField:last-child {
-    grid-column: 1;
-    border-right: 0;
+  .PullRequestDetailHero {
+    flex-direction: column;
+    gap: 10px;
   }
 
-  .PullRequestField + .PullRequestField {
-    border-top: 1px solid var(--PullRequestBorder);
+  .PullRequestStateBadge {
+    order: -1;
   }
 
   .PullRequestFileHeader {
@@ -659,5 +838,20 @@
 
   .PullRequestFileStatus {
     display: none;
+  }
+}
+
+@container (max-width: 430px) {
+  .PullRequestDetailTabs .PullRequestDetailTabIcon,
+  .PullRequestDiffStats {
+    display: none;
+  }
+
+  .PullRequestDetailTabs {
+    gap: 0;
+  }
+
+  .PullRequestDetailTabs .PullRequestTab {
+    padding-inline: 8px;
   }
 }

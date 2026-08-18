@@ -38,7 +38,7 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await Locator('button[name="openPullRequest:703"]').click()
   await Command.execute('Timeout.sleep', 200)
 
-  const details = Locator('.PullRequestDetails')
+  const details = Locator('.PullRequestOverview')
   const commitsTab = Locator('button[name="showPullRequestCommits"]')
   const changesTab = Locator('button[name="showPullRequestChanges"]')
   await expect(details).toContainText('No description')

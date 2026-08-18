@@ -36,7 +36,7 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await expect(icon).toBeVisible()
   await expect(icon).toHaveCSS('mask-image', `url("${iconUrl}")`)
   await expect(view).toBeVisible()
-  await expect(view).toHaveCSS('padding-left', '12px')
+  await expect(view).toHaveCSS('padding-left', '16px')
   await expect(tabs).toHaveCSS('display', 'flex')
   await expect(openTab).toHaveCSS('height', '24px')
   await expect(message).toContainText('No open pull requests.')

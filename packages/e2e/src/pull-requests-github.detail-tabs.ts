@@ -21,12 +21,15 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
       author: 'mira.k',
       baseBranch: 'main',
       comments: 12,
-      description: 'A deterministic overview for the pull request detail tabs.',
+      description: 'Adds a comment gutter to the diff editor so reviewers can leave inline comments without leaving the editor.',
       draft: false,
-      headBranch: 'feature/detail-tabs',
-      labels: [{ color: '1d76db', name: 'feature' }],
+      headBranch: 'feat/inline-review-comments',
+      labels: [
+        { color: '1d76db', name: 'feature' },
+        { color: 'd4a72c', name: 'needs-review' },
+      ],
       number: 482,
-      title: 'Add pull request detail tabs',
+      title: 'Add inline review comments to the diff editor',
       updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
       url,
     },
@@ -45,8 +48,13 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
         message: 'Render changed files',
         sha: 'b2c3d4e5f67890a1',
       },
+      {
+        author: 'mira-k',
+        message: 'Polish inline comment markers',
+        sha: 'c3d4e5f67890a1b2',
+      },
     ],
-    description: 'A deterministic overview for the pull request detail tabs.',
+    description: 'Adds a comment gutter to the diff editor so reviewers can leave inline comments without leaving the editor.',
     files: [
       {
         additions: 5,
@@ -55,9 +63,23 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
         patch: "@@ -1,2 +1,2 @@\n-export const tabs = []\n+export const tabs = ['overview', 'commits', 'changes']",
         status: 'modified',
       },
+      {
+        additions: 4,
+        deletions: 0,
+        filename: 'src/inlineComments.ts',
+        patch: '@@ -0,0 +1 @@\n+export const inlineComments = true',
+        status: 'added',
+      },
+      {
+        additions: 2,
+        deletions: 1,
+        filename: 'src/comments.css',
+        patch: '@@ -1 +1 @@\n-old\n+new',
+        status: 'modified',
+      },
     ],
-    headBranch: 'feature/detail-tabs',
-    title: 'Add pull request detail tabs',
+    headBranch: 'feat/inline-review-comments',
+    title: 'Add inline review comments to the diff editor',
   })
   await Command.executeExtensionCommand('PullRequestsGithub.show')
 
@@ -70,10 +92,21 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   const overviewTab = Locator('button[name="showPullRequestOverview"]')
   const commitsTab = Locator('button[name="showPullRequestCommits"]')
   const changesTab = Locator('button[name="showPullRequestChanges"]')
-  const overview = Locator('.PullRequestDetails')
-  await expect(tabs).toHaveCSS('display', 'grid')
+  const overview = Locator('.PullRequestOverview')
+  const title = Locator('.PullRequestDetailTitle')
+  const stateBadge = Locator('.PullRequestStateBadge')
+  const overviewIcon = overviewTab.locator('.PullRequestOverviewIcon')
+  await expect(tabs).toHaveCSS('display', 'flex')
+  await expect(title).toContainText('Add inline review comments to the diff editor #482')
+  await expect(stateBadge).toContainText('Open')
+  await expect(overviewIcon).toHaveCount(1)
   await expect(overviewTab).toHaveAttribute('aria-selected', 'true')
-  await expect(overview).toContainText('A deterministic overview for the pull request detail tabs.')
+  await expect(overview).toHaveCSS('display', 'grid')
+  await expect(overview).toContainText('mira.k opened this pull request')
+  await expect(overview).toContainText('Adds a comment gutter to the diff editor')
+  await expect(overview).toContainText('feature')
+  await expect(overview).toContainText('needs-review')
+  await expect(overview).toContainText('12 comments')
 
   await commitsTab.click()
   await Command.execute('Timeout.sleep', 200)
@@ -85,9 +118,9 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
 
   await changesTab.click()
   await Command.execute('Timeout.sleep', 200)
-  const changedFile = Locator('.PullRequestFile')
-  const addition = Locator('.PullRequestDiffLineAddition')
-  const deletion = Locator('.PullRequestDiffLineDeletion')
+  const changedFile = Locator('.PullRequestFile').first()
+  const addition = changedFile.locator('.PullRequestDiffLineAddition')
+  const deletion = changedFile.locator('.PullRequestDiffLineDeletion')
   await expect(changesTab).toHaveAttribute('aria-selected', 'true')
   await expect(changedFile).toContainText('src/detailTabs.ts')
   await expect(changedFile).toContainText('+5')

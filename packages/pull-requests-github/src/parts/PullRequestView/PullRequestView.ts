@@ -168,7 +168,7 @@ export const create = (
   }
 
   const loadDetail = async (rerender: boolean): Promise<void> => {
-    const { url } = state
+    const { pullRequest: currentPullRequest, url } = state
     if (!url) {
       await loadRepository(rerender)
       return
@@ -183,7 +183,11 @@ export const create = (
       await requestRerender()
     }
     try {
-      const pullRequest = await dependencies.fetchPullRequest(url)
+      const detail = await dependencies.fetchPullRequest(url)
+      const pullRequest: PullRequestData = {
+        ...currentPullRequest,
+        ...detail,
+      }
       state = {
         ...state,
         pullRequest,

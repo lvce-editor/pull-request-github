@@ -20,6 +20,15 @@ export interface PullRequestSummary {
 }
 
 export interface PullRequestData extends PullRequestSummary {
+  readonly author?: string
+  readonly comments?: number
   readonly commits: readonly PullRequestCommit[]
+  readonly draft?: boolean
   readonly files: readonly PullRequestFile[]
+  readonly labels?: readonly {
+    readonly color: string
+    readonly name: string
+  }[]
+  readonly number?: number
+  readonly updatedAt?: string
 }
