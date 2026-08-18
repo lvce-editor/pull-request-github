@@ -72,6 +72,7 @@ packageJson.main = 'dist/pullRequestWorkerMain.js'
 await writeJson(join(dist, 'package.json'), packageJson)
 
 await cp(join(root, 'packages', 'pull-requests-github', 'extension.json'), join(dist, 'extension.json'))
+await cp(join(root, 'packages', 'pull-requests-github', 'media'), join(dist, 'media'), { recursive: true })
 await cp(join(root, 'README.md'), join(dist, 'README.md'))
 await cp(join(root, 'LICENSE'), join(dist, 'LICENSE'))
 

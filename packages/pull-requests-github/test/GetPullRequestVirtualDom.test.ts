@@ -1,8 +1,10 @@
 import { expect, test } from '@jest/globals'
+import { mergeClassNames } from '@lvce-editor/virtual-dom-worker'
 import { getPullRequestVirtualDom } from '../src/parts/GetPullRequestVirtualDom/GetPullRequestVirtualDom.ts'
 import * as PullRequestViewStatus from '../src/parts/PullRequestViewState/PullRequestViewState.ts'
 
 test('getPullRequestVirtualDom renders empty state', () => {
+  const className = mergeClassNames('Viewlet', 'PullRequestView')
   const dom = getPullRequestVirtualDom({
     error: '',
     pullRequest: undefined,
@@ -10,6 +12,31 @@ test('getPullRequestVirtualDom renders empty state', () => {
     url: '',
   })
 
+  expect(dom).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        childCount: 3,
+        className,
+      }),
+      expect.objectContaining({
+        className: 'PullRequestTitle',
+      }),
+      expect.objectContaining({
+        text: 'Inspect a pull request',
+      }),
+      expect.objectContaining({
+        className: 'PullRequestLabel',
+        htmlFor: 'pullRequestUrl',
+      }),
+      expect.objectContaining({
+        className: 'PullRequestInput',
+        id: 'pullRequestUrl',
+      }),
+      expect.objectContaining({
+        className: 'PullRequestButton',
+      }),
+    ]),
+  )
   expect(dom.some((node) => node.text === 'Enter a GitHub pull request URL.')).toBe(true)
 })
 
