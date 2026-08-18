@@ -18,14 +18,20 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await Command.executeExtensionCommand('PullRequestsGithub.clearPullRequestData')
   await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestListData', 'lvce-editor', 'pull-request-github', 'open', [
     {
+      author: 'mira.k',
       baseBranch: 'main',
+      comments: 12,
       description: 'A deterministic overview for the pull request detail tabs.',
+      draft: false,
       headBranch: 'feature/detail-tabs',
+      labels: [{ color: '1d76db', name: 'feature' }],
       number: 482,
       title: 'Add pull request detail tabs',
+      updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
       url,
     },
   ])
+  await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestListData', 'lvce-editor', 'pull-request-github', 'closed', [])
   await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestData', url, {
     baseBranch: 'main',
     commits: [

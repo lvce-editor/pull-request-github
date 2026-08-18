@@ -23,11 +23,14 @@ export interface PullRequestViewSavedState {
 }
 
 export interface PullRequestViewState {
+  readonly closedPullRequests: readonly PullRequestListItem[]
   readonly detailTab: PullRequestDetailTab
   readonly error: string
   readonly filter: PullRequestFilter
+  readonly openPullRequests: readonly PullRequestListItem[]
   readonly pullRequest: PullRequestData | undefined
   readonly pullRequests: readonly PullRequestListItem[]
+  readonly query: string
   readonly repository: GitHubRepository | undefined
   readonly screen: PullRequestScreen
   readonly status: PullRequestViewStatus
@@ -36,11 +39,14 @@ export interface PullRequestViewState {
 
 export const createDefaultState = (savedState: PullRequestViewSavedState | undefined): PullRequestViewState => {
   return {
+    closedPullRequests: [],
     detailTab: PullRequestDetailTabs.Overview,
     error: '',
     filter: savedState?.filter === PullRequestFilters.Closed ? PullRequestFilters.Closed : PullRequestFilters.Open,
+    openPullRequests: [],
     pullRequest: undefined,
     pullRequests: [],
+    query: '',
     repository: undefined,
     screen: List,
     status: Loading,

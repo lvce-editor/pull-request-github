@@ -24,7 +24,7 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await Command.executeExtensionCommand('PullRequestsGithub.show')
 
   const title = Locator('text=Pull request #17')
-  const branches = Locator('.PullRequestListItemBranches')
+  const metadata = Locator('.PullRequestListItemMetadata')
   await expect(title).toBeVisible()
-  await expect(branches).toHaveText(' → ')
+  await expect(metadata).toHaveText('#17')
 }
