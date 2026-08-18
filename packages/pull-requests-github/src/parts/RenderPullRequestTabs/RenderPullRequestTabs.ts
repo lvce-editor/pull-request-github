@@ -1,7 +1,7 @@
 import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
 import { Closed, Open, type PullRequestFilter } from '@lvce-editor/pull-request-shared'
-import { AriaRoles, mergeClassNames, text, VirtualDomElements } from '@lvce-editor/virtual-dom-worker'
-import * as DomEventListenerFunctions from '../DomEventListenerFunctions/DomEventListenerFunctions.ts'
+import { AriaRoles, VirtualDomElements } from '@lvce-editor/virtual-dom-worker'
+import { renderPullRequestTab } from '../RenderPullRequestTab/RenderPullRequestTab.ts'
 
 const tabListNode: VirtualDomNode = {
   ariaLabel: 'Pull request state',
@@ -11,37 +11,6 @@ const tabListNode: VirtualDomNode = {
   type: VirtualDomElements.Div,
 }
 
-const renderTab = (filter: PullRequestFilter, activeFilter: PullRequestFilter, count: number): readonly VirtualDomNode[] => {
-  const active = filter === activeFilter
-  const label = filter === Open ? 'Open' : 'Closed'
-  const name = filter === Open ? 'showOpenPullRequests' : 'showClosedPullRequests'
-  return [
-    {
-      ariaSelected: active,
-      childCount: 2,
-      className: mergeClassNames('PullRequestTab', active ? 'PullRequestTabActive' : ''),
-      name,
-      onClick: DomEventListenerFunctions.HandleClick,
-      role: AriaRoles.Tab,
-      tabIndex: active ? 0 : -1,
-      type: VirtualDomElements.Button,
-    },
-    {
-      childCount: 1,
-      name,
-      type: VirtualDomElements.Span,
-    },
-    text(label),
-    {
-      childCount: 1,
-      className: 'PullRequestTabCount',
-      name,
-      type: VirtualDomElements.Span,
-    },
-    text(String(count)),
-  ]
-}
-
 export const renderPullRequestTabs = (activeFilter: PullRequestFilter, openCount: number, closedCount: number): readonly VirtualDomNode[] => {
-  return [tabListNode, ...renderTab(Open, activeFilter, openCount), ...renderTab(Closed, activeFilter, closedCount)]
+  return [tabListNode, ...renderPullRequestTab(Open, activeFilter, openCount), ...renderPullRequestTab(Closed, activeFilter, closedCount)]
 }
