@@ -27,5 +27,6 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await Command.execute('Timeout.sleep', 200)
 
   const error = Locator('.PullRequestMessageError')
-  await expect(error).toHaveText('Not Found')
+  await expect(error).toContainText('Not Found')
+  await expect(error).toContainText('Error code: E_GITHUB_REQUEST_FAILED')
 }

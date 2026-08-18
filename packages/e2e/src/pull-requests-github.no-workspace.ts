@@ -9,5 +9,6 @@ export const test: Test = async ({ Command, expect, Locator, Workspace }) => {
 
   const message = Locator('.PullRequestMessage')
   await expect(message).toHaveAttribute('role', 'status')
-  await expect(message).toHaveText('Open a folder containing a GitHub repository to view pull requests.')
+  await expect(message).toContainText('Open a folder containing a GitHub repository to view pull requests.')
+  await expect(message).toContainText('Error code: E_GIT_REPOSITORY_NOT_FOUND')
 }

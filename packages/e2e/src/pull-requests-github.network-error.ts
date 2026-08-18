@@ -16,5 +16,6 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
 
   const error = Locator('.PullRequestMessageError')
   await expect(error).toHaveAttribute('role', 'alert')
-  await expect(error).toHaveText('Failed to fetch')
+  await expect(error).toContainText('Failed to fetch')
+  await expect(error).toContainText('Error code: E_GITHUB_REQUEST_FAILED')
 }

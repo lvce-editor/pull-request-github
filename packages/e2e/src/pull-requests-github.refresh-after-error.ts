@@ -14,7 +14,8 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestListError', owner, repo, 'open', 'Failed to fetch')
   await Command.executeExtensionCommand('PullRequestsGithub.show')
   const error = Locator('.PullRequestMessageError')
-  await expect(error).toHaveText('Failed to fetch')
+  await expect(error).toContainText('Failed to fetch')
+  await expect(error).toContainText('Error code: E_GITHUB_REQUEST_FAILED')
 
   await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestListData', owner, repo, 'open', [
     {

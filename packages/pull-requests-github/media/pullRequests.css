@@ -560,6 +560,13 @@
   border-radius: 0;
 }
 
+.PullRequestMessageWithErrorCode {
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+  text-align: left;
+}
+
 .PullRequestMessageError {
   min-height: 0;
   justify-content: flex-start;
@@ -567,7 +574,11 @@
   background: var(--InputValidationErrorBackground, rgb(160 40 40 / 16%));
   border-color: var(--InputValidationErrorBorder, #be5050);
   border-style: solid;
-  text-align: left;
+}
+
+.PullRequestErrorCode {
+  font-size: 0.9em;
+  opacity: 0.8;
 }
 
 .PullRequestOverview {

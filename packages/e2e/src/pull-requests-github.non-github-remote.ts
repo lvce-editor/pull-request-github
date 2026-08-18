@@ -11,5 +11,6 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await Command.executeExtensionCommand('PullRequestsGithub.show')
 
   const message = Locator('.PullRequestMessage')
-  await expect(message).toHaveText('The current repository remote is not hosted on GitHub.')
+  await expect(message).toContainText('The current repository remote is not hosted on GitHub.')
+  await expect(message).toContainText('Error code: E_GITHUB_REMOTE_REQUIRED')
 }

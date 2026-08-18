@@ -1,4 +1,11 @@
-import type { PullRequestCommit, PullRequestData, PullRequestFile } from '@lvce-editor/pull-request-shared'
+import {
+  ErrorCodes,
+  type PullRequestCommit,
+  type PullRequestData,
+  PullRequestError,
+  type PullRequestFile,
+  toPullRequestError,
+} from '@lvce-editor/pull-request-shared'
 import * as PullRequestMockRegistry from '../PullRequestMockRegistry/PullRequestMockRegistry.ts'
 import { parsePullRequestUrl } from '../PullRequestUrl/PullRequestUrl.ts'
 
@@ -92,7 +99,7 @@ export const fetchPullRequest = async (url: string, fetchFn: typeof fetch = fetc
     return mock.data
   }
   if (mock?.type === 'error') {
-    throw new Error(mock.message)
+    throw new PullRequestError(mock.message, ErrorCodes.GitHubRequestFailed)
   }
   let pullRequestResponse: unknown
   let commitResponse: unknown
@@ -102,30 +109,34 @@ export const fetchPullRequest = async (url: string, fetchFn: typeof fetch = fetc
     commitResponse = mock.commits
     fileResponse = mock.files
   } else {
-    const location = parsePullRequestUrl(url)
-    const apiUrl = `https://api.github.com/repos/${location.owner}/${location.repo}/pulls/${location.number}`
-    const fetchJson = async (requestUrl: string): Promise<unknown> => {
-      const response = await fetchFn(requestUrl, {
-        headers: {
-          Accept: 'application/vnd.github+json',
-        },
-      })
-      const json = (await response.json()) as GitHubPullResponse
-      if (!response.ok) {
-        throw new Error(getErrorMessage(json, response.status))
+    try {
+      const location = parsePullRequestUrl(url)
+      const apiUrl = `https://api.github.com/repos/${location.owner}/${location.repo}/pulls/${location.number}`
+      const fetchJson = async (requestUrl: string): Promise<unknown> => {
+        const response = await fetchFn(requestUrl, {
+          headers: {
+            Accept: 'application/vnd.github+json',
+          },
+        })
+        const json = (await response.json()) as GitHubPullResponse
+        if (!response.ok) {
+          throw new PullRequestError(getErrorMessage(json, response.status), ErrorCodes.GitHubRequestFailed)
+        }
+        return json
       }
-      return json
+      const responses = await Promise.all([fetchJson(apiUrl), fetchJson(`${apiUrl}/commits?per_page=100`), fetchJson(`${apiUrl}/files?per_page=100`)])
+      pullRequestResponse = responses[0]
+      commitResponse = responses[1]
+      fileResponse = responses[2]
+    } catch (error) {
+      throw toPullRequestError(error, ErrorCodes.GitHubRequestFailed)
     }
-    const responses = await Promise.all([fetchJson(apiUrl), fetchJson(`${apiUrl}/commits?per_page=100`), fetchJson(`${apiUrl}/files?per_page=100`)])
-    pullRequestResponse = responses[0]
-    commitResponse = responses[1]
-    fileResponse = responses[2]
   }
   if (!Array.isArray(commitResponse)) {
-    throw new TypeError('GitHub returned an invalid pull request commit list.')
+    throw new PullRequestError('GitHub returned an invalid pull request commit list.', ErrorCodes.GitHubInvalidCommitData)
   }
   if (!Array.isArray(fileResponse)) {
-    throw new TypeError('GitHub returned an invalid pull request file list.')
+    throw new PullRequestError('GitHub returned an invalid pull request file list.', ErrorCodes.GitHubInvalidFileData)
   }
   const commits = commitResponse.map(toPullRequestCommit)
   const files = fileResponse.map(toPullRequestFile)

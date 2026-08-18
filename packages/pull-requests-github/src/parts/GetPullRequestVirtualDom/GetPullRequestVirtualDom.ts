@@ -4,6 +4,7 @@ import type { PullRequestViewState } from '../PullRequestViewState/PullRequestVi
 import * as DomEventListenerFunctions from '../DomEventListenerFunctions/DomEventListenerFunctions.ts'
 import * as PullRequestDetailTabs from '../PullRequestDetailTab/PullRequestDetailTab.ts'
 import * as PullRequestViewStates from '../PullRequestViewState/PullRequestViewState.ts'
+import { renderErrorMessage } from '../RenderErrorMessage/RenderErrorMessage.ts'
 import { renderPullRequest } from '../RenderPullRequest/RenderPullRequest.ts'
 import { renderPullRequestChanges } from '../RenderPullRequestChanges/RenderPullRequestChanges.ts'
 import { renderPullRequestCommits } from '../RenderPullRequestCommits/RenderPullRequestCommits.ts'
@@ -36,12 +37,12 @@ const renderDetailMessage = (message: string, error = false): readonly VirtualDo
 }
 
 const renderDetailContent = (state: PullRequestViewState): readonly VirtualDomNode[] => {
-  const { detailTab, error, pullRequest, status } = state
+  const { detailTab, error, errorCode, pullRequest, status } = state
   if (status === PullRequestViewStates.Loading) {
     return renderDetailMessage('Loading pull request...')
   }
   if (status === PullRequestViewStates.Error) {
-    return renderDetailMessage(error, true)
+    return renderErrorMessage(error, errorCode)
   }
   if (!pullRequest) {
     return []
