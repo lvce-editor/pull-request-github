@@ -40,6 +40,7 @@
   ],
   "views": [
     {
+      "css": "media/pullRequests.css",
       "id": "github.pullRequests",
       "title": "Pull Requests",
       "icon": "symbol-github",

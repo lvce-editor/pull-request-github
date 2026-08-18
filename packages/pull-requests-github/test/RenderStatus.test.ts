@@ -15,6 +15,7 @@ test('renderStatus renders loading state', () => {
     expect.arrayContaining([
       expect.objectContaining({
         className: 'PullRequestMessage',
+        role: 'status',
       }),
       expect.objectContaining({
         text: 'Loading pull request...',
@@ -36,6 +37,7 @@ test('renderStatus renders error state', () => {
     expect.arrayContaining([
       expect.objectContaining({
         className,
+        role: 'alert',
       }),
       expect.objectContaining({
         text: 'Not Found',
@@ -81,6 +83,7 @@ test('renderStatus renders empty state', () => {
     expect.arrayContaining([
       expect.objectContaining({
         className: 'PullRequestMessage',
+        role: 'status',
       }),
       expect.objectContaining({
         text: 'Enter a GitHub pull request URL.',
