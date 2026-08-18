@@ -5,11 +5,5 @@ import * as PullRequestView from '../PullRequestView/PullRequestView.ts'
 export const listen = async (): Promise<void> => {
   await activateExtensionApi()
   PullRequestCommands.registerCommands()
-  registerView({
-    create: PullRequestView.create,
-    icon: 'media/git-pull-request.svg',
-    id: PullRequestView.viewId,
-    kind: 'virtualDom',
-    title: 'Pull Requests',
-  } as any)
+  registerView(PullRequestView.view)
 }

@@ -1,7 +1,9 @@
 import type { GitHubRepository } from '../GitHubRepository/GitHubRepository.ts'
 import type { PullRequestData } from '../PullRequestData/PullRequestData.ts'
+import type { PullRequestDetailTab } from '../PullRequestDetailTab/PullRequestDetailTab.ts'
 import type { PullRequestFilter } from '../PullRequestFilter/PullRequestFilter.ts'
 import type { PullRequestListItem } from '../PullRequestListItem/PullRequestListItem.ts'
+import * as PullRequestDetailTabs from '../PullRequestDetailTab/PullRequestDetailTab.ts'
 import * as PullRequestFilters from '../PullRequestFilter/PullRequestFilter.ts'
 
 export const Error = 'error'
@@ -21,6 +23,7 @@ export interface PullRequestViewSavedState {
 }
 
 export interface PullRequestViewState {
+  readonly detailTab: PullRequestDetailTab
   readonly error: string
   readonly filter: PullRequestFilter
   readonly pullRequest: PullRequestData | undefined
@@ -33,6 +36,7 @@ export interface PullRequestViewState {
 
 export const createDefaultState = (savedState: PullRequestViewSavedState | undefined): PullRequestViewState => {
   return {
+    detailTab: PullRequestDetailTabs.Overview,
     error: '',
     filter: savedState?.filter === PullRequestFilters.Closed ? PullRequestFilters.Closed : PullRequestFilters.Open,
     pullRequest: undefined,

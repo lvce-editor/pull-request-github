@@ -5,7 +5,9 @@ import { create } from '../src/parts/GitHubWorkerRpc/GitHubWorkerRpc.ts'
 test('forwards github operations to the worker', async () => {
   const data = {
     baseBranch: 'main',
+    commits: [],
     description: 'description',
+    files: [],
     headBranch: 'feature',
     title: 'Add feature',
   }

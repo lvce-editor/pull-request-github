@@ -1,1 +1,1 @@
-export const HandleClick = 'handleClick'
+export const HandleClick = 'handlePullRequestClick'

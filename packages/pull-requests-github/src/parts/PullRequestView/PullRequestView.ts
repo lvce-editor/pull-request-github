@@ -1,4 +1,4 @@
-import type { ViewContext, ViewEvent, VirtualDomViewInstance } from '@lvce-editor/api'
+import type { View, ViewContext, ViewEvent, VirtualDomViewInstance } from '@lvce-editor/api'
 import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
 import type { GitHubRepository } from '../GitHubRepository/GitHubRepository.ts'
 import type { PullRequestData } from '../PullRequestData/PullRequestData.ts'
@@ -8,12 +8,14 @@ import type { PullRequestViewSavedState } from '../PullRequestViewState/PullRequ
 import { getGitHubRepository } from '../GetGitHubRepository/GetGitHubRepository.ts'
 import { getPullRequestVirtualDom } from '../GetPullRequestVirtualDom/GetPullRequestVirtualDom.ts'
 import * as GitHubWorkerRpc from '../GitHubWorkerRpc/GitHubWorkerRpc.ts'
+import * as PullRequestDetailTabs from '../PullRequestDetailTab/PullRequestDetailTab.ts'
 import * as PullRequestFilters from '../PullRequestFilter/PullRequestFilter.ts'
 import * as PullRequestViewStates from '../PullRequestViewState/PullRequestViewState.ts'
 
-interface PullRequestViewInstance extends VirtualDomViewInstance {
+export interface PullRequestViewInstance extends VirtualDomViewInstance {
   readonly dispose: () => void
   readonly handleEvent: (event: ViewEvent) => Promise<void>
+  readonly handlePullRequestClick: (name: unknown) => Promise<void>
   readonly openOnGitHub: (open: (url: string) => Promise<void>) => Promise<void>
   readonly refresh: () => Promise<void>
   readonly render: () => readonly VirtualDomNode[]
@@ -78,6 +80,7 @@ export const create = (
   const loadList = async (repository: GitHubRepository, filter: PullRequestFilter, rerender: boolean): Promise<void> => {
     state = {
       ...state,
+      detailTab: PullRequestDetailTabs.Overview,
       error: '',
       filter,
       pullRequest: undefined,
@@ -112,6 +115,7 @@ export const create = (
   const loadRepository = async (rerender: boolean): Promise<void> => {
     state = {
       ...state,
+      detailTab: PullRequestDetailTabs.Overview,
       error: '',
       pullRequest: undefined,
       pullRequests: [],
@@ -150,7 +154,6 @@ export const create = (
     state = {
       ...state,
       error: '',
-      pullRequest: undefined,
       screen: PullRequestViewStates.Detail,
       status: PullRequestViewStates.Loading,
     }
@@ -195,10 +198,32 @@ export const create = (
       if (name === 'showPullRequestList') {
         state = {
           ...state,
+          detailTab: PullRequestDetailTabs.Overview,
           pullRequest: undefined,
           screen: PullRequestViewStates.List,
           status: PullRequestViewStates.Ready,
           url: '',
+        }
+        return
+      }
+      if (name === 'showPullRequestOverview') {
+        state = {
+          ...state,
+          detailTab: PullRequestDetailTabs.Overview,
+        }
+        return
+      }
+      if (name === 'showPullRequestCommits') {
+        state = {
+          ...state,
+          detailTab: PullRequestDetailTabs.Commits,
+        }
+        return
+      }
+      if (name === 'showPullRequestChanges') {
+        state = {
+          ...state,
+          detailTab: PullRequestDetailTabs.Changes,
         }
         return
       }
@@ -210,11 +235,16 @@ export const create = (
         }
         state = {
           ...state,
-          pullRequest,
+          detailTab: PullRequestDetailTabs.Overview,
+          pullRequest: {
+            ...pullRequest,
+            commits: [],
+            files: [],
+          },
           screen: PullRequestViewStates.Detail,
-          status: PullRequestViewStates.Ready,
           url: pullRequest.url,
         }
+        await loadDetail(false)
       }
     }
 
@@ -226,8 +256,11 @@ export const create = (
         if (event.type !== 'click') {
           return
         }
-        if (event.name) {
-          await handleClick(event.name)
+        await instance.handlePullRequestClick(event.name)
+      },
+      async handlePullRequestClick(name: unknown): Promise<void> {
+        if (typeof name === 'string') {
+          await handleClick(name)
         }
       },
       async openOnGitHub(open: (url: string) => Promise<void>): Promise<void> {
@@ -258,4 +291,19 @@ export const create = (
     return instance
   }
   return createInstance()
+}
+
+export const view: View<PullRequestViewInstance> = {
+  create,
+  displayName: 'Pull Requests',
+  eventListeners: [
+    {
+      name: 'handlePullRequestClick',
+      params: ['handlePullRequestClick', 'event.currentTarget.name'],
+    },
+  ],
+  icon: 'media/git-pull-request.svg',
+  id: viewId,
+  kind: 'virtualDom',
+  title: 'Pull Requests',
 }

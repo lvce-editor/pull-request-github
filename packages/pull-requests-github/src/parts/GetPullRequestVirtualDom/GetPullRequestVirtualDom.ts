@@ -2,8 +2,12 @@ import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
 import { mergeClassNames, text, VirtualDomElements } from '@lvce-editor/virtual-dom-worker'
 import type { PullRequestViewState } from '../PullRequestViewState/PullRequestViewState.ts'
 import * as DomEventListenerFunctions from '../DomEventListenerFunctions/DomEventListenerFunctions.ts'
+import * as PullRequestDetailTabs from '../PullRequestDetailTab/PullRequestDetailTab.ts'
 import * as PullRequestViewStates from '../PullRequestViewState/PullRequestViewState.ts'
 import { renderPullRequest } from '../RenderPullRequest/RenderPullRequest.ts'
+import { renderPullRequestChanges } from '../RenderPullRequestChanges/RenderPullRequestChanges.ts'
+import { renderPullRequestCommits } from '../RenderPullRequestCommits/RenderPullRequestCommits.ts'
+import { renderPullRequestDetailTabs } from '../RenderPullRequestDetailTabs/RenderPullRequestDetailTabs.ts'
 import { renderPullRequestListStatus } from '../RenderPullRequestListStatus/RenderPullRequestListStatus.ts'
 import { renderPullRequestTabs } from '../RenderPullRequestTabs/RenderPullRequestTabs.ts'
 
@@ -14,9 +18,23 @@ const listViewNode: VirtualDomNode = {
 }
 
 const detailViewNode: VirtualDomNode = {
-  childCount: 2,
+  childCount: 3,
   className: mergeClassNames('Viewlet', 'PullRequestView', 'PullRequestDetailView'),
   type: VirtualDomElements.Div,
+}
+
+const renderDetailContent = (state: PullRequestViewState): readonly VirtualDomNode[] => {
+  const { detailTab, pullRequest } = state
+  if (!pullRequest) {
+    return []
+  }
+  if (detailTab === PullRequestDetailTabs.Commits) {
+    return renderPullRequestCommits(pullRequest.commits)
+  }
+  if (detailTab === PullRequestDetailTabs.Changes) {
+    return renderPullRequestChanges(pullRequest.files)
+  }
+  return renderPullRequest(pullRequest)
 }
 
 const introNode: VirtualDomNode = {
@@ -75,7 +93,7 @@ const renderListView = (state: PullRequestViewState): readonly VirtualDomNode[] 
 }
 
 const renderDetailView = (state: PullRequestViewState): readonly VirtualDomNode[] => {
-  const { pullRequest, repository } = state
+  const { detailTab, pullRequest, repository } = state
   if (!pullRequest) {
     return renderListView(state)
   }
@@ -91,7 +109,8 @@ const renderDetailView = (state: PullRequestViewState): readonly VirtualDomNode[
     text('Pull request details'),
     descriptionNode,
     text(repositoryLabel),
-    ...renderPullRequest(pullRequest),
+    ...renderPullRequestDetailTabs(pullRequest, detailTab),
+    ...renderDetailContent(state),
   ]
 }
 

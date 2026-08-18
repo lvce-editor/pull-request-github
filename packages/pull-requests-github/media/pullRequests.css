@@ -77,11 +77,28 @@
   background: color-mix(in srgb, var(--PullRequestForeground) 7%, transparent);
 }
 
+.PullRequestTab > span,
+.PullRequestListItemButton > span,
+.PullRequestBackButton > span {
+  pointer-events: none;
+}
+
 .PullRequestTabActive {
   color: var(--PullRequestForeground);
   background: color-mix(in srgb, var(--PullRequestAccent) 18%, var(--PullRequestSurface));
   box-shadow: 0 1px 3px rgb(0 0 0 / 18%);
   font-weight: 600;
+}
+
+.PullRequestDetailTabs {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.PullRequestDetailTabs .PullRequestTab {
+  height: 32px;
+  padding-inline: 6px;
+  font-size: 11px;
+  white-space: nowrap;
 }
 
 .PullRequestTab:focus-visible,
@@ -268,4 +285,166 @@
   font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.PullRequestCommitList,
+.PullRequestFileList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+
+.PullRequestCommitList {
+  list-style: none;
+}
+
+.PullRequestCommit {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 5px 12px;
+  padding: 11px 12px;
+  background: color-mix(in srgb, var(--PullRequestSurface) 64%, transparent);
+  border: 1px solid var(--PullRequestBorder);
+  border-radius: 8px;
+}
+
+.PullRequestCommitMessage {
+  min-width: 0;
+  grid-column: 1 / -1;
+  overflow: hidden;
+  font-weight: 600;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.PullRequestCommitAuthor {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--PullRequestMuted);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.PullRequestCommitSha {
+  color: color-mix(in srgb, var(--PullRequestAccent) 72%, var(--PullRequestForeground));
+  font-family: var(--EditorFontFamily, monospace);
+  font-size: 11px;
+}
+
+.PullRequestFile {
+  overflow: hidden;
+  background: color-mix(in srgb, var(--PullRequestSurface) 64%, transparent);
+  border: 1px solid var(--PullRequestBorder);
+  border-radius: 8px;
+}
+
+.PullRequestFileHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  gap: 8px;
+  align-items: center;
+  min-height: 36px;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--PullRequestBorder);
+}
+
+.PullRequestFileName {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--PullRequestForeground);
+  font-family: var(--EditorFontFamily, monospace);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.PullRequestFileStatus {
+  color: var(--PullRequestMuted);
+  font-size: 10px;
+  text-transform: capitalize;
+}
+
+.PullRequestFileAdditions,
+.PullRequestFileDeletions {
+  font-family: var(--EditorFontFamily, monospace);
+  font-size: 10px;
+}
+
+.PullRequestFileAdditions {
+  color: var(--TestingIconPassed, #73c991);
+}
+
+.PullRequestFileDeletions {
+  color: var(--TestingIconFailed, #f14c4c);
+}
+
+.PullRequestDiff {
+  margin: 0;
+  overflow: auto;
+  padding: 7px 0;
+  color: var(--PullRequestForeground);
+  background: color-mix(in srgb, var(--PullRequestBackground) 88%, black 12%);
+  font-family: var(--EditorFontFamily, monospace);
+  font-size: 11px;
+  line-height: 1.55;
+  tab-size: 2;
+}
+
+.PullRequestDiffLine {
+  display: block;
+  min-width: max-content;
+  padding: 0 10px;
+  white-space: pre;
+}
+
+.PullRequestDiffLineAddition {
+  color: color-mix(in srgb, var(--TestingIconPassed, #73c991) 82%, var(--PullRequestForeground));
+  background: color-mix(in srgb, var(--TestingIconPassed, #73c991) 13%, transparent);
+}
+
+.PullRequestDiffLineDeletion {
+  color: color-mix(in srgb, var(--TestingIconFailed, #f14c4c) 82%, var(--PullRequestForeground));
+  background: color-mix(in srgb, var(--TestingIconFailed, #f14c4c) 13%, transparent);
+}
+
+.PullRequestDiffLineHunk {
+  color: color-mix(in srgb, var(--PullRequestAccent) 72%, var(--PullRequestForeground));
+  background: color-mix(in srgb, var(--PullRequestAccent) 10%, transparent);
+}
+
+.PullRequestDiffUnavailable {
+  padding: 16px;
+  color: var(--PullRequestMuted);
+  font-size: 11px;
+  text-align: center;
+}
+
+@container (max-width: 300px) {
+  .PullRequestDetails {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .PullRequestField,
+  .PullRequestField:first-child,
+  .PullRequestField:last-child {
+    grid-column: 1;
+    border-right: 0;
+  }
+
+  .PullRequestField + .PullRequestField {
+    border-top: 1px solid var(--PullRequestBorder);
+  }
+
+  .PullRequestFileHeader {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
+  .PullRequestFileStatus {
+    display: none;
+  }
 }
