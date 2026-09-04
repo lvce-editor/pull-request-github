@@ -4,6 +4,7 @@ export const name = 'pull-requests-github.no-git-repository'
 
 export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspace }) => {
   const tmpDir = await FileSystem.getTmpDir()
+  await FileSystem.mkdir(tmpDir)
   await Workspace.setPath(tmpDir)
   await Command.executeExtensionCommand('PullRequestsGithub.clearPullRequestData')
   await Command.executeExtensionCommand('PullRequestsGithub.show')

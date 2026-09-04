@@ -64,12 +64,10 @@ export const parseGitHubRemoteUrl = (value: string): GitHubRepository | undefine
   if (scpMatch && isGitHubHostname(scpMatch[1])) {
     return fromPath(scpMatch[2])
   }
-  let url: URL
-  try {
-    url = new URL(remoteUrl)
-  } catch {
+  if (!URL.canParse(remoteUrl)) {
     return undefined
   }
+  const url = new URL(remoteUrl)
   if (!isGitHubHostname(url.hostname)) {
     return undefined
   }
