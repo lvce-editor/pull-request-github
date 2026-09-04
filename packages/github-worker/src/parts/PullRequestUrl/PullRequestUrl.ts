@@ -7,12 +7,10 @@ export interface PullRequestLocation {
 }
 
 export const parsePullRequestUrl = (value: string): PullRequestLocation => {
-  let url: URL
-  try {
-    url = new URL(value)
-  } catch {
+  if (!URL.canParse(value)) {
     throw new PullRequestError('Enter a valid GitHub pull request URL', ErrorCodes.GitHubInvalidPullRequestUrl)
   }
+  const url = new URL(value)
   if (url.protocol !== 'https:' || url.hostname !== 'github.com') {
     throw new PullRequestError('Only https://github.com pull request URLs are supported', ErrorCodes.GitHubInvalidPullRequestUrl)
   }
