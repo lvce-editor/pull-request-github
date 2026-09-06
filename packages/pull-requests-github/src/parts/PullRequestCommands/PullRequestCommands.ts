@@ -1,4 +1,5 @@
 import { executeCommand, registerCommand } from '@lvce-editor/api'
+import { setCreationFixture } from '../CreatePullRequestDependencies/CreatePullRequestDependencies.ts'
 import * as GitHubWorkerRpc from '../GitHubWorkerRpc/GitHubWorkerRpc.ts'
 import * as PullRequestView from '../PullRequestView/PullRequestView.ts'
 
@@ -14,6 +15,9 @@ export const SetPullRequestResponse = 'PullRequestsGithub.setPullRequestResponse
 export const ClearPullRequestData = 'PullRequestsGithub.clearPullRequestData'
 
 export const commandIds = [
+  'PullRequestsGithub.create',
+  'PullRequestsGithub.setCreationFixture',
+  'PullRequestsGithub.getCreateRequests',
   Show,
   Refresh,
   OpenOnGitHub,
@@ -53,6 +57,15 @@ export const {
 } = GitHubWorkerRpc
 
 export const registerCommands = (): void => {
+  registerCommand({
+    async execute() {
+      await show()
+      await PullRequestView.createActiveInstance()
+    },
+    id: 'PullRequestsGithub.create',
+  })
+  registerCommand({ execute: setCreationFixture, id: 'PullRequestsGithub.setCreationFixture' })
+  registerCommand({ execute: GitHubWorkerRpc.getCreateRequests, id: 'PullRequestsGithub.getCreateRequests' })
   registerCommand({
     execute: show,
     id: Show,

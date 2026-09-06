@@ -866,3 +866,56 @@
     padding-inline: 8px;
   }
 }
+
+.PullRequestCreateField,
+.PullRequestCreateDescription {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.PullRequestCreateDescription {
+  flex: 1;
+  min-height: 180px;
+}
+.PullRequestCreateInput {
+  width: 100%;
+  padding: 8px;
+  color: var(--PullRequestForeground);
+  background: var(--PullRequestSurface);
+  border: 1px solid var(--PullRequestBorder);
+  border-radius: 4px;
+  font: inherit;
+}
+textarea.PullRequestCreateInput {
+  flex: 1;
+  min-height: 150px;
+  resize: vertical;
+}
+.PullRequestCreateActions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.PullRequestCreateButton {
+  padding: 6px 10px;
+  color: var(--PullRequestForeground);
+  background: var(--PullRequestSurfaceRaised);
+  border: 1px solid var(--PullRequestBorder);
+  border-radius: 4px;
+  font: inherit;
+  cursor: pointer;
+}
+.PullRequestCreateButton[name='submitCreatePullRequest'] {
+  background: var(--ButtonBackground, #27676a);
+}
+.PullRequestCreateButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.PullRequestCreateInput:focus-visible,
+.PullRequestCreateButton:focus-visible {
+  outline: 1px solid var(--PullRequestAccent);
+}
+.PullRequestCreatedLink {
+  color: var(--PullRequestInfo);
+}

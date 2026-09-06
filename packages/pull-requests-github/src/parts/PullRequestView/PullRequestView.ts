@@ -9,6 +9,7 @@ import {
   type PullRequestListItem,
 } from '@lvce-editor/pull-request-shared'
 import type { PullRequestViewSavedState } from '../PullRequestViewState/PullRequestViewState.ts'
+import * as CreatePullRequestView from '../CreatePullRequestView/CreatePullRequestView.ts'
 import { getErrorInfo } from '../GetErrorInfo/GetErrorInfo.ts'
 import { getGitHubRepository } from '../GetGitHubRepository/GetGitHubRepository.ts'
 import { getPullRequestVirtualDom } from '../GetPullRequestVirtualDom/GetPullRequestVirtualDom.ts'
@@ -18,6 +19,7 @@ import * as PullRequestViewStates from '../PullRequestViewState/PullRequestViewS
 
 export interface PullRequestViewInstance extends VirtualDomViewInstance {
   readonly dispose: () => void
+  readonly handleCreateInput: (name: unknown, value: unknown) => void
   readonly handleEvent: (event: ViewEvent) => Promise<void>
   readonly handlePullRequestClick: (name: unknown) => Promise<void>
   readonly handlePullRequestFilterInput: (value: unknown) => void
@@ -25,6 +27,7 @@ export interface PullRequestViewInstance extends VirtualDomViewInstance {
   readonly refresh: () => Promise<void>
   readonly render: () => readonly VirtualDomNode[]
   readonly saveState: () => PullRequestViewSavedState
+  readonly startCreate: () => Promise<void>
 }
 
 type PullRequestViewContext = Partial<ViewContext>
@@ -47,6 +50,10 @@ const activeInstances = new Set<PullRequestViewInstance>()
 
 const getActiveInstance = (): PullRequestViewInstance | undefined => {
   return [...activeInstances].at(-1)
+}
+
+export const createActiveInstance = async (): Promise<void> => {
+  await getActiveInstance()?.startCreate()
 }
 
 export const refreshActiveInstance = async (): Promise<void> => {
@@ -72,6 +79,7 @@ export const create = (
   context?: PullRequestViewContext,
   dependencies: PullRequestViewDependencies = defaultDependencies,
 ): Promise<PullRequestViewInstance> => {
+  let creation: ReturnType<typeof CreatePullRequestView.create> | undefined
   let state = PullRequestViewStates.createDefaultState(getSavedState(context))
 
   const requestRerender = async (): Promise<void> => {
@@ -290,9 +298,17 @@ export const create = (
 
     const instance: PullRequestViewInstance = {
       dispose(): void {
+        creation?.dispose()
         activeInstances.delete(instance)
       },
+      handleCreateInput(name: unknown, value: unknown): void {
+        creation?.input(name, value)
+      },
       async handleEvent(event: ViewEvent): Promise<void> {
+        if (creation && event.type === 'input') {
+          creation.input(event.name, event.value)
+          return
+        }
         if (event.type === 'input' && event.name === 'filterPullRequests') {
           instance.handlePullRequestFilterInput(event.value)
           return
@@ -303,9 +319,23 @@ export const create = (
         await instance.handlePullRequestClick(event.name)
       },
       async handlePullRequestClick(name: unknown): Promise<void> {
-        if (typeof name === 'string') {
-          await handleClick(name)
+        if (typeof name !== 'string') {
+          return
         }
+
+        if (name === 'createPullRequest') {
+          await instance.startCreate()
+          return
+        }
+        if (creation) {
+          if (name === 'submitCreatePullRequest') await creation.submit()
+          if (name === 'cancelCreatePullRequest' && creation.canCancel()) {
+            creation.dispose()
+            creation = undefined
+          }
+          return
+        }
+        await handleClick(name)
       },
       handlePullRequestFilterInput(value: unknown): void {
         state = {
@@ -320,6 +350,7 @@ export const create = (
         }
       },
       async refresh(): Promise<void> {
+        if (creation) return
         const { screen } = state
         if (screen === PullRequestViewStates.Detail) {
           await loadDetail(true)
@@ -328,13 +359,19 @@ export const create = (
         await loadRepository(true)
       },
       render(): readonly VirtualDomNode[] {
-        return getPullRequestVirtualDom(state)
+        return creation ? creation.render() : getPullRequestVirtualDom(state)
       },
       saveState(): PullRequestViewSavedState {
         const { filter } = state
         return {
           filter,
         }
+      },
+      async startCreate(): Promise<void> {
+        if (creation) return
+        creation = CreatePullRequestView.create(requestRerender)
+        await requestRerender()
+        await creation.initialize()
       },
     }
     activeInstances.add(instance)
@@ -347,6 +384,7 @@ export const view: View<PullRequestViewInstance> = {
   create,
   displayName: 'Pull Requests',
   eventListeners: [
+    { name: 'handleCreateInput', params: ['handleCreateInput', 'event.currentTarget.name', 'event.currentTarget.value'] },
     {
       name: 'handlePullRequestClick',
       params: ['handlePullRequestClick', 'event.currentTarget.name'],

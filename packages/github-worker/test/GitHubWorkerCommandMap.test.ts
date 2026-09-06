@@ -3,6 +3,9 @@ import { commandMap } from '../src/parts/GitHubWorkerCommandMap/GitHubWorkerComm
 
 test('exposes github logic over rpc', () => {
   expect(Object.keys(commandMap)).toEqual([
+    'GitHub.createRequest',
+    'GitHub.setCreateResponses',
+    'GitHub.getCreateRequests',
     'GitHub.clearPullRequestData',
     'GitHub.fetchPullRequest',
     'GitHub.fetchPullRequests',
