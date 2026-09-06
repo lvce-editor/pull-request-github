@@ -47,6 +47,7 @@ export const create = (rerender: () => Promise<void>, dependencies: Dependencies
   const initialize = async (): Promise<void> => {
     try {
       const defaults = await dependencies.getDefaults()
+      if (disposed) return
       const repository = getRepository(defaults.remoteUrl)
       let base = defaults.baseBranch
       if (!base) {
@@ -75,6 +76,7 @@ export const create = (rerender: () => Promise<void>, dependencies: Dependencies
     try {
       await rerender()
       const token = await dependencies.getToken()
+      if (disposed) return
       if (!token) throw new Error('Sign in to LVCE with GitHub before creating a pull request.')
       if (!previousNumber) {
         const result = await dependencies.request(token, '', { base: base.trim(), description, head: head.trim(), repository, title: title.trim() })
