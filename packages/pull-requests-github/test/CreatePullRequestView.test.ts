@@ -141,7 +141,7 @@ test.each([{}, { number: 0 }, { number: 42, url: 'https://evil.example' }])(
 
 test('closing the view during authentication prevents PR creation', async () => {
   const token = Promise.withResolvers<string>()
-  const { view, request } = setup({ getToken: () => token.promise })
+  const { request, view } = setup({ getToken: () => token.promise })
   await view.initialize()
   const pending = view.submit()
   await Promise.resolve()

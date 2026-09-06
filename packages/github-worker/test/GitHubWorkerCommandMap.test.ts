@@ -2,7 +2,7 @@ import { expect, test } from '@jest/globals'
 import { commandMap } from '../src/parts/GitHubWorkerCommandMap/GitHubWorkerCommandMap.ts'
 
 test('exposes github logic over rpc', () => {
-  expect(Object.keys(commandMap).toSorted()).toEqual(
+  expect(Object.keys(commandMap).toSorted((a, b) => a.localeCompare(b))).toEqual(
     [
       'GitHub.createRequest',
       'GitHub.setCreateResponses',
@@ -17,6 +17,6 @@ test('exposes github logic over rpc', () => {
       'GitHub.setPullRequestListResponse',
       'GitHub.setPullRequestResponse',
       'GitHub.validatePullRequestUrl',
-    ].toSorted(),
+    ].toSorted((a, b) => a.localeCompare(b)),
   )
 })
