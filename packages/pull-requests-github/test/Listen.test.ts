@@ -19,6 +19,9 @@ test('listen', async () => {
     start()
     await expect(listenPromise).resolves.toBeUndefined()
     expect(PullRequestCommands.commandIds).toEqual([
+      'PullRequestsGithub.create',
+      'PullRequestsGithub.setCreationFixture',
+      'PullRequestsGithub.getCreateRequests',
       'PullRequestsGithub.show',
       'PullRequestsGithub.refresh',
       'PullRequestsGithub.openOnGitHub',
@@ -35,6 +38,7 @@ test('listen', async () => {
         {
           displayName: 'Pull Requests',
           eventListeners: [
+            { name: 'handleCreateInput', params: ['handleCreateInput', 'event.currentTarget.name', 'event.currentTarget.value'] },
             {
               name: 'handlePullRequestClick',
               params: ['handlePullRequestClick', 'event.currentTarget.name'],

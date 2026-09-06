@@ -64,7 +64,7 @@ const githubWorkerRpcState: { rpcPromise: Promise<Rpc> | undefined } = {
 const getRpc = (): Promise<Rpc> => {
   githubWorkerRpcState.rpcPromise ||= createExtensionRpc({
     commandMap: {},
-    contentSecurityPolicy: ["default-src 'none'", 'connect-src https://api.github.com', "script-src 'self'"],
+    contentSecurityPolicy: ["default-src 'none'", 'connect-src https://api.github.com https://lvce-editor.dev', "script-src 'self'"],
     name: 'GitHub Worker',
     url: new URL('githubWorkerMain.js', import.meta.url).href,
   })
@@ -83,3 +83,16 @@ export const {
   setPullRequestResponse,
   validatePullRequestUrl,
 } = create(getRpc)
+
+export const createRequest = async (token: string, path: string, body?: unknown): Promise<any> => {
+  const rpc = await getRpc()
+  return rpc.invoke('GitHub.createRequest', token, path, body)
+}
+export const setCreateResponses = async (responses: unknown): Promise<void> => {
+  const rpc = await getRpc()
+  await rpc.invoke('GitHub.setCreateResponses', responses)
+}
+export const getCreateRequests = async (): Promise<unknown> => {
+  const rpc = await getRpc()
+  return rpc.invoke('GitHub.getCreateRequests')
+}

@@ -12,6 +12,14 @@ import { renderPullRequestDetailTabs } from '../RenderPullRequestDetailTabs/Rend
 import { renderPullRequestListStatus } from '../RenderPullRequestListStatus/RenderPullRequestListStatus.ts'
 import { renderPullRequestTabs } from '../RenderPullRequestTabs/RenderPullRequestTabs.ts'
 
+const createButtonNode: VirtualDomNode = {
+  childCount: 1,
+  className: 'PullRequestCreateButton',
+  name: 'createPullRequest',
+  onClick: DomEventListenerFunctions.HandleClick,
+  type: VirtualDomElements.Button,
+}
+
 const listViewNode: VirtualDomNode = {
   childCount: 2,
   className: mergeClassNames('Viewlet', 'PullRequestView'),
@@ -69,7 +77,7 @@ const listHeaderNode: VirtualDomNode = {
 }
 
 const listActionsNode: VirtualDomNode = {
-  childCount: 2,
+  childCount: 3,
   className: 'PullRequestListActions',
   type: VirtualDomElements.Div,
 }
@@ -229,6 +237,8 @@ const renderListView = (state: PullRequestViewState): readonly VirtualDomNode[] 
       type: VirtualDomElements.Input,
       value: query,
     },
+    createButtonNode,
+    text('Create Pull Request'),
     refreshButtonNode,
     refreshIconNode,
     listCardNode,

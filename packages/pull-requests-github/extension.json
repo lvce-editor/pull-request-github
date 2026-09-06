@@ -14,7 +14,10 @@
     "onCommand:PullRequestsGithub.setPullRequestListData",
     "onCommand:PullRequestsGithub.setPullRequestListError",
     "onCommand:PullRequestsGithub.setPullRequestListResponse",
-    "onCommand:PullRequestsGithub.setPullRequestResponse"
+    "onCommand:PullRequestsGithub.setPullRequestResponse",
+    "onCommand:PullRequestsGithub.create",
+    "onCommand:PullRequestsGithub.setCreationFixture",
+    "onCommand:PullRequestsGithub.getCreateRequests"
   ],
   "commands": [
     {
@@ -56,6 +59,18 @@
     {
       "id": "PullRequestsGithub.setPullRequestResponse",
       "label": "Set Pull Requests GitHub Mock Response"
+    },
+    {
+      "id": "PullRequestsGithub.create",
+      "label": "GitHub Pull Requests: Create Pull Request"
+    },
+    {
+      "id": "PullRequestsGithub.setCreationFixture",
+      "label": "Set Pull Request Creation Fixture"
+    },
+    {
+      "id": "PullRequestsGithub.getCreateRequests",
+      "label": "Get Mock Pull Request Creation Requests"
     }
   ],
   "views": [
