@@ -1,5 +1,6 @@
 {
   "id": "github.pull-requests",
+  "icon": "media/icon.svg",
   "browser": "dist/pullRequestWorkerMain.js",
   "isolated": true,
   "contentSecurityPolicy": ["default-src 'none'", "script-src 'self'"],
