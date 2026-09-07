@@ -1,5 +1,6 @@
 {
   "id": "github.pull-requests",
+  "description": "Create and review GitHub pull requests in the editor.",
   "icon": "media/icon.svg",
   "browser": "dist/pullRequestWorkerMain.js",
   "isolated": true,

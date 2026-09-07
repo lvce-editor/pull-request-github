@@ -59,6 +59,8 @@ jobs:
         run: npm ci
         if: steps.npm-cache.outputs.cache-hit != 'true'
       - run: npm run build
+        env:
+          RG_VERSION: ${{ needs.create-release.outputs.rg_version }}
       - run: npm run build:static
       - run: npm test
       - run: npm run type-check
