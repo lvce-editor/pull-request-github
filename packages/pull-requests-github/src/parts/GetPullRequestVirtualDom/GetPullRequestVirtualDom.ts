@@ -215,10 +215,10 @@ const getStatePresentation = (draft: boolean | undefined, filter: string): reado
 }
 
 const renderListView = (state: PullRequestViewState): readonly VirtualDomNode[] => {
-  if (state.status === PullRequestViewStates.Unavailable && state.errorCode === ErrorCodes.WorkspaceNotOpen) {
-    return [{ ...listViewNode, childCount: 1 }, ...renderDetailMessage(state.error)]
+  const { closedPullRequests, error, errorCode, filter, openPullRequests, query, repository, status } = state
+  if (status === PullRequestViewStates.Unavailable && errorCode === ErrorCodes.WorkspaceNotOpen) {
+    return [{ ...listViewNode, childCount: 1 }, ...renderDetailMessage(error)]
   }
-  const { closedPullRequests, filter, openPullRequests, query, repository } = state
   const repositoryLabel = repository ? `${repository.owner} / ${repository.name}` : 'Reading the current workspace repository…'
   return [
     listViewNode,
