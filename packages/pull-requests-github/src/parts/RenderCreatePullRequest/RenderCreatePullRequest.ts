@@ -3,6 +3,8 @@ import { AriaRoles, mergeClassNames, text, VirtualDomElements as E } from '@lvce
 import type { CreateState } from '../CreatePullRequestView/CreatePullRequestView.ts'
 import * as Events from '../DomEventListenerFunctions/DomEventListenerFunctions.ts'
 
+const createViewClassName = mergeClassNames('Viewlet', 'PullRequestView', 'PullRequestCreateView')
+
 const heading: VirtualDomNode = { childCount: 1, className: 'PullRequestTitle', type: E.H2 }
 const repositoryLabel: VirtualDomNode = { childCount: 1, className: 'PullRequestDescription', type: E.P }
 const statusNode: VirtualDomNode = { childCount: 1, role: AriaRoles.Status, type: E.Div }
@@ -52,7 +54,7 @@ export const renderCreatePullRequest = (state: CreateState): readonly VirtualDom
   return [
     {
       childCount: 8 + Number(Boolean(error)) + Number(Boolean(number)),
-      className: mergeClassNames('Viewlet', 'PullRequestView', 'PullRequestCreateView'),
+      className: createViewClassName,
       type: E.Div,
     },
     heading,
