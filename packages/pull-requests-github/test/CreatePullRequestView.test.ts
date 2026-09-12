@@ -17,7 +17,7 @@ const setup = (
   const view = create(async () => {}, dependencies)
   return { request, view }
 }
-const text = (view: Readonly<ReturnType<typeof create>>): string =>
+const getRenderedText = (view: Readonly<ReturnType<typeof create>>): string =>
   view
     .render()
     .map((node) => node.text || '')
@@ -34,7 +34,7 @@ test('uses commit title, accepts empty description, creates and enables squash e
     ['lvce-token', '', { base: 'main', description: '', head: 'feature', repository: 'owner/repo', title: 'Edited title' }],
     ['lvce-token', '/auto-merge', { number: 42, repository: 'owner/repo' }],
   ])
-  expect(text(view)).toContain('Auto-squash enabled')
+  expect(getRenderedText(view)).toContain('Auto-squash enabled')
 })
 test('retries only auto-merge after partial success', async () => {
   const request = jest
@@ -45,7 +45,7 @@ test('retries only auto-merge after partial success', async () => {
   const { view } = setup({ request })
   await view.initialize()
   await view.submit()
-  expect(text(view)).toContain('Pull request created, but auto-squash failed')
+  expect(getRenderedText(view)).toContain('Pull request created, but auto-squash failed')
   view.input('title', 'cannot change submitted title')
   await view.submit()
   expect(request.mock.calls.map((call: Readonly<Parameters<Dependencies['request']>>) => call[1])).toEqual(['', '/auto-merge', '/auto-merge'])
@@ -56,7 +56,7 @@ test.each(['base', 'head', 'title'])('rejects empty %s without a request', async
   view.input(name, '  ')
   await view.submit()
   expect(request).not.toHaveBeenCalled()
-  expect(text(view)).toContain('are required')
+  expect(getRenderedText(view)).toContain('are required')
 })
 test('rejects identical branches and preserves description', async () => {
   const { request, view } = setup()
@@ -65,7 +65,7 @@ test('rejects identical branches and preserves description', async () => {
   view.input('head', 'main')
   await view.submit()
   expect(request).not.toHaveBeenCalled()
-  expect(text(view)).toContain('must be different')
+  expect(getRenderedText(view)).toContain('must be different')
   expect(view.render().find((node) => node.name === 'description')?.value).toBe('line 1\nline 2')
 })
 test('signed out never sends a request', async () => {
@@ -73,7 +73,7 @@ test('signed out never sends a request', async () => {
   await view.initialize()
   await view.submit()
   expect(request).not.toHaveBeenCalled()
-  expect(text(view)).toContain('Sign in')
+  expect(getRenderedText(view)).toContain('Sign in')
 })
 test.each(['No workspace', 'Detached HEAD', 'No commits', 'Git unavailable'])('shows initialization error %s', async (message) => {
   const { request, view } = setup({
@@ -82,13 +82,13 @@ test.each(['No workspace', 'Detached HEAD', 'No commits', 'Git unavailable'])('s
     },
   })
   await view.initialize()
-  expect(text(view)).toContain(message)
+  expect(getRenderedText(view)).toContain(message)
   expect(request).not.toHaveBeenCalled()
 })
 test('rejects non-GitHub remote', async () => {
   const { view } = setup({ getDefaults: async () => ({ ...defaults, remoteUrl: 'git@gitlab.com:owner/repo.git' }) })
   await view.initialize()
-  expect(text(view)).toContain('not hosted on GitHub')
+  expect(getRenderedText(view)).toContain('not hosted on GitHub')
 })
 test('gets missing default branch from authenticated repository API', async () => {
   const request = jest.fn<Dependencies['request']>().mockResolvedValue({ defaultBranch: 'develop' })
@@ -134,7 +134,7 @@ test.each([{}, { number: 0 }, { number: 42, url: 'https://evil.example' }])(
     const { view } = setup({ request })
     await view.initialize()
     await view.submit()
-    expect(text(view)).toContain('Invalid pull request response')
+    expect(getRenderedText(view)).toContain('Invalid pull request response')
     expect(request).toHaveBeenCalledTimes(1)
   },
 )

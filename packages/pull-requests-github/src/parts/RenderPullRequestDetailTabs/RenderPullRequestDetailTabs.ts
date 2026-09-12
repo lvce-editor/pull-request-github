@@ -5,6 +5,8 @@ import type { PullRequestDetailTab } from '../PullRequestDetailTab/PullRequestDe
 import * as DomEventListenerFunctions from '../DomEventListenerFunctions/DomEventListenerFunctions.ts'
 import * as PullRequestDetailTabs from '../PullRequestDetailTab/PullRequestDetailTab.ts'
 
+const activeTabClassName = mergeClassNames('PullRequestTab', 'PullRequestTabActive')
+
 const tabListNode: VirtualDomNode = {
   ariaLabel: 'Pull request details',
   childCount: 4,
@@ -56,7 +58,7 @@ const renderCount = (tabData: TabData): readonly VirtualDomNode[] => {
 
 const renderTab = (tabData: TabData, activeTab: PullRequestDetailTab): readonly VirtualDomNode[] => {
   const active = tabData.tab === activeTab
-  const className = active ? mergeClassNames('PullRequestTab', 'PullRequestTabActive') : 'PullRequestTab'
+  const className = active ? activeTabClassName : 'PullRequestTab'
   return [
     {
       ariaSelected: active,
