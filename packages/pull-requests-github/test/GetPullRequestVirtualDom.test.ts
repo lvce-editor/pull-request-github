@@ -1,5 +1,6 @@
 import { expect, test } from '@jest/globals'
 import * as PullRequestFilters from '@lvce-editor/pull-request-shared'
+import { AriaRoles, mergeClassNames, text, VirtualDomElements } from '@lvce-editor/virtual-dom-worker'
 import type { PullRequestViewState, PullRequestViewStatus } from '../src/parts/PullRequestViewState/PullRequestViewState.ts'
 import { getPullRequestVirtualDom } from '../src/parts/GetPullRequestVirtualDom/GetPullRequestVirtualDom.ts'
 import { createDefaultState, Detail, Error, Loading, Ready, Unavailable } from '../src/parts/PullRequestViewState/PullRequestViewState.ts'
@@ -260,4 +261,19 @@ test('renders a fallback title for an untitled pull request', () => {
   )
 
   expect(dom.some((node) => node.text === 'Pull request #7')).toBe(true)
+})
+
+test('renders only an informational message when no workspace is open', () => {
+  const dom = getPullRequestVirtualDom(
+    createState({
+      error: 'Open a Git repository to view its pull requests.',
+      errorCode: PullRequestFilters.ErrorCodes.WorkspaceNotOpen,
+      status: Unavailable,
+    }),
+  )
+  expect(dom).toEqual([
+    { childCount: 1, className: mergeClassNames('Viewlet', 'PullRequestView'), type: VirtualDomElements.Div },
+    { childCount: 1, className: 'PullRequestMessage', role: AriaRoles.Status, type: VirtualDomElements.Div },
+    text('Open a Git repository to view its pull requests.'),
+  ])
 })

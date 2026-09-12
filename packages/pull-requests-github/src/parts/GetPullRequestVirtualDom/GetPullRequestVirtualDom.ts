@@ -1,4 +1,5 @@
 import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
+import { ErrorCodes } from '@lvce-editor/pull-request-shared'
 import { AriaRoles, mergeClassNames, text, VirtualDomElements } from '@lvce-editor/virtual-dom-worker'
 import type { PullRequestViewState } from '../PullRequestViewState/PullRequestViewState.ts'
 import * as DomEventListenerFunctions from '../DomEventListenerFunctions/DomEventListenerFunctions.ts'
@@ -214,7 +215,10 @@ const getStatePresentation = (draft: boolean | undefined, filter: string): reado
 }
 
 const renderListView = (state: PullRequestViewState): readonly VirtualDomNode[] => {
-  const { closedPullRequests, filter, openPullRequests, query, repository } = state
+  const { closedPullRequests, error, errorCode, filter, openPullRequests, query, repository, status } = state
+  if (status === PullRequestViewStates.Unavailable && errorCode === ErrorCodes.WorkspaceNotOpen) {
+    return [{ ...listViewNode, childCount: 1 }, ...renderDetailMessage(error)]
+  }
   const repositoryLabel = repository ? `${repository.owner} / ${repository.name}` : 'Reading the current workspace repository…'
   return [
     listViewNode,

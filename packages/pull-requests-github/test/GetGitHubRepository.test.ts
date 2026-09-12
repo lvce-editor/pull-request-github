@@ -67,6 +67,6 @@ test('reports a workspace without a remote', async () => {
 test('reports when no workspace is open', async () => {
   const readFile = jest.fn<(uri: string) => Promise<string>>()
 
-  await expect(getGitHubRepository(async () => '', readFile)).rejects.toThrow('Open a folder containing a GitHub repository to view pull requests.')
+  await expect(getGitHubRepository(async () => '', readFile)).rejects.toThrow('Open a Git repository to view its pull requests.')
   expect(readFile).not.toHaveBeenCalled()
 })

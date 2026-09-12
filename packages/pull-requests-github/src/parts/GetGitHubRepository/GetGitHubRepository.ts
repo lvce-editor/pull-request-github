@@ -63,7 +63,7 @@ const readGitConfig = async (workspaceUri: string, read: ReadFile): Promise<stri
 export const getGitHubRepository = async (getWorkspace: GetWorkspaceUri = getWorkspaceUri, read: ReadFile = readFile): Promise<GitHubRepository> => {
   const workspaceUri = await getWorkspace()
   if (!workspaceUri) {
-    throw new PullRequestError('Open a folder containing a GitHub repository to view pull requests.', ErrorCodes.GitRepositoryNotFound)
+    throw new PullRequestError('Open a Git repository to view its pull requests.', ErrorCodes.WorkspaceNotOpen)
   }
   const config = await readGitConfig(workspaceUri, read)
   const remoteUrl = getRemoteUrl(config)

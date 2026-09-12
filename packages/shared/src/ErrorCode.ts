@@ -6,6 +6,7 @@ export const GitHubRemoteRequired = 'E_GITHUB_REMOTE_REQUIRED'
 export const GitHubRequestFailed = 'E_GITHUB_REQUEST_FAILED'
 export const GitRemoteNotFound = 'E_GIT_REMOTE_NOT_FOUND'
 export const GitRepositoryNotFound = 'E_GIT_REPOSITORY_NOT_FOUND'
+export const WorkspaceNotOpen = 'E_WORKSPACE_NOT_OPEN'
 export const Unknown = 'E_UNKNOWN'
 
 export type ErrorCode =
@@ -18,3 +19,4 @@ export type ErrorCode =
   | typeof GitRemoteNotFound
   | typeof GitRepositoryNotFound
   | typeof Unknown
+  | typeof WorkspaceNotOpen
