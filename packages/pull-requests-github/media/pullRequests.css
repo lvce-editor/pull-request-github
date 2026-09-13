@@ -425,6 +425,7 @@
   font-weight: 600;
   letter-spacing: -0.025em;
   line-height: 25px;
+  overflow-wrap: anywhere;
 }
 
 .PullRequestDetailNumber {
@@ -437,6 +438,7 @@
   color: var(--PullRequestMuted);
   font-size: 12px;
   line-height: 18px;
+  overflow-wrap: anywhere;
 }
 
 .PullRequestMergeAuthor {
@@ -444,6 +446,9 @@
 }
 
 .PullRequestBranch {
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
   padding: 1px 4px;
   color: var(--PullRequestMuted);
   background: var(--PullRequestSurface);
@@ -584,6 +589,7 @@
 .PullRequestOverview {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 220px;
+  grid-template-areas: 'main sidebar';
   gap: 16px;
   padding-block: 0;
 }
@@ -593,6 +599,14 @@
   display: flex;
   min-width: 0;
   flex-direction: column;
+}
+
+.PullRequestOverviewMain {
+  grid-area: main;
+}
+
+.PullRequestOverviewSidebar {
+  grid-area: sidebar;
 }
 
 .PullRequestOverviewMain {
@@ -618,6 +632,8 @@
 }
 
 .PullRequestOverviewDescription {
+  min-width: 0;
+  overflow-wrap: anywhere;
   padding: 12px;
   color: var(--PullRequestForeground);
   font-size: 14px;
@@ -821,17 +837,12 @@
   text-align: center;
 }
 
-@container (max-width: 300px) {
-  .PullRequestListActions {
-    width: 100%;
-  }
-
-  .PullRequestLabel {
-    max-width: 84px;
-  }
-
+@container (max-width: 560px) {
   .PullRequestOverview {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'main'
+      'sidebar';
   }
 
   .PullRequestDetailHero {
@@ -841,6 +852,16 @@
 
   .PullRequestStateBadge {
     order: -1;
+  }
+}
+
+@container (max-width: 300px) {
+  .PullRequestListActions {
+    width: 100%;
+  }
+
+  .PullRequestLabel {
+    max-width: 84px;
   }
 
   .PullRequestFileHeader {
