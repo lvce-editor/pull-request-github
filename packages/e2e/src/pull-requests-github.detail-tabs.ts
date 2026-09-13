@@ -108,6 +108,15 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await expect(overview).toContainText('needs-review')
   await expect(overview).toContainText('12 comments')
 
+  await Command.execute('Layout.setExplicitBounds', 1200, 720)
+  await Command.execute('Layout.moveSideBarLeft')
+  await Command.execute('Layout.handleSashSideBarPointerDown')
+  await Command.execute('Layout.handleSashPointerMove', 800, 300)
+  await expect(overview).toHaveCSS('grid-template-areas', '"main sidebar"')
+
+  await Command.execute('Layout.handleSashPointerMove', 430, 300)
+  await expect(overview).toHaveCSS('grid-template-areas', '"main" "sidebar"')
+
   await commitsTab.click()
   await Command.execute('Timeout.sleep', 200)
   const commitList = Locator('.PullRequestCommitList')
