@@ -1,4 +1,5 @@
 import { expect, jest, test } from '@jest/globals'
+import { PullRequestError } from '@lvce-editor/pull-request-shared'
 import type { Dependencies } from '../src/parts/CreatePullRequestDependencies/CreatePullRequestDependencies.ts'
 import { create } from '../src/parts/CreatePullRequestView/CreatePullRequestView.ts'
 
@@ -49,6 +50,17 @@ test('retries only auto-merge after partial success', async () => {
   view.input('title', 'cannot change submitted title')
   await view.submit()
   expect(request.mock.calls.map((call: Readonly<Parameters<Dependencies['request']>>) => call[1])).toEqual(['', '/auto-merge', '/auto-merge'])
+})
+
+test('renders the API error message and code together', async () => {
+  const request = jest
+    .fn<Dependencies['request']>()
+    .mockRejectedValue(new PullRequestError('Validation Failed: must be a collaborator', 'E_GITHUB_REQUEST_FAILED'))
+  const { view } = setup({ request })
+  await view.initialize()
+  await view.submit()
+  expect(getRenderedText(view)).toContain('Validation Failed: must be a collaborator')
+  expect(getRenderedText(view)).toContain('Error code: E_GITHUB_REQUEST_FAILED')
 })
 test.each(['base', 'head', 'title'])('rejects empty %s without a request', async (name: string) => {
   const { request, view } = setup()

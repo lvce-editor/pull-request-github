@@ -1,3 +1,5 @@
+import { ErrorCodes, PullRequestError } from '@lvce-editor/pull-request-shared'
+
 export interface MockResponse {
   readonly body?: unknown
   readonly error?: string
@@ -14,7 +16,7 @@ export const setCreateResponses = (values: readonly MockResponse[] | undefined):
 export const getCreateRequests = (): unknown => mockState.requests
 
 export const request = async (token: string, path: string, body?: unknown, fetchFn: typeof fetch = fetch): Promise<any> => {
-  if (!token) throw new Error('Sign in to LVCE with GitHub before creating a pull request.')
+  if (!token) throw new PullRequestError('Sign in to LVCE with GitHub before creating a pull request.', ErrorCodes.Unknown)
   let response: Response
   try {
     const { requests, responses } = mockState
@@ -34,8 +36,11 @@ export const request = async (token: string, path: string, body?: unknown, fetch
         signal: AbortSignal.timeout(70_000),
       })
     }
-  } catch {
-    throw new Error('Could not reach GitHub. Check the repository for an existing pull request before retrying.')
+  } catch (error) {
+    if (error instanceof PullRequestError) {
+      throw error
+    }
+    throw new PullRequestError('Could not reach GitHub. Check the repository for an existing pull request before retrying.', ErrorCodes.GitHubRequestFailed)
   }
   return parseResponse(response)
 }
@@ -50,8 +55,10 @@ const parseResponse = async (response: Response): Promise<any> => {
   if (!response.ok) {
     const hint = response.status === 401 || response.status === 403 ? ' Sign in with GitHub again and check repository permissions.' : ''
     const message = typeof value?.error === 'string' ? value.error : `GitHub request failed (${response.status}).`
-    throw new Error(message + hint)
+    throw new PullRequestError(message + hint, ErrorCodes.GitHubRequestFailed)
   }
-  if (!value || typeof value !== 'object') throw new Error('Invalid response from GitHub. Check the repository before retrying.')
+  if (!value || typeof value !== 'object') {
+    throw new PullRequestError('Invalid response from GitHub. Check the repository before retrying.', ErrorCodes.Unknown)
+  }
   return value
 }

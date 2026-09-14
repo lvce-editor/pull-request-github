@@ -1,6 +1,8 @@
 import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
+import { ErrorCodes } from '@lvce-editor/pull-request-shared'
 import type { Dependencies } from '../CreatePullRequestDependencies/CreatePullRequestDependencies.ts'
 import { dependencies as defaultDependencies, getRepository } from '../CreatePullRequestDependencies/CreatePullRequestDependencies.ts'
+import { getErrorInfo } from '../GetErrorInfo/GetErrorInfo.ts'
 import { renderCreatePullRequest } from '../RenderCreatePullRequest/RenderCreatePullRequest.ts'
 
 export interface CreateState {
@@ -9,6 +11,7 @@ export interface CreateState {
   readonly busy: boolean
   readonly description: string
   readonly error: string
+  readonly errorCode: string
   readonly head: string
   readonly loading: boolean
   readonly number: number
@@ -32,6 +35,7 @@ export const create = (rerender: () => Promise<void>, dependencies: Dependencies
     busy: false,
     description: '',
     error: '',
+    errorCode: '',
     head: '',
     loading: true,
     number: 0,
@@ -57,7 +61,8 @@ export const create = (rerender: () => Promise<void>, dependencies: Dependencies
       }
       await update({ base, head: defaults.headBranch, loading: false, repository, title: defaults.title })
     } catch (error) {
-      await update({ error: error instanceof Error ? error.message : String(error), loading: false })
+      const errorInfo = getErrorInfo(error)
+      await update({ error: errorInfo.message, errorCode: errorInfo.code, loading: false })
     }
   }
   const submit = async (): Promise<void> => {
@@ -65,14 +70,14 @@ export const create = (rerender: () => Promise<void>, dependencies: Dependencies
     if (disposed || busy || loading || autoMerge) return
     const { base, description, head, repository, title } = state
     if (!repository || !base.trim() || !head.trim() || !title.trim()) {
-      await update({ error: 'Repository, base branch, merge branch, and title are required.' })
+      await update({ error: 'Repository, base branch, merge branch, and title are required.', errorCode: ErrorCodes.Unknown })
       return
     }
     if (base.trim() === head.trim()) {
-      await update({ error: 'Base and merge branches must be different.' })
+      await update({ error: 'Base and merge branches must be different.', errorCode: ErrorCodes.Unknown })
       return
     }
-    state = { ...state, busy: true, error: '' }
+    state = { ...state, busy: true, error: '', errorCode: '' }
     try {
       await rerender()
       const token = await dependencies.getToken()
@@ -91,9 +96,12 @@ export const create = (rerender: () => Promise<void>, dependencies: Dependencies
       if (result.autoMerge !== true) throw new Error('GitHub did not confirm auto-squash.')
       await update({ autoMerge: true })
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
+      const errorInfo = getErrorInfo(error)
       const { number } = state
-      await update({ error: number ? `Pull request created, but auto-squash failed: ${message}` : message })
+      await update({
+        error: number ? `Pull request created, but auto-squash failed: ${errorInfo.message}` : errorInfo.message,
+        errorCode: errorInfo.code,
+      })
     } finally {
       await update({ busy: false })
     }
@@ -110,7 +118,9 @@ export const create = (rerender: () => Promise<void>, dependencies: Dependencies
     input(name: unknown, value: unknown): void {
       const { busy, loading, number } = state
       if (disposed || busy || loading || number || typeof value !== 'string') return
-      if (typeof name === 'string' && ['base', 'head', 'title', 'description'].includes(name)) state = { ...state, error: '', [name]: value }
+      if (typeof name === 'string' && ['base', 'head', 'title', 'description'].includes(name)) {
+        state = { ...state, error: '', errorCode: '', [name]: value }
+      }
     },
     render: (): readonly VirtualDomNode[] => renderCreatePullRequest(state),
     submit,
