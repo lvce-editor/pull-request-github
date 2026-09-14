@@ -40,7 +40,10 @@ export const request = async (token: string, path: string, body?: unknown, fetch
     if (error instanceof PullRequestError) {
       throw error
     }
-    throw new PullRequestError('Could not reach GitHub. Check the repository for an existing pull request before retrying.', ErrorCodes.GitHubRequestFailed)
+    throw new PullRequestError(
+      'Could not reach GitHub. Check the repository for an existing pull request before retrying.',
+      ErrorCodes.GitHubRequestFailed,
+    )
   }
   return parseResponse(response)
 }
