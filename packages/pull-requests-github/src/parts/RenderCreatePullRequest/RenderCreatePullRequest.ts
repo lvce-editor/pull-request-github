@@ -2,18 +2,13 @@ import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
 import { AriaRoles, mergeClassNames, text, VirtualDomElements as E } from '@lvce-editor/virtual-dom-worker'
 import type { CreateState } from '../CreatePullRequestView/CreatePullRequestView.ts'
 import * as Events from '../DomEventListenerFunctions/DomEventListenerFunctions.ts'
+import { renderErrorMessage } from '../RenderErrorMessage/RenderErrorMessage.ts'
 
 const createViewClassName = mergeClassNames('Viewlet', 'PullRequestView', 'PullRequestCreateView')
 
 const heading: VirtualDomNode = { childCount: 1, className: 'PullRequestTitle', type: E.H2 }
 const repositoryLabel: VirtualDomNode = { childCount: 1, className: 'PullRequestDescription', type: E.P }
 const statusNode: VirtualDomNode = { childCount: 1, role: AriaRoles.Status, type: E.Div }
-const errorNode: VirtualDomNode = {
-  childCount: 1,
-  className: mergeClassNames('PullRequestMessage', 'PullRequestMessageError'),
-  role: AriaRoles.Alert,
-  type: E.Div,
-}
 const actions: VirtualDomNode = { childCount: 2, className: 'PullRequestCreateActions', type: E.Div }
 const button = (name: string, label: string, disabled = false): readonly VirtualDomNode[] => [
   { childCount: 1, className: 'PullRequestCreateButton', disabled, name, onClick: Events.HandleClick, type: E.Button },
@@ -36,7 +31,7 @@ const field = (state: CreateState, name: 'base' | 'head' | 'title' | 'descriptio
     },
   ]
 }
-const renderError = (error: string): readonly VirtualDomNode[] => (error ? [errorNode, text(error)] : [])
+const renderError = (error: string, errorCode: string): readonly VirtualDomNode[] => (error ? renderErrorMessage(error, errorCode) : [])
 const renderLink = (number: number, url: string): readonly VirtualDomNode[] => {
   if (!number) return []
   return [
@@ -50,7 +45,7 @@ const statusMessage = (loading: boolean, busy: boolean, autoMerge: boolean): str
   return autoMerge ? 'Pull request created. Auto-squash enabled.' : ''
 }
 export const renderCreatePullRequest = (state: CreateState): readonly VirtualDomNode[] => {
-  const { autoMerge, busy, error, loading, number, repository, url } = state
+  const { autoMerge, busy, error, errorCode, loading, number, repository, url } = state
   return [
     {
       childCount: 8 + Number(Boolean(error)) + Number(Boolean(number)),
@@ -67,7 +62,7 @@ export const renderCreatePullRequest = (state: CreateState): readonly VirtualDom
     ...field(state, 'description', 'Description'),
     statusNode,
     text(statusMessage(loading, busy, autoMerge)),
-    ...renderError(error),
+    ...renderError(error, errorCode),
     ...renderLink(number, url),
     actions,
     ...button('cancelCreatePullRequest', number ? 'Done' : 'Cancel', busy),

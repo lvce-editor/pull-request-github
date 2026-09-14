@@ -38,6 +38,7 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await Locator('button[name="submitCreatePullRequest"]').click()
   const element1 = Locator('.PullRequestCreateView [role="alert"]')
   await retry(() => expect(element1).toContainText('Insufficient permission'))
+  await retry(() => expect(element1).toContainText('Error code: E_GITHUB_REQUEST_FAILED'))
   const element2 = Locator('input[name="title"]')
   await retry(() => expect(element2).toHaveValue(defaults.title))
   const element3 = Locator('.PullRequestCreatedLink')
