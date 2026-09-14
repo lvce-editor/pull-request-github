@@ -27,3 +27,14 @@ test('packages the release version and extension description', async (t) => {
   assert.equal(manifest.version, '1.2.3')
   assert.equal(manifest.description, 'Create and review GitHub pull requests in the editor.')
 })
+
+test('keeps the pull request creation fixture out of the command palette', async () => {
+  const extensionPath = join(root, 'packages', 'pull-requests-github')
+  const manifestContent = await readFile(join(extensionPath, 'extension.json'), 'utf8')
+  const manifest = JSON.parse(manifestContent)
+  const fixtureCommand = manifest.commands.find((command: { id?: string }) => command.id === 'PullRequestsGithub.setCreationFixture')
+  const createCommand = manifest.commands.find((command: { id?: string }) => command.id === 'PullRequestsGithub.create')
+
+  assert.equal(fixtureCommand?.internal, true)
+  assert.equal(createCommand?.internal, undefined)
+})

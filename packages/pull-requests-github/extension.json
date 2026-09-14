@@ -68,7 +68,8 @@
     },
     {
       "id": "PullRequestsGithub.setCreationFixture",
-      "label": "Set Pull Request Creation Fixture"
+      "label": "Set Pull Request Creation Fixture",
+      "internal": true
     },
     {
       "id": "PullRequestsGithub.getCreateRequests",
