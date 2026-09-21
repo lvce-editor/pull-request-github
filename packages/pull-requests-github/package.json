@@ -59,7 +59,7 @@
     "ts-jest": "^29.4.12"
   },
   "dependencies": {
-    "@lvce-editor/api": "^9.22.0",
+    "@lvce-editor/api": "^9.30.0",
     "@lvce-editor/pull-request-shared": "*"
   }
 }
