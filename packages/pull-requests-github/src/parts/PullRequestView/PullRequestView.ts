@@ -24,6 +24,7 @@ export interface PullRequestViewInstance extends VirtualDomViewInstance {
   readonly focusCreateControl: (direction: -1 | 1) => Promise<void>
   readonly focusNextCreateControl: () => Promise<void>
   readonly focusPreviousCreateControl: () => Promise<void>
+  readonly getContext: () => Readonly<Record<string, boolean>>
   readonly handleCreateInput: (name: unknown, value: unknown) => void
   readonly handleEvent: (event: ViewEvent) => Promise<void>
   readonly handlePullRequestBlur: (name: unknown) => void
@@ -33,6 +34,7 @@ export interface PullRequestViewInstance extends VirtualDomViewInstance {
   readonly openOnGitHub: (open: (url: string) => Promise<void>) => Promise<void>
   readonly refresh: () => Promise<void>
   readonly render: () => readonly VirtualDomNode[]
+  readonly renderFocus: (oldContext: Readonly<Record<string, boolean>>, newContext: Readonly<Record<string, boolean>>) => string
   readonly saveState: () => PullRequestViewSavedState
   readonly startCreate: () => Promise<void>
 }
