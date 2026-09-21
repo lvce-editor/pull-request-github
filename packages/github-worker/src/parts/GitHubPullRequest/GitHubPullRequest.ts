@@ -42,6 +42,10 @@ interface GitHubFileResponse {
   readonly status?: unknown
 }
 
+const plusFilePathRegex = /^\+\+\+ b\/(.*)$/
+const oldFilePathRegex = /^--- a\/(.*)$/
+const diffHeaderRegex = /^diff --git /m
+
 const assertString = (value: unknown): string => {
   if (typeof value === 'string') {
     return value
@@ -91,6 +95,55 @@ const getErrorMessage = (response: GitHubPullResponse, status: number): string =
     return response.message
   }
   return `GitHub request failed with status ${status}`
+}
+
+const getDiffPath = (line: string): string => {
+  const match = line.match(plusFilePathRegex)
+  if (match) {
+    return match[1]
+  }
+  const oldMatch = line.match(oldFilePathRegex)
+  return oldMatch ? oldMatch[1] : ''
+}
+
+const extractFilePatch = (diff: string, filename: string): string | undefined => {
+  const blocks = diff.split(diffHeaderRegex).slice(1)
+  for (const block of blocks) {
+    const lines = block.split('\n')
+    const paths = lines.filter((line) => line.startsWith('--- ') || line.startsWith('+++ ')).map(getDiffPath)
+    if (!paths.includes(filename)) {
+      continue
+    }
+    const firstHunk = lines.findIndex((line) => line.startsWith('@@'))
+    if (firstHunk === -1) {
+      return undefined
+    }
+    return lines.slice(firstHunk).join('\n').trimEnd()
+  }
+  return undefined
+}
+
+export const fetchPullRequestFileDiff = async (url: string, filename: string, fetchFn: typeof fetch = fetch): Promise<string | undefined> => {
+  const mock = PullRequestMockRegistry.getMockPullRequestFileDiff(url, filename)
+  if (mock !== undefined) {
+    return mock
+  }
+  try {
+    const location = parsePullRequestUrl(url)
+    const apiUrl = `https://api.github.com/repos/${location.owner}/${location.repo}/pulls/${location.number}`
+    const response = await fetchFn(apiUrl, {
+      headers: {
+        Accept: 'application/vnd.github.diff',
+      },
+    })
+    const diff = await response.text()
+    if (!response.ok) {
+      throw new PullRequestError(`GitHub request failed with status ${response.status}`, ErrorCodes.GitHubRequestFailed)
+    }
+    return extractFilePatch(diff, filename)
+  } catch (error) {
+    throw toPullRequestError(error, ErrorCodes.GitHubRequestFailed)
+  }
 }
 
 export const fetchPullRequest = async (url: string, fetchFn: typeof fetch = fetch): Promise<PullRequestData> => {

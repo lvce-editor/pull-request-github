@@ -7,9 +7,11 @@ type GetRpc = () => Promise<Pick<Rpc, 'invoke'>>
 export interface GitHubWorkerRpc {
   readonly clearPullRequestData: () => Promise<void>
   readonly fetchPullRequest: (url: string) => Promise<PullRequestData>
+  readonly fetchPullRequestFileDiff: (url: string, filename: string) => Promise<string | undefined>
   readonly fetchPullRequests: (repository: GitHubRepository, state: PullRequestFilter) => Promise<readonly PullRequestListItem[]>
   readonly setPullRequestData: (url: string, data: PullRequestData) => Promise<void>
   readonly setPullRequestError: (url: string, message: string) => Promise<void>
+  readonly setPullRequestFileDiff: (url: string, filename: string, diff: string) => Promise<void>
   readonly setPullRequestListData: (owner: string, repo: string, state: PullRequestFilter, data: readonly PullRequestListItem[]) => Promise<void>
   readonly setPullRequestListError: (owner: string, repo: string, state: PullRequestFilter, message: string) => Promise<void>
   readonly setPullRequestListResponse: (owner: string, repo: string, state: PullRequestFilter, data: unknown) => Promise<void>
@@ -30,6 +32,9 @@ export const create = (getRpc: GetRpc): GitHubWorkerRpc => {
     fetchPullRequest(url: string): Promise<PullRequestData> {
       return invoke('GitHub.fetchPullRequest', url)
     },
+    fetchPullRequestFileDiff(url: string, filename: string): Promise<string | undefined> {
+      return invoke('GitHub.fetchPullRequestFileDiff', url, filename)
+    },
     fetchPullRequests(repository: GitHubRepository, state: PullRequestFilter): Promise<readonly PullRequestListItem[]> {
       return invoke('GitHub.fetchPullRequests', repository, state)
     },
@@ -38,6 +43,9 @@ export const create = (getRpc: GetRpc): GitHubWorkerRpc => {
     },
     setPullRequestError(url: string, message: string): Promise<void> {
       return invoke('GitHub.setPullRequestError', url, message)
+    },
+    setPullRequestFileDiff(url: string, filename: string, diff: string): Promise<void> {
+      return invoke('GitHub.setPullRequestFileDiff', url, filename, diff)
     },
     setPullRequestListData(owner: string, repo: string, state: PullRequestFilter, data: readonly PullRequestListItem[]): Promise<void> {
       return invoke('GitHub.setPullRequestListData', owner, repo, state, data)
@@ -74,9 +82,11 @@ const getRpc = (): Promise<Rpc> => {
 export const {
   clearPullRequestData,
   fetchPullRequest,
+  fetchPullRequestFileDiff,
   fetchPullRequests,
   setPullRequestData,
   setPullRequestError,
+  setPullRequestFileDiff,
   setPullRequestListData,
   setPullRequestListError,
   setPullRequestListResponse,

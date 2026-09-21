@@ -3,11 +3,13 @@ import {
   clearPullRequestData,
   getMockPullRequestList,
   getMockPullRequest,
+  getMockPullRequestFileDiff,
   getPullRequestApiUrl,
   setPullRequestData,
   setPullRequestError,
   setPullRequestListResponse,
   setPullRequestResponse,
+  setPullRequestFileDiff,
 } from '../src/parts/PullRequestMockRegistry/PullRequestMockRegistry.ts'
 
 afterEach(() => {
@@ -48,6 +50,12 @@ test('clearPullRequestData removes mock data', () => {
   clearPullRequestData()
 
   expect(getMockPullRequest('https://github.com/owner/repo/pull/7')).toBeUndefined()
+})
+
+test('setPullRequestFileDiff stores a file diff by normalized pull request url', () => {
+  setPullRequestFileDiff('https://github.com/owner/repo/pull/7', 'src/large.ts', '@@ -1 +1 @@')
+
+  expect(getMockPullRequestFileDiff('https://github.com/owner/repo/pull/7', 'src/large.ts')).toBe('@@ -1 +1 @@')
 })
 
 test('getMockPullRequest normalizes equivalent urls', () => {

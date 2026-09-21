@@ -23,6 +23,12 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
     [],
     [{ additions: 'many', deletions: null, filename: 'src/generated.ts', patch: null, status: null }],
   )
+  await Command.executeExtensionCommand(
+    'PullRequestsGithub.setPullRequestFileDiff',
+    url,
+    'src/generated.ts',
+    'diff --git a/src/generated.ts b/src/generated.ts\n--- a/src/generated.ts\n+++ b/src/generated.ts\n@@ -1 +1 @@\n-old\n+new',
+  )
   await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestListData', 'lvce-editor', 'pull-request-github', 'open', [
     {
       baseBranch: 'main',
@@ -44,5 +50,8 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await expect(file).toContainText('modified')
   await expect(file).toContainText('+0')
   await expect(file).toContainText('−0')
-  await expect(file).toContainText('Diff not available for this file.')
+  await expect(file).toContainText('Large or generated diffs are hidden by default.')
+  await Locator('button[name="showPullRequestDiff:0"]').click()
+  await Command.execute('Timeout.sleep', 200)
+  await expect(file).toContainText('+new')
 }

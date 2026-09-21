@@ -48,6 +48,7 @@ const pullRequestDetail: PullRequestData = {
 
 interface Dependencies {
   readonly fetchPullRequest: (url: string) => Promise<any>
+  readonly fetchPullRequestFileDiff: (url: string, filename: string) => Promise<string | undefined>
   readonly fetchPullRequests: (repository: GitHubRepository, filter: PullRequestFilter) => Promise<readonly PullRequestListItem[]>
   readonly getRepository: () => Promise<GitHubRepository>
 }
@@ -55,6 +56,7 @@ interface Dependencies {
 const createDependencies = (overrides: Readonly<Partial<Dependencies>> = {}): Dependencies => {
   return {
     fetchPullRequest: jest.fn<(url: string) => Promise<any>>().mockResolvedValue(pullRequestDetail),
+    fetchPullRequestFileDiff: jest.fn<(url: string, filename: string) => Promise<string | undefined>>().mockResolvedValue(undefined),
     fetchPullRequests: jest
       .fn<(repository: GitHubRepository, filter: PullRequestFilter) => Promise<readonly PullRequestListItem[]>>()
       .mockResolvedValue([pullRequest]),
@@ -214,6 +216,55 @@ test('switches between overview, commits, and changes in pull request detail', a
 
   expect(view.render().some((node) => node.name === 'showPullRequestChanges' && node.ariaSelected === true)).toBe(true)
   expect(view.render().some((node) => node.text === 'src/detail.ts')).toBe(true)
+  view.dispose()
+})
+
+test('loads a hidden file diff on demand and does not reload it', async () => {
+  const fetchPullRequestFileDiff = jest
+    .fn<(url: string, filename: string) => Promise<string | undefined>>()
+    .mockResolvedValue('@@ -1 +1 @@\n-old\n+new')
+  const fetchPullRequest = jest.fn<(url: string) => Promise<PullRequestData>>().mockResolvedValue({
+    ...pullRequestDetail,
+    files: [{ ...pullRequestDetail.files[0], patch: '' }],
+  })
+  const view = await create(undefined, createDependencies({ fetchPullRequest, fetchPullRequestFileDiff }))
+
+  await view.handleEvent({ name: 'openPullRequest:42', type: 'click' })
+  await view.handleEvent({ name: 'showPullRequestChanges', type: 'click' })
+
+  expect(view.render().some((node) => node.text === 'Large or generated diffs are hidden by default.')).toBe(true)
+  expect(view.render().some((node) => node.name === 'showPullRequestDiff:0')).toBe(true)
+
+  await view.handleEvent({ name: 'showPullRequestDiff:0', type: 'click' })
+  await view.handleEvent({ name: 'showPullRequestDiff:0', type: 'click' })
+
+  expect(fetchPullRequestFileDiff).toHaveBeenCalledTimes(1)
+  expect(fetchPullRequestFileDiff).toHaveBeenCalledWith('https://github.com/owner/repo/pull/42', 'src/detail.ts')
+  expect(view.render().some((node) => node.text === '+new')).toBe(true)
+  view.dispose()
+})
+
+test('allows retrying a failed hidden file diff', async () => {
+  const fetchPullRequestFileDiff = jest
+    .fn<(url: string, filename: string) => Promise<string | undefined>>()
+    .mockRejectedValueOnce(new Error('network error'))
+    .mockResolvedValueOnce('@@ -1 +1 @@\n-old\n+new')
+  const fetchPullRequest = jest.fn<(url: string) => Promise<PullRequestData>>().mockResolvedValue({
+    ...pullRequestDetail,
+    files: [{ ...pullRequestDetail.files[0], patch: '' }],
+  })
+  const view = await create(undefined, createDependencies({ fetchPullRequest, fetchPullRequestFileDiff }))
+
+  await view.handleEvent({ name: 'openPullRequest:42', type: 'click' })
+  await view.handleEvent({ name: 'showPullRequestChanges', type: 'click' })
+  await view.handleEvent({ name: 'showPullRequestDiff:0', type: 'click' })
+
+  expect(view.render().some((node) => node.text === 'Unable to load the diff.')).toBe(true)
+  expect(view.render().some((node) => node.text === 'Try again')).toBe(true)
+
+  await view.handleEvent({ name: 'showPullRequestDiff:0', type: 'click' })
+  expect(view.render().some((node) => node.text === '+new')).toBe(true)
+  expect(fetchPullRequestFileDiff).toHaveBeenCalledTimes(2)
   view.dispose()
 })
 

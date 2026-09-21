@@ -56,5 +56,5 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await expect(files).toHaveCount(2)
   await expect(fileList).toContainText('src/added.ts')
   await expect(fileList).toContainText('renamed')
-  await expect(fileList).toContainText('Diff not available for this file.')
+  await expect(fileList).toContainText('Large or generated diffs are hidden by default.')
 }

@@ -45,12 +45,14 @@ type PullRequestViewContext = Partial<ViewContext>
 
 interface PullRequestViewDependencies {
   readonly fetchPullRequest: (url: string) => Promise<PullRequestData>
+  readonly fetchPullRequestFileDiff: (url: string, filename: string) => Promise<string | undefined>
   readonly fetchPullRequests: (repository: GitHubRepository, filter: PullRequestFilter) => Promise<readonly PullRequestListItem[]>
   readonly getRepository: () => Promise<GitHubRepository>
 }
 
 const defaultDependencies: PullRequestViewDependencies = {
   fetchPullRequest: GitHubWorkerRpc.fetchPullRequest,
+  fetchPullRequestFileDiff: GitHubWorkerRpc.fetchPullRequestFileDiff,
   fetchPullRequests: GitHubWorkerRpc.fetchPullRequests,
   getRepository: getGitHubRepository,
 }
@@ -118,6 +120,7 @@ export const create = (
       detailTab: PullRequestDetailTabs.Overview,
       error: '',
       errorCode: '',
+      fileDiffs: {},
       filter,
       openPullRequests: [],
       pullRequest: undefined,
@@ -173,6 +176,7 @@ export const create = (
       detailTab: PullRequestDetailTabs.Overview,
       error: '',
       errorCode: '',
+      fileDiffs: {},
       pullRequest: undefined,
       pullRequests: [],
       repository: undefined,
@@ -213,6 +217,7 @@ export const create = (
       ...state,
       error: '',
       errorCode: '',
+      fileDiffs: {},
       screen: PullRequestViewStates.Detail,
       status: PullRequestViewStates.Loading,
     }
@@ -244,6 +249,55 @@ export const create = (
     }
   }
 
+  const loadFileDiff = async (index: number): Promise<void> => {
+    const { pullRequest, url } = state
+    const currentPullRequest = pullRequest
+    const file = currentPullRequest?.files[index]
+    if (!file || !url) {
+      return
+    }
+    const { fileDiffs } = state
+    const currentDiff = fileDiffs[index]
+    if (currentDiff?.status === 'loading' || currentDiff?.status === 'loaded') {
+      return
+    }
+    state = {
+      ...state,
+      fileDiffs: {
+        ...fileDiffs,
+        [index]: { status: 'loading' },
+      },
+    }
+    await requestRerender()
+    try {
+      const patch = await dependencies.fetchPullRequestFileDiff(url, file.filename)
+      const { fileDiffs: currentFileDiffs, pullRequest: activePullRequest, url: currentUrl } = state
+      if (activePullRequest !== currentPullRequest || currentUrl !== url) {
+        return
+      }
+      state = {
+        ...state,
+        fileDiffs: {
+          ...currentFileDiffs,
+          [index]: patch ? { patch, status: 'loaded' } : { status: 'unavailable' },
+        },
+      }
+    } catch {
+      const { fileDiffs: currentFileDiffs, pullRequest: activePullRequest, url: currentUrl } = state
+      if (activePullRequest !== currentPullRequest || currentUrl !== url) {
+        return
+      }
+      state = {
+        ...state,
+        fileDiffs: {
+          ...currentFileDiffs,
+          [index]: { status: 'error' },
+        },
+      }
+    }
+    await requestRerender()
+  }
+
   const createInstance = async (): Promise<PullRequestViewInstance> => {
     await loadRepository(false)
     const handleClick = async (name: string): Promise<void> => {
@@ -272,6 +326,7 @@ export const create = (
         state = {
           ...state,
           detailTab: PullRequestDetailTabs.Overview,
+          fileDiffs: {},
           pullRequest: undefined,
           screen: PullRequestViewStates.List,
           status: PullRequestViewStates.Ready,
@@ -300,6 +355,13 @@ export const create = (
         }
         return
       }
+      if (name.startsWith('showPullRequestDiff:')) {
+        const index = Number(name.slice('showPullRequestDiff:'.length))
+        if (Number.isSafeInteger(index) && index >= 0) {
+          await loadFileDiff(index)
+        }
+        return
+      }
       if (name.startsWith('openPullRequest:')) {
         const number = Number(name.slice('openPullRequest:'.length))
         const pullRequest = pullRequests.find((item) => item.number === number)
@@ -309,6 +371,7 @@ export const create = (
         state = {
           ...state,
           detailTab: PullRequestDetailTabs.Overview,
+          fileDiffs: {},
           pullRequest: {
             ...pullRequest,
             commits: [],

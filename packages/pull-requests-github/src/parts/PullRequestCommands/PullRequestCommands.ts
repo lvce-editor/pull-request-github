@@ -12,6 +12,7 @@ export const SetPullRequestListData = 'PullRequestsGithub.setPullRequestListData
 export const SetPullRequestListError = 'PullRequestsGithub.setPullRequestListError'
 export const SetPullRequestListResponse = 'PullRequestsGithub.setPullRequestListResponse'
 export const SetPullRequestResponse = 'PullRequestsGithub.setPullRequestResponse'
+export const SetPullRequestFileDiff = 'PullRequestsGithub.setPullRequestFileDiff'
 export const ClearPullRequestData = 'PullRequestsGithub.clearPullRequestData'
 export const FocusNextCreateControl = 'PullRequestsGithub.focusNextCreateControl'
 export const FocusPreviousCreateControl = 'PullRequestsGithub.focusPreviousCreateControl'
@@ -29,6 +30,7 @@ export const commandIds = [
   SetPullRequestListError,
   SetPullRequestListResponse,
   SetPullRequestResponse,
+  SetPullRequestFileDiff,
   ClearPullRequestData,
   FocusNextCreateControl,
   FocusPreviousCreateControl,
@@ -54,6 +56,7 @@ export const {
   clearPullRequestData,
   setPullRequestData,
   setPullRequestError,
+  setPullRequestFileDiff,
   setPullRequestListData,
   setPullRequestListError,
   setPullRequestListResponse,
@@ -105,6 +108,10 @@ export const registerCommands = (): void => {
   registerCommand({
     execute: setPullRequestListResponse,
     id: SetPullRequestListResponse,
+  })
+  registerCommand({
+    execute: setPullRequestFileDiff,
+    id: SetPullRequestFileDiff,
   })
   registerCommand({
     execute: setPullRequestResponse,

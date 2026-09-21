@@ -1,5 +1,11 @@
 import { afterEach, expect, jest, test } from '@jest/globals'
-import { fetchPullRequest, toPullRequestCommit, toPullRequestData, toPullRequestFile } from '../src/parts/GitHubPullRequest/GitHubPullRequest.ts'
+import {
+  fetchPullRequest,
+  fetchPullRequestFileDiff,
+  toPullRequestCommit,
+  toPullRequestData,
+  toPullRequestFile,
+} from '../src/parts/GitHubPullRequest/GitHubPullRequest.ts'
 import {
   clearPullRequestData,
   setPullRequestData,
@@ -18,6 +24,28 @@ const createNotFoundFetch = async (): Promise<Response> => {
     }),
     ok: false,
     status: 404,
+  } as Response
+}
+
+const createDiffFetch = (): { readonly calls: readonly unknown[]; readonly fetchFn: typeof fetch } => {
+  const calls: unknown[] = []
+  const fetchFn: typeof fetch = async (...args: readonly unknown[]): Promise<Response> => {
+    calls.push(args)
+    return {
+      ok: true,
+      status: 200,
+      text: async () =>
+        `diff --git a/src/large.ts b/src/large.ts\nindex 123..456 100644\n--- a/src/large.ts\n+++ b/src/large.ts\n@@ -1 +1 @@\n-old\n+new\ndiff --git a/src/other.ts b/src/other.ts\n--- a/src/other.ts\n+++ b/src/other.ts\n@@ -1 +1 @@\n-old\n+other`,
+    } as Response
+  }
+  return { calls, fetchFn }
+}
+
+const createBinaryDiffFetch: typeof fetch = async (): Promise<Response> => {
+  return {
+    ok: true,
+    status: 200,
+    text: async () => 'diff --git a/image.png b/image.png\nBinary files differ',
   } as Response
 }
 
@@ -193,6 +221,26 @@ test('fetchPullRequest reports a network error with a code', async () => {
     code: 'E_GITHUB_REQUEST_FAILED',
     message: 'Failed to fetch',
   })
+})
+
+test('fetchPullRequestFileDiff extracts the requested file from the pull request diff', async () => {
+  const { calls, fetchFn } = createDiffFetch()
+
+  await expect(fetchPullRequestFileDiff('https://github.com/owner/repo/pull/7', 'src/large.ts', fetchFn)).resolves.toBe('@@ -1 +1 @@\n-old\n+new')
+  expect(calls).toEqual([
+    [
+      'https://api.github.com/repos/owner/repo/pulls/7',
+      {
+        headers: {
+          Accept: 'application/vnd.github.diff',
+        },
+      },
+    ],
+  ])
+})
+
+test('fetchPullRequestFileDiff returns undefined for binary or unavailable files', async () => {
+  await expect(fetchPullRequestFileDiff('https://github.com/owner/repo/pull/7', 'image.png', createBinaryDiffFetch)).resolves.toBeUndefined()
 })
 
 test('fetchPullRequest returns mock data without fetching', async () => {
