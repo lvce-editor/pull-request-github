@@ -80,6 +80,26 @@ test('loads open and closed pull requests from the current repository on create'
   view.dispose()
 })
 
+test('component state exposes and applies the live view state', async () => {
+  const view = await create(undefined, createDependencies())
+  const state = view.getComponentState()
+  const { repository: currentRepository, status } = state
+
+  expect(status).toBe('ready')
+  expect(currentRepository).toEqual(repository)
+
+  const updatedState = {
+    ...state,
+    filter: 'closed',
+    query: 'updated query',
+  } as const
+  view.setComponentState(updatedState)
+
+  expect(view.getComponentState()).toBe(updatedState)
+  expect(view.render().some((node) => node.value === 'updated query')).toBe(true)
+  view.dispose()
+})
+
 test('keeps the active pull request list when the background count request fails', async () => {
   const fetchPullRequests = jest
     .fn<(repository: GitHubRepository, filter: PullRequestFilter) => Promise<readonly PullRequestListItem[]>>()

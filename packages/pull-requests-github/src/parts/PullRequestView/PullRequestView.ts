@@ -10,7 +10,7 @@ import {
   type PullRequestListItem,
 } from '@lvce-editor/pull-request-shared'
 import { RendererWorker } from '@lvce-editor/rpc-registry'
-import type { PullRequestViewSavedState } from '../PullRequestViewState/PullRequestViewState.ts'
+import type { PullRequestViewSavedState, PullRequestViewState } from '../PullRequestViewState/PullRequestViewState.ts'
 import * as CreatePullRequestView from '../CreatePullRequestView/CreatePullRequestView.ts'
 import { getErrorInfo } from '../GetErrorInfo/GetErrorInfo.ts'
 import { getGitHubRepository } from '../GetGitHubRepository/GetGitHubRepository.ts'
@@ -24,6 +24,7 @@ export interface PullRequestViewInstance extends VirtualDomViewInstance {
   readonly focusCreateControl: (direction: -1 | 1) => Promise<void>
   readonly focusNextCreateControl: () => Promise<void>
   readonly focusPreviousCreateControl: () => Promise<void>
+  readonly getComponentState: () => PullRequestViewState
   readonly getContext: () => Readonly<Record<string, boolean>>
   readonly handleCreateInput: (name: unknown, value: unknown) => void
   readonly handleEvent: (event: ViewEvent) => Promise<void>
@@ -36,6 +37,7 @@ export interface PullRequestViewInstance extends VirtualDomViewInstance {
   readonly render: () => readonly VirtualDomNode[]
   readonly renderFocus: (oldContext: Readonly<Record<string, boolean>>, newContext: Readonly<Record<string, boolean>>) => string
   readonly saveState: () => PullRequestViewSavedState
+  readonly setComponentState: (state: PullRequestViewState) => void
   readonly startCreate: () => Promise<void>
 }
 
@@ -340,6 +342,9 @@ export const create = (
       async focusPreviousCreateControl(): Promise<void> {
         await instance.focusCreateControl(-1)
       },
+      getComponentState(): PullRequestViewState {
+        return state
+      },
       getContext(): Readonly<Record<string, boolean>> {
         if (!createFocusActive || !focusedCreateControl) {
           return {}
@@ -461,6 +466,11 @@ export const create = (
           filter,
         }
       },
+      setComponentState(newState: PullRequestViewState): void {
+        creation?.dispose()
+        creation = undefined
+        state = newState
+      },
       async startCreate(): Promise<void> {
         if (creation) return
         creation = CreatePullRequestView.create(requestRerender)
@@ -474,7 +484,7 @@ export const create = (
   return createInstance()
 }
 
-export const view: View<PullRequestViewInstance> = {
+export const view: View<PullRequestViewInstance, PullRequestViewState> = {
   create,
   displayName: 'Pull Requests',
   eventListeners: [
@@ -496,8 +506,10 @@ export const view: View<PullRequestViewInstance> = {
       params: ['handlePullRequestFilterInput', 'event.currentTarget.value'],
     },
   ],
+  getComponentState: (instance) => instance.getComponentState(),
   icon: 'media/git-pull-request.svg',
   id: viewId,
   kind: 'virtualDom',
+  setComponentState: (instance, state) => instance.setComponentState(state),
   title: 'Pull Requests',
 }

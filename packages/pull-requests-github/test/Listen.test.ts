@@ -63,6 +63,7 @@ test('listen', async () => {
           kind: 'virtualDom',
           name: undefined,
           preferredLocation: 'sideBar',
+          stateful: true,
           title: 'Pull Requests',
         },
       ],
