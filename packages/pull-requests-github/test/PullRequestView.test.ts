@@ -1,5 +1,7 @@
 import type { GitHubRepository, PullRequestData, PullRequestFilter, PullRequestListItem } from '@lvce-editor/pull-request-shared'
 import { afterEach, expect, jest, test } from '@jest/globals'
+import { WhenExpression } from '@lvce-editor/constants'
+import { RendererWorker } from '@lvce-editor/rpc-registry'
 import { create, openActiveInstance, refreshActiveInstance } from '../src/parts/PullRequestView/PullRequestView.ts'
 
 const repository: GitHubRepository = {
@@ -105,6 +107,41 @@ test('switches between open and closed pull requests', async () => {
 
   expect(dependencies.fetchPullRequests).toHaveBeenCalledTimes(2)
   expect(view.saveState()).toEqual({ filter: 'closed' })
+  view.dispose()
+})
+
+test('moves keyboard focus context to the pull request form', async () => {
+  using mockRpc = RendererWorker.registerMockRpc({
+    'Focus.setFocus': () => {},
+  })
+  const view = await create(undefined, createDependencies())
+
+  await view.handleEvent({
+    name: 'base',
+    type: 'focus',
+  })
+
+  expect(view.getContext()).toEqual({
+    'github.pullRequests.createFocus': true,
+    'github.pullRequests.createFocus.base': true,
+  })
+  expect(mockRpc.invocations).toEqual([])
+
+  await view.handleEvent({
+    name: 'base',
+    type: 'click',
+  })
+
+  expect(mockRpc.invocations).toContainEqual(['Focus.setFocus', WhenExpression.FocusViewletList])
+
+  const oldContext = view.getContext()
+  await view.focusNextCreateControl()
+  const newContext = view.getContext()
+  expect(newContext).toEqual({
+    'github.pullRequests.createFocus': true,
+    'github.pullRequests.createFocus.head': true,
+  })
+  expect(view.renderFocus(oldContext, newContext)).toBe('[name="head"]')
   view.dispose()
 })
 

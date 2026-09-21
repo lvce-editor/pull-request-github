@@ -1,5 +1,6 @@
 import type { View, ViewContext, ViewEvent, VirtualDomViewInstance } from '@lvce-editor/api'
 import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
+import { WhenExpression } from '@lvce-editor/constants'
 import {
   Closed,
   Open,
@@ -8,6 +9,7 @@ import {
   type PullRequestFilter,
   type PullRequestListItem,
 } from '@lvce-editor/pull-request-shared'
+import { RendererWorker } from '@lvce-editor/rpc-registry'
 import type { PullRequestViewSavedState } from '../PullRequestViewState/PullRequestViewState.ts'
 import * as CreatePullRequestView from '../CreatePullRequestView/CreatePullRequestView.ts'
 import { getErrorInfo } from '../GetErrorInfo/GetErrorInfo.ts'
@@ -19,13 +21,20 @@ import * as PullRequestViewStates from '../PullRequestViewState/PullRequestViewS
 
 export interface PullRequestViewInstance extends VirtualDomViewInstance {
   readonly dispose: () => void
+  readonly focusCreateControl: (direction: -1 | 1) => Promise<void>
+  readonly focusNextCreateControl: () => Promise<void>
+  readonly focusPreviousCreateControl: () => Promise<void>
+  readonly getContext: () => Readonly<Record<string, boolean>>
   readonly handleCreateInput: (name: unknown, value: unknown) => void
   readonly handleEvent: (event: ViewEvent) => Promise<void>
+  readonly handlePullRequestBlur: (name: unknown) => void
   readonly handlePullRequestClick: (name: unknown) => Promise<void>
   readonly handlePullRequestFilterInput: (value: unknown) => void
+  readonly handlePullRequestFocus: (name: unknown) => Promise<void>
   readonly openOnGitHub: (open: (url: string) => Promise<void>) => Promise<void>
   readonly refresh: () => Promise<void>
   readonly render: () => readonly VirtualDomNode[]
+  readonly renderFocus: (oldContext: Readonly<Record<string, boolean>>, newContext: Readonly<Record<string, boolean>>) => string
   readonly saveState: () => PullRequestViewSavedState
   readonly startCreate: () => Promise<void>
 }
@@ -45,6 +54,9 @@ const defaultDependencies: PullRequestViewDependencies = {
 }
 
 export const viewId = 'github.pullRequests'
+export const contextKeyCreatePullRequestFocus = 'github.pullRequests.createFocus'
+export const focusableCreateControlNames = ['base', 'head', 'title', 'description', 'cancelCreatePullRequest', 'submitCreatePullRequest'] as const
+const getFocusTargetContextKey = (name: string): string => `${contextKeyCreatePullRequestFocus}.${name}`
 
 const activeInstances = new Set<PullRequestViewInstance>()
 
@@ -64,6 +76,14 @@ export const openActiveInstance = async (open: (url: string) => Promise<void>): 
   await getActiveInstance()?.openOnGitHub(open)
 }
 
+export const focusNextActiveInstance = async (): Promise<void> => {
+  await getActiveInstance()?.focusNextCreateControl()
+}
+
+export const focusPreviousActiveInstance = async (): Promise<void> => {
+  await getActiveInstance()?.focusPreviousCreateControl()
+}
+
 const isSavedState = (value: unknown): value is PullRequestViewSavedState => {
   return Boolean(value && typeof value === 'object')
 }
@@ -80,6 +100,9 @@ export const create = (
   dependencies: PullRequestViewDependencies = defaultDependencies,
 ): Promise<PullRequestViewInstance> => {
   let creation: ReturnType<typeof CreatePullRequestView.create> | undefined
+  let focusedCreateControl = ''
+  let createFocusActive = false
+  let focusRequested = false
   let state = PullRequestViewStates.createDefaultState(getSavedState(context))
 
   const requestRerender = async (): Promise<void> => {
@@ -301,10 +324,43 @@ export const create = (
         creation?.dispose()
         activeInstances.delete(instance)
       },
+      async focusCreateControl(direction: -1 | 1): Promise<void> {
+        const currentIndex = focusableCreateControlNames.indexOf(focusedCreateControl as (typeof focusableCreateControlNames)[number])
+        const nextIndex =
+          currentIndex === -1 ? 0 : (currentIndex + direction + focusableCreateControlNames.length) % focusableCreateControlNames.length
+        const name = focusableCreateControlNames[nextIndex]
+        focusedCreateControl = name
+        createFocusActive = true
+        focusRequested = true
+        await requestRerender()
+      },
+      async focusNextCreateControl(): Promise<void> {
+        await instance.focusCreateControl(1)
+      },
+      async focusPreviousCreateControl(): Promise<void> {
+        await instance.focusCreateControl(-1)
+      },
+      getContext(): Readonly<Record<string, boolean>> {
+        if (!createFocusActive || !focusedCreateControl) {
+          return {}
+        }
+        return {
+          [contextKeyCreatePullRequestFocus]: true,
+          [getFocusTargetContextKey(focusedCreateControl)]: true,
+        }
+      },
       handleCreateInput(name: unknown, value: unknown): void {
         creation?.input(name, value)
       },
       async handleEvent(event: ViewEvent): Promise<void> {
+        if (event.type === 'focus') {
+          await instance.handlePullRequestFocus(event.name)
+          return
+        }
+        if (event.type === 'blur') {
+          instance.handlePullRequestBlur(event.name)
+          return
+        }
         if (creation && event.type === 'input') {
           creation.input(event.name, event.value)
           return
@@ -318,8 +374,26 @@ export const create = (
         }
         await instance.handlePullRequestClick(event.name)
       },
+      handlePullRequestBlur(name: unknown): void {
+        if (name !== focusedCreateControl) {
+          return
+        }
+
+        focusedCreateControl = ''
+        createFocusActive = false
+        focusRequested = false
+      },
       async handlePullRequestClick(name: unknown): Promise<void> {
         if (typeof name !== 'string') {
+          return
+        }
+
+        const isCreateField = ['base', 'head', 'title', 'description'].includes(name)
+        if (isCreateField) {
+          focusedCreateControl = name
+          createFocusActive = true
+          focusRequested = false
+          await RendererWorker.setFocus(WhenExpression.FocusViewletList)
           return
         }
 
@@ -343,6 +417,14 @@ export const create = (
           query: typeof value === 'string' ? value : '',
         }
       },
+      async handlePullRequestFocus(name: unknown): Promise<void> {
+        if (!(typeof name === 'string' && (focusableCreateControlNames as readonly string[]).includes(name))) {
+          return
+        }
+
+        focusedCreateControl = name
+        createFocusActive = true
+      },
       async openOnGitHub(open: (url: string) => Promise<void>): Promise<void> {
         const { url } = state
         if (url) {
@@ -360,6 +442,18 @@ export const create = (
       },
       render(): readonly VirtualDomNode[] {
         return creation ? creation.render() : getPullRequestVirtualDom(state)
+      },
+      renderFocus(oldContext: Readonly<Record<string, boolean>>, newContext: Readonly<Record<string, boolean>>): string {
+        if (
+          focusedCreateControl &&
+          focusRequested &&
+          newContext[getFocusTargetContextKey(focusedCreateControl)] &&
+          !oldContext[getFocusTargetContextKey(focusedCreateControl)]
+        ) {
+          focusRequested = false
+          return `[name="${focusedCreateControl}"]`
+        }
+        return ''
       },
       saveState(): PullRequestViewSavedState {
         const { filter } = state
@@ -384,6 +478,14 @@ export const view: View<PullRequestViewInstance> = {
   create,
   displayName: 'Pull Requests',
   eventListeners: [
+    {
+      name: 'handlePullRequestFocus',
+      params: ['handlePullRequestFocus', 'event.currentTarget.name'],
+    },
+    {
+      name: 'handlePullRequestBlur',
+      params: ['handlePullRequestBlur', 'event.currentTarget.name'],
+    },
     { name: 'handleCreateInput', params: ['handleCreateInput', 'event.currentTarget.name', 'event.currentTarget.value'] },
     {
       name: 'handlePullRequestClick',
