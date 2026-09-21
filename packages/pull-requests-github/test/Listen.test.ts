@@ -32,12 +32,22 @@ test('listen', async () => {
       'PullRequestsGithub.setPullRequestListResponse',
       'PullRequestsGithub.setPullRequestResponse',
       'PullRequestsGithub.clearPullRequestData',
+      'PullRequestsGithub.focusNextCreateControl',
+      'PullRequestsGithub.focusPreviousCreateControl',
     ])
     expect(getViewRegistrySnapshot()).toEqual({
       views: [
         {
           displayName: 'Pull Requests',
           eventListeners: [
+            {
+              name: 'handlePullRequestFocus',
+              params: ['handlePullRequestFocus', 'event.currentTarget.name'],
+            },
+            {
+              name: 'handlePullRequestBlur',
+              params: ['handlePullRequestBlur', 'event.currentTarget.name'],
+            },
             { name: 'handleCreateInput', params: ['handleCreateInput', 'event.currentTarget.name', 'event.currentTarget.value'] },
             {
               name: 'handlePullRequestClick',

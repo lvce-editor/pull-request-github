@@ -19,7 +19,9 @@
     "onCommand:PullRequestsGithub.setPullRequestResponse",
     "onCommand:PullRequestsGithub.create",
     "onCommand:PullRequestsGithub.setCreationFixture",
-    "onCommand:PullRequestsGithub.getCreateRequests"
+    "onCommand:PullRequestsGithub.getCreateRequests",
+    "onCommand:PullRequestsGithub.focusNextCreateControl",
+    "onCommand:PullRequestsGithub.focusPreviousCreateControl"
   ],
   "commands": [
     {
@@ -74,6 +76,16 @@
     {
       "id": "PullRequestsGithub.getCreateRequests",
       "label": "Get Mock Pull Request Creation Requests"
+    },
+    {
+      "id": "PullRequestsGithub.focusNextCreateControl",
+      "label": "Focus next Create Pull Request control",
+      "internal": true
+    },
+    {
+      "id": "PullRequestsGithub.focusPreviousCreateControl",
+      "label": "Focus previous Create Pull Request control",
+      "internal": true
     }
   ],
   "views": [
@@ -83,6 +95,18 @@
       "title": "Pull Requests",
       "icon": "media/git-pull-request.svg",
       "kind": "virtualDom"
+    }
+  ],
+  "keybindings": [
+    {
+      "key": "Tab",
+      "command": "PullRequestsGithub.focusNextCreateControl",
+      "when": "github.pullRequests.createFocus"
+    },
+    {
+      "key": "Shift+Tab",
+      "command": "PullRequestsGithub.focusPreviousCreateControl",
+      "when": "github.pullRequests.createFocus"
     }
   ]
 }

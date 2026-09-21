@@ -13,6 +13,8 @@ export const SetPullRequestListError = 'PullRequestsGithub.setPullRequestListErr
 export const SetPullRequestListResponse = 'PullRequestsGithub.setPullRequestListResponse'
 export const SetPullRequestResponse = 'PullRequestsGithub.setPullRequestResponse'
 export const ClearPullRequestData = 'PullRequestsGithub.clearPullRequestData'
+export const FocusNextCreateControl = 'PullRequestsGithub.focusNextCreateControl'
+export const FocusPreviousCreateControl = 'PullRequestsGithub.focusPreviousCreateControl'
 
 export const commandIds = [
   'PullRequestsGithub.create',
@@ -28,6 +30,8 @@ export const commandIds = [
   SetPullRequestListResponse,
   SetPullRequestResponse,
   ClearPullRequestData,
+  FocusNextCreateControl,
+  FocusPreviousCreateControl,
 ]
 
 type ExecuteCommand = (id: string, ...args: readonly unknown[]) => Promise<unknown>
@@ -70,6 +74,8 @@ export const registerCommands = (): void => {
     execute: show,
     id: Show,
   })
+  registerCommand({ execute: PullRequestView.focusNextActiveInstance, id: FocusNextCreateControl })
+  registerCommand({ execute: PullRequestView.focusPreviousActiveInstance, id: FocusPreviousCreateControl })
   registerCommand({
     execute: PullRequestView.refreshActiveInstance,
     id: Refresh,

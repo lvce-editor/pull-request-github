@@ -11,7 +11,16 @@ const repositoryLabel: VirtualDomNode = { childCount: 1, className: 'PullRequest
 const statusNode: VirtualDomNode = { childCount: 1, role: AriaRoles.Status, type: E.Div }
 const actions: VirtualDomNode = { childCount: 2, className: 'PullRequestCreateActions', type: E.Div }
 const button = (name: string, label: string, disabled = false): readonly VirtualDomNode[] => [
-  { childCount: 1, className: 'PullRequestCreateButton', disabled, name, onClick: Events.HandleClick, type: E.Button },
+  {
+    childCount: 1,
+    className: 'PullRequestCreateButton',
+    disabled,
+    name,
+    onBlur: Events.HandleBlur,
+    onClick: Events.HandleClick,
+    onFocus: Events.HandleFocus,
+    type: E.Button,
+  },
   text(label),
 ]
 const field = (state: CreateState, name: 'base' | 'head' | 'title' | 'description', label: string): readonly VirtualDomNode[] => {
@@ -25,6 +34,8 @@ const field = (state: CreateState, name: 'base' | 'head' | 'title' | 'descriptio
       className: 'PullRequestCreateInput',
       disabled: loading || busy || Boolean(number),
       name,
+      onBlur: Events.HandleBlur,
+      onFocus: Events.HandleFocus,
       onInput: Events.HandleCreateInput,
       type: name === 'description' ? E.TextArea : E.Input,
       value: state[name],

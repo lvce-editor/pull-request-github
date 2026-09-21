@@ -1,3 +1,5 @@
 export const HandleClick = 'handlePullRequestClick'
+export const HandleBlur = 'handlePullRequestBlur'
+export const HandleFocus = 'handlePullRequestFocus'
 export const HandleInput = 'handlePullRequestFilterInput'
 export const HandleCreateInput = 'handleCreateInput'
