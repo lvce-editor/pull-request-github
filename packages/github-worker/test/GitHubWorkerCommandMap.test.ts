@@ -9,6 +9,7 @@ test('exposes github logic over rpc', () => {
       'GitHub.getCreateRequests',
       'GitHub.clearPullRequestData',
       'GitHub.fetchPullRequest',
+      'GitHub.fetchPullRequestFileDiff',
       'GitHub.fetchPullRequests',
       'GitHub.setPullRequestData',
       'GitHub.setPullRequestError',
@@ -16,6 +17,7 @@ test('exposes github logic over rpc', () => {
       'GitHub.setPullRequestListError',
       'GitHub.setPullRequestListResponse',
       'GitHub.setPullRequestResponse',
+      'GitHub.setPullRequestFileDiff',
       'GitHub.validatePullRequestUrl',
     ].toSorted((a, b) => a.localeCompare(b)),
   )

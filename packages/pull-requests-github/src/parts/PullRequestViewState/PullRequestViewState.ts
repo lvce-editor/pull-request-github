@@ -21,6 +21,14 @@ export const Detail = 'detail'
 
 export type PullRequestScreen = typeof Detail | typeof List
 
+export type PullRequestFileDiffStatus = 'error' | 'hidden' | 'loaded' | 'loading' | 'unavailable'
+
+export interface PullRequestFileDiffState {
+  readonly error?: string
+  readonly patch?: string
+  readonly status: PullRequestFileDiffStatus
+}
+
 export interface PullRequestViewSavedState {
   readonly filter?: PullRequestFilter
 }
@@ -30,6 +38,7 @@ export interface PullRequestViewState {
   readonly detailTab: PullRequestDetailTab
   readonly error: string
   readonly errorCode: string
+  readonly fileDiffs: Readonly<Record<number, PullRequestFileDiffState>>
   readonly filter: PullRequestFilter
   readonly openPullRequests: readonly PullRequestListItem[]
   readonly pullRequest: PullRequestData | undefined
@@ -47,6 +56,7 @@ export const createDefaultState = (savedState: PullRequestViewSavedState | undef
     detailTab: PullRequestDetailTabs.Overview,
     error: '',
     errorCode: '',
+    fileDiffs: {},
     filter: savedState?.filter === Closed ? Closed : Open,
     openPullRequests: [],
     pullRequest: undefined,

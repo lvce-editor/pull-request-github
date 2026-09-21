@@ -31,6 +31,7 @@ test('listen', async () => {
       'PullRequestsGithub.setPullRequestListError',
       'PullRequestsGithub.setPullRequestListResponse',
       'PullRequestsGithub.setPullRequestResponse',
+      'PullRequestsGithub.setPullRequestFileDiff',
       'PullRequestsGithub.clearPullRequestData',
       'PullRequestsGithub.focusNextCreateControl',
       'PullRequestsGithub.focusPreviousCreateControl',

@@ -837,6 +837,22 @@
   text-align: center;
 }
 
+.PullRequestDiffAction {
+  display: block;
+  margin: 0 auto 12px;
+  padding: 4px 10px;
+  color: var(--PullRequestForeground);
+  background: var(--PullRequestSurface);
+  border: 1px solid var(--PullRequestBorder);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.PullRequestDiffAction:hover {
+  background: var(--PullRequestSurfaceRaised);
+}
+
 @container (max-width: 560px) {
   .PullRequestOverview {
     grid-template-columns: minmax(0, 1fr);

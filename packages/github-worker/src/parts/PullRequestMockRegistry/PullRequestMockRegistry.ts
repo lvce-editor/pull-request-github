@@ -32,6 +32,7 @@ export type PullRequestMock =
   PullRequestListMockData | PullRequestListMockResponse | PullRequestMockData | PullRequestMockError | PullRequestMockResponse
 
 const mocks = new Map<string, PullRequestMock>()
+const fileDiffMocks = new Map<string, string>()
 
 export const getPullRequestApiUrl = (url: string): string => {
   const location = parsePullRequestUrl(url)
@@ -88,6 +89,17 @@ export const setPullRequestListResponse = (owner: string, repo: string, state: P
 
 export const clearPullRequestData = (): void => {
   mocks.clear()
+  fileDiffMocks.clear()
+}
+
+const getPullRequestFileDiffMockKey = (url: string, filename: string): string => `${getPullRequestApiUrl(url)}:${filename}`
+
+export const setPullRequestFileDiff = (url: string, filename: string, diff: string): void => {
+  fileDiffMocks.set(getPullRequestFileDiffMockKey(url, filename), diff)
+}
+
+export const getMockPullRequestFileDiff = (url: string, filename: string): string | undefined => {
+  return fileDiffMocks.get(getPullRequestFileDiffMockKey(url, filename))
 }
 
 export const getMockPullRequest = (url: string): PullRequestMock | undefined => {
