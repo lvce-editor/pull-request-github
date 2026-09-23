@@ -66,7 +66,7 @@ const renderDetailContent = (state: PullRequestViewState): readonly VirtualDomNo
 }
 
 const introNode: VirtualDomNode = {
-  childCount: 2,
+  childCount: 1,
   className: 'PullRequestIntro',
   type: VirtualDomElements.Div,
 }
@@ -116,12 +116,6 @@ const listCardNode: VirtualDomNode = {
   childCount: 2,
   className: 'PullRequestListCard',
   type: VirtualDomElements.Div,
-}
-
-const titleNode: VirtualDomNode = {
-  childCount: 1,
-  className: 'PullRequestTitle',
-  type: VirtualDomElements.H2,
 }
 
 const descriptionNode: VirtualDomNode = {
@@ -224,8 +218,6 @@ const renderListView = (state: PullRequestViewState): readonly VirtualDomNode[] 
     listViewNode,
     listHeaderNode,
     introNode,
-    titleNode,
-    text('Pull Requests'),
     descriptionNode,
     text(repositoryLabel),
     listActionsNode,
