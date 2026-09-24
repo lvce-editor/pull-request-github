@@ -1,16 +1,37 @@
 .PullRequestView {
   --PullRequestBackground: var(--PanelBackground, var(--vscode-panel-background, var(--MainBackground, var(--vscode-editor-background, #ffffff))));
   --PullRequestTitlebar: var(--SideBarBackground, var(--vscode-sideBar-background, var(--WidgetBackground, var(--PullRequestBackground))));
-  --PullRequestSurface: var(--WidgetBackground, var(--vscode-editorWidget-background, var(--InputBoxBackground, var(--vscode-input-background, var(--PullRequestBackground)))));
-  --PullRequestSurfaceRaised: var(--ListHoverBackground, var(--vscode-toolbar-hoverBackground, var(--vscode-list-hoverBackground, color-mix(in srgb, var(--PullRequestForeground) 8%, var(--PullRequestSurface)))));
-  --PullRequestBorder: var(--PanelBorderTopColor, var(--InputBoxBorder, var(--vscode-widget-border, var(--vscode-panel-border, color-mix(in srgb, var(--PullRequestForeground) 20%, transparent)))));
+  --PullRequestSurface: var(
+    --WidgetBackground,
+    var(--vscode-editorWidget-background, var(--InputBoxBackground, var(--vscode-input-background, var(--PullRequestBackground))))
+  );
+  --PullRequestSurfaceRaised: var(
+    --ListHoverBackground,
+    var(
+      --vscode-toolbar-hoverBackground,
+      var(--vscode-list-hoverBackground, color-mix(in srgb, var(--PullRequestForeground) 8%, var(--PullRequestSurface)))
+    )
+  );
+  --PullRequestBorder: var(
+    --PanelBorderTopColor,
+    var(--InputBoxBorder, var(--vscode-widget-border, var(--vscode-panel-border, color-mix(in srgb, var(--PullRequestForeground) 20%, transparent))))
+  );
   --PullRequestForeground: var(--PanelTabActiveForeground, var(--ListForeground, var(--vscode-foreground, #333333)));
-  --PullRequestMuted: var(--PanelTabForeground, var(--DescriptionForeground, var(--vscode-descriptionForeground, var(--vscode-disabledForeground, color-mix(in srgb, var(--PullRequestForeground) 65%, transparent)))));
+  --PullRequestMuted: var(
+    --PanelTabForeground,
+    var(
+      --DescriptionForeground,
+      var(--vscode-descriptionForeground, var(--vscode-disabledForeground, color-mix(in srgb, var(--PullRequestForeground) 65%, transparent)))
+    )
+  );
   --PullRequestAccent: var(--FocusBorder, var(--FocusOutline, var(--vscode-focusBorder, var(--vscode-textLink-foreground, #005fb8))));
   --PullRequestInfo: var(--GitDecorationModifiedResourceForeground, var(--vscode-charts-blue, var(--vscode-textLink-foreground, #005fb8)));
   --PullRequestWarn: var(--vscode-charts-orange, var(--vscode-charts-yellow, #895e00));
   --PullRequestOpen: var(--TestingIconPassed, var(--GitDecorationAddedResourceForeground, var(--vscode-charts-green, #388a34)));
-  --PullRequestClosed: var(--TestingIconFailed, var(--GitDecorationDeletedResourceForeground, var(--vscode-charts-red, var(--vscode-errorForeground, #a1260d))));
+  --PullRequestClosed: var(
+    --TestingIconFailed,
+    var(--GitDecorationDeletedResourceForeground, var(--vscode-charts-red, var(--vscode-errorForeground, #a1260d)))
+  );
   --PullRequestDraft: var(--vscode-disabledForeground, var(--PanelTabForeground, var(--vscode-descriptionForeground, #717171)));
   --PullRequestPurple: var(--vscode-charts-purple, var(--GitDecorationModifiedResourceForeground, var(--vscode-charts-blue, #6f42c1)));
   box-sizing: border-box;
@@ -575,8 +596,14 @@
 .PullRequestMessageError {
   min-height: 0;
   justify-content: flex-start;
-  color: var(--InputValidationErrorForeground, var(--vscode-inputValidation-errorForeground, var(--vscode-errorForeground, var(--PullRequestForeground))));
-  background: var(--InputValidationErrorBackground, var(--vscode-inputValidation-errorBackground, color-mix(in srgb, var(--PullRequestClosed) 12%, transparent)));
+  color: var(
+    --InputValidationErrorForeground,
+    var(--vscode-inputValidation-errorForeground, var(--vscode-errorForeground, var(--PullRequestForeground)))
+  );
+  background: var(
+    --InputValidationErrorBackground,
+    var(--vscode-inputValidation-errorBackground, color-mix(in srgb, var(--PullRequestClosed) 12%, transparent))
+  );
   border-color: var(--InputValidationErrorBorder, var(--vscode-inputValidation-errorBorder, var(--PullRequestClosed)));
   border-style: solid;
 }
