@@ -1,18 +1,18 @@
 .PullRequestView {
-  --PullRequestBackground: oklch(19.6% 0.011 258);
-  --PullRequestTitlebar: oklch(17.1% 0.011 258);
-  --PullRequestSurface: oklch(22.9% 0.012 258);
-  --PullRequestSurfaceRaised: oklch(27.6% 0.014 258);
-  --PullRequestBorder: oklch(30.5% 0.014 258);
-  --PullRequestForeground: oklch(90.6% 0.008 258);
-  --PullRequestMuted: oklch(66% 0.012 258);
-  --PullRequestAccent: oklch(62% 0.15 250);
-  --PullRequestInfo: oklch(70% 0.13 235);
-  --PullRequestWarn: oklch(78% 0.13 85);
-  --PullRequestOpen: oklch(68% 0.16 150);
-  --PullRequestClosed: oklch(62% 0.19 25);
-  --PullRequestDraft: oklch(66% 0.012 258);
-  --PullRequestPurple: oklch(65% 0.18 300);
+  --PullRequestBackground: var(--PanelBackground, var(--vscode-panel-background, var(--MainBackground, var(--vscode-editor-background, #ffffff))));
+  --PullRequestTitlebar: var(--SideBarBackground, var(--vscode-sideBar-background, var(--WidgetBackground, var(--PullRequestBackground))));
+  --PullRequestSurface: var(--WidgetBackground, var(--vscode-editorWidget-background, var(--InputBoxBackground, var(--vscode-input-background, var(--PullRequestBackground)))));
+  --PullRequestSurfaceRaised: var(--ListHoverBackground, var(--vscode-toolbar-hoverBackground, var(--vscode-list-hoverBackground, color-mix(in srgb, var(--PullRequestForeground) 8%, var(--PullRequestSurface)))));
+  --PullRequestBorder: var(--PanelBorderTopColor, var(--InputBoxBorder, var(--vscode-widget-border, var(--vscode-panel-border, color-mix(in srgb, var(--PullRequestForeground) 20%, transparent)))));
+  --PullRequestForeground: var(--PanelTabActiveForeground, var(--ListForeground, var(--vscode-foreground, #333333)));
+  --PullRequestMuted: var(--PanelTabForeground, var(--DescriptionForeground, var(--vscode-descriptionForeground, var(--vscode-disabledForeground, color-mix(in srgb, var(--PullRequestForeground) 65%, transparent)))));
+  --PullRequestAccent: var(--FocusBorder, var(--FocusOutline, var(--vscode-focusBorder, var(--vscode-textLink-foreground, #005fb8))));
+  --PullRequestInfo: var(--GitDecorationModifiedResourceForeground, var(--vscode-charts-blue, var(--vscode-textLink-foreground, #005fb8)));
+  --PullRequestWarn: var(--vscode-charts-orange, var(--vscode-charts-yellow, #895e00));
+  --PullRequestOpen: var(--TestingIconPassed, var(--GitDecorationAddedResourceForeground, var(--vscode-charts-green, #388a34)));
+  --PullRequestClosed: var(--TestingIconFailed, var(--GitDecorationDeletedResourceForeground, var(--vscode-charts-red, var(--vscode-errorForeground, #a1260d))));
+  --PullRequestDraft: var(--vscode-disabledForeground, var(--PanelTabForeground, var(--vscode-descriptionForeground, #717171)));
+  --PullRequestPurple: var(--vscode-charts-purple, var(--GitDecorationModifiedResourceForeground, var(--vscode-charts-blue, #6f42c1)));
   box-sizing: border-box;
   container-type: inline-size;
   display: flex;
@@ -533,11 +533,11 @@
 }
 
 .PullRequestDiffStatAdditions {
-  color: oklch(78% 0.14 150);
+  color: var(--PullRequestOpen);
 }
 
 .PullRequestDiffStatDeletions {
-  color: oklch(75% 0.15 25);
+  color: var(--PullRequestClosed);
 }
 
 .PullRequestMessage,
@@ -575,9 +575,9 @@
 .PullRequestMessageError {
   min-height: 0;
   justify-content: flex-start;
-  color: var(--InputValidationErrorForeground, #f48771);
-  background: var(--InputValidationErrorBackground, rgb(160 40 40 / 16%));
-  border-color: var(--InputValidationErrorBorder, #be5050);
+  color: var(--InputValidationErrorForeground, var(--vscode-inputValidation-errorForeground, var(--vscode-errorForeground, var(--PullRequestForeground))));
+  background: var(--InputValidationErrorBackground, var(--vscode-inputValidation-errorBackground, color-mix(in srgb, var(--PullRequestClosed) 12%, transparent)));
+  border-color: var(--InputValidationErrorBorder, var(--vscode-inputValidation-errorBorder, var(--PullRequestClosed)));
   border-style: solid;
 }
 
@@ -789,11 +789,11 @@
 }
 
 .PullRequestFileAdditions {
-  color: var(--TestingIconPassed, #73c991);
+  color: var(--PullRequestOpen);
 }
 
 .PullRequestFileDeletions {
-  color: var(--TestingIconFailed, #f14c4c);
+  color: var(--PullRequestClosed);
 }
 
 .PullRequestDiff {
@@ -801,7 +801,7 @@
   overflow: auto;
   padding: 7px 0;
   color: var(--PullRequestForeground);
-  background: color-mix(in srgb, var(--PullRequestBackground) 88%, black 12%);
+  background: color-mix(in srgb, var(--PullRequestBackground) 96%, var(--PullRequestForeground) 4%);
   font-family: var(--EditorFontFamily, monospace);
   font-size: 11px;
   line-height: 1.55;
@@ -816,13 +816,13 @@
 }
 
 .PullRequestDiffLineAddition {
-  color: color-mix(in srgb, var(--TestingIconPassed, #73c991) 82%, var(--PullRequestForeground));
-  background: color-mix(in srgb, var(--TestingIconPassed, #73c991) 13%, transparent);
+  color: color-mix(in srgb, var(--PullRequestOpen) 82%, var(--PullRequestForeground));
+  background: color-mix(in srgb, var(--PullRequestOpen) 13%, transparent);
 }
 
 .PullRequestDiffLineDeletion {
-  color: color-mix(in srgb, var(--TestingIconFailed, #f14c4c) 82%, var(--PullRequestForeground));
-  background: color-mix(in srgb, var(--TestingIconFailed, #f14c4c) 13%, transparent);
+  color: color-mix(in srgb, var(--PullRequestClosed) 82%, var(--PullRequestForeground));
+  background: color-mix(in srgb, var(--PullRequestClosed) 13%, transparent);
 }
 
 .PullRequestDiffLineHunk {
@@ -943,7 +943,8 @@ textarea.PullRequestCreateInput {
   cursor: pointer;
 }
 .PullRequestCreateButton[name='submitCreatePullRequest'] {
-  background: var(--ButtonBackground, #27676a);
+  background: var(--ButtonBackground, var(--vscode-button-background, var(--PullRequestSurfaceRaised)));
+  color: var(--ButtonForeground, var(--vscode-button-foreground, var(--PullRequestForeground)));
 }
 .PullRequestCreateButton:disabled {
   opacity: 0.6;
