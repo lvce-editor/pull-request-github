@@ -1,5 +1,6 @@
 {
   "id": "github.pull-requests",
+  "repository": "https://github.com/lvce-editor/pull-request-github",
   "description": "Create and review GitHub pull requests in the editor.",
   "icon": "media/icon.svg",
   "browser": "dist/pullRequestWorkerMain.js",
