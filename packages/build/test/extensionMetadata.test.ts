@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import test from 'node:test'
 import { root } from '../src/root.ts'
 
-test('packages the release version and extension description', async (t) => {
+test('packages the release version, extension description, and repository', async (t) => {
   const testDir = await mkdtemp(join(tmpdir(), 'pull-request-github-metadata-'))
   t.after(async () => {
     await rm(testDir, { force: true, recursive: true })
@@ -26,6 +26,7 @@ test('packages the release version and extension description', async (t) => {
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
   assert.equal(manifest.version, '1.2.3')
   assert.equal(manifest.description, 'Create and review GitHub pull requests in the editor.')
+  assert.equal(manifest.repository, 'https://github.com/lvce-editor/pull-request-github')
 })
 
 test('keeps the pull request creation fixture out of the command palette', async () => {
