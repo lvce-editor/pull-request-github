@@ -17,6 +17,7 @@ const pullRequest: PullRequestListItem = {
   draft: false,
   headBranch: 'feature',
   labels: [{ color: '1d76db', name: 'feature' }],
+  nodeId: 'PR_node_42',
   number: 42,
   title: 'Add feature',
   updatedAt: '2026-08-18T10:00:00.000Z',
@@ -46,11 +47,15 @@ const pullRequestDetail: PullRequestData = {
   title: pullRequest.title,
 }
 
+type PullRequestAction = 'archive' | 'close' | 'unarchive'
+
 interface Dependencies {
   readonly fetchPullRequest: (url: string) => Promise<any>
   readonly fetchPullRequestFileDiff: (url: string, filename: string) => Promise<string | undefined>
   readonly fetchPullRequests: (repository: GitHubRepository, filter: PullRequestFilter) => Promise<readonly PullRequestListItem[]>
   readonly getRepository: () => Promise<GitHubRepository>
+  readonly getToken: () => Promise<string>
+  readonly mutatePullRequest: (token: string, action: PullRequestAction, pullRequestId: string) => Promise<void>
 }
 
 const createDependencies = (overrides: Readonly<Partial<Dependencies>> = {}): Dependencies => {
@@ -61,6 +66,10 @@ const createDependencies = (overrides: Readonly<Partial<Dependencies>> = {}): De
       .fn<(repository: GitHubRepository, filter: PullRequestFilter) => Promise<readonly PullRequestListItem[]>>()
       .mockResolvedValue([pullRequest]),
     getRepository: jest.fn<() => Promise<GitHubRepository>>().mockResolvedValue(repository),
+    getToken: jest.fn<() => Promise<string>>().mockResolvedValue('token'),
+    mutatePullRequest: jest
+      .fn<(token: string, action: 'archive' | 'close' | 'unarchive', pullRequestId: string) => Promise<void>>()
+      .mockResolvedValue(),
     ...overrides,
   }
 }
@@ -302,6 +311,42 @@ test('filters pull requests using visible list metadata', async () => {
   view.handlePullRequestFilterInput('not-found')
 
   expect(view.render().some((node) => node.text === 'No pull requests match “not-found”.')).toBe(true)
+  view.dispose()
+})
+
+test('selects pull requests and updates their status after a successful bulk action', async () => {
+  const dependencies = createDependencies()
+  const view = await create(undefined, dependencies)
+  view.handlePullRequestSelection('togglePullRequest:42', true)
+  await view.handleEvent({ name: 'togglePullRequestActionMenu', type: 'click' })
+  expect(view.render().some((node) => node.text === 'Archived')).toBe(true)
+  await view.handleEvent({ name: 'bulkPullRequest:close', type: 'click' })
+
+  expect(dependencies.getToken).toHaveBeenCalledTimes(1)
+  expect(dependencies.mutatePullRequest).toHaveBeenCalledWith('token', 'close', 'PR_node_42')
+  expect(view.getComponentState().openPullRequests).toEqual([])
+  expect(view.getComponentState().closedPullRequests).toEqual([pullRequest])
+  expect(view.getComponentState().selectedPullRequestNumbers).toEqual([])
+  view.dispose()
+})
+
+test('preserves failed items for retry after mixed bulk results', async () => {
+  const secondPullRequest: PullRequestListItem = { ...pullRequest, nodeId: 'PR_node_43', number: 43, title: 'Second pull request' }
+  const fetchPullRequests = jest
+    .fn<(repository: GitHubRepository, filter: PullRequestFilter) => Promise<readonly PullRequestListItem[]>>()
+    .mockImplementation(async (_repository, filter) => (filter === 'open' ? [pullRequest, secondPullRequest] : []))
+  const mutatePullRequest = jest
+    .fn<(token: string, action: 'archive' | 'close' | 'unarchive', pullRequestId: string) => Promise<void>>()
+    .mockResolvedValueOnce()
+    .mockRejectedValueOnce(new Error('Permission denied'))
+  const view = await create(undefined, createDependencies({ fetchPullRequests, mutatePullRequest }))
+  view.handlePullRequestSelection('toggleAllPullRequests', true)
+  await view.handleEvent({ name: 'bulkPullRequest:archive', type: 'click' })
+
+  expect(view.getComponentState().openPullRequests).toEqual([secondPullRequest])
+  expect(view.getComponentState().closedPullRequests).toEqual([{ ...pullRequest, archived: true }])
+  expect(view.getComponentState().selectedPullRequestNumbers).toEqual([43])
+  expect(view.render().some((node) => node.text === '#43: Permission denied')).toBe(true)
   view.dispose()
 })
 

@@ -11,6 +11,7 @@ import {
 } from '@lvce-editor/pull-request-shared'
 import { RendererWorker } from '@lvce-editor/rpc-registry'
 import type { PullRequestViewSavedState, PullRequestViewState } from '../PullRequestViewState/PullRequestViewState.ts'
+import * as CreatePullRequestDependencies from '../CreatePullRequestDependencies/CreatePullRequestDependencies.ts'
 import * as CreatePullRequestView from '../CreatePullRequestView/CreatePullRequestView.ts'
 import { getErrorInfo } from '../GetErrorInfo/GetErrorInfo.ts'
 import { getGitHubRepository } from '../GetGitHubRepository/GetGitHubRepository.ts'
@@ -32,6 +33,7 @@ export interface PullRequestViewInstance extends VirtualDomViewInstance {
   readonly handlePullRequestClick: (name: unknown) => Promise<void>
   readonly handlePullRequestFilterInput: (value: unknown) => void
   readonly handlePullRequestFocus: (name: unknown) => Promise<void>
+  readonly handlePullRequestSelection: (name: unknown, checked: unknown) => void
   readonly openOnGitHub: (open: (url: string) => Promise<void>) => Promise<void>
   readonly refresh: () => Promise<void>
   readonly render: () => readonly VirtualDomNode[]
@@ -48,6 +50,32 @@ interface PullRequestViewDependencies {
   readonly fetchPullRequestFileDiff: (url: string, filename: string) => Promise<string | undefined>
   readonly fetchPullRequests: (repository: GitHubRepository, filter: PullRequestFilter) => Promise<readonly PullRequestListItem[]>
   readonly getRepository: () => Promise<GitHubRepository>
+  readonly getToken?: () => Promise<string>
+  readonly mutatePullRequest?: (token: string, action: 'archive' | 'close' | 'unarchive', pullRequestId: string) => Promise<void>
+}
+
+type ActionTokenResult = Error | string
+type PullRequestAction = 'archive' | 'close' | 'unarchive'
+
+const getBulkAction = (name: string): PullRequestAction | undefined => {
+  const action = name.slice('bulkPullRequest:'.length)
+  return name.startsWith('bulkPullRequest:') && ['archive', 'close', 'unarchive'].includes(action) ? (action as PullRequestAction) : undefined
+}
+
+const getPullRequestActionFailure = async (
+  dependencies: PullRequestViewDependencies,
+  token: string,
+  action: PullRequestAction,
+  pullRequest: PullRequestListItem,
+): Promise<string | undefined> => {
+  if (!pullRequest.nodeId) return `Pull request #${pullRequest.number} is missing its GitHub ID.`
+  if (!dependencies.mutatePullRequest) return 'Pull request actions are unavailable.'
+  try {
+    await dependencies.mutatePullRequest(token, action, pullRequest.nodeId)
+    return undefined
+  } catch (error) {
+    return error instanceof Error ? error.message : 'GitHub request failed.'
+  }
 }
 
 const defaultDependencies: PullRequestViewDependencies = {
@@ -55,6 +83,8 @@ const defaultDependencies: PullRequestViewDependencies = {
   fetchPullRequestFileDiff: GitHubWorkerRpc.fetchPullRequestFileDiff,
   fetchPullRequests: GitHubWorkerRpc.fetchPullRequests,
   getRepository: getGitHubRepository,
+  getToken: CreatePullRequestDependencies.dependencies.getToken,
+  mutatePullRequest: GitHubWorkerRpc.mutatePullRequest,
 }
 
 export const viewId = 'github.pullRequests'
@@ -97,6 +127,20 @@ const getSavedState = (context: PullRequestViewContext | undefined): PullRequest
     return undefined
   }
   return context.state
+}
+
+const matchesPullRequestQuery = (pullRequest: PullRequestListItem, query: string): boolean => {
+  const searchable = [
+    pullRequest.title,
+    pullRequest.author,
+    pullRequest.headBranch,
+    pullRequest.baseBranch,
+    String(pullRequest.number),
+    ...(pullRequest.labels ?? []).map((label) => label.name),
+  ]
+    .join(' ')
+    .toLowerCase()
+  return searchable.includes(query)
 }
 
 export const create = (
@@ -149,11 +193,15 @@ export const create = (
       const [primaryPullRequests, secondaryPullRequests] = await Promise.all([fetchList(filter), fetchSecondaryList()])
       const openPullRequests = filter === Open ? primaryPullRequests : secondaryPullRequests
       const closedPullRequests = filter === Closed ? primaryPullRequests : secondaryPullRequests
+      const { selectedPullRequestNumbers } = state
       state = {
         ...state,
         closedPullRequests,
         openPullRequests,
         pullRequests: filter === Closed ? closedPullRequests : openPullRequests,
+        selectedPullRequestNumbers: selectedPullRequestNumbers.filter((number) =>
+          [...openPullRequests, ...closedPullRequests].some((item) => item.number === number),
+        ),
         status: PullRequestViewStates.Ready,
       }
     } catch (error) {
@@ -298,6 +346,70 @@ export const create = (
     await requestRerender()
   }
 
+  const getActionToken = async (): Promise<ActionTokenResult> => {
+    try {
+      const token = await dependencies.getToken?.()
+      return token || new Error('Sign in to GitHub before changing pull requests.')
+    } catch (error) {
+      return error instanceof Error ? error : new Error('Could not sign in to GitHub.')
+    }
+  }
+
+  const runBulkAction = async (action: PullRequestAction): Promise<void> => {
+    const { actionPending, closedPullRequests, openPullRequests, selectedPullRequestNumbers } = state
+    if (actionPending) return
+    const selected = [...openPullRequests, ...closedPullRequests].filter((item) => selectedPullRequestNumbers.includes(item.number))
+    state = { ...state, actionError: '', actionMenuOpen: false, actionPending: true }
+    await requestRerender()
+    const token = await getActionToken()
+    if (token instanceof Error) {
+      state = { ...state, actionError: token.message, actionPending: false }
+      await requestRerender()
+      return
+    }
+    const failures: string[] = []
+    let nextOpenPullRequests = [...openPullRequests]
+    let nextClosedPullRequests = [...closedPullRequests]
+    let nextSelectedPullRequestNumbers = [...selectedPullRequestNumbers]
+    for (const pullRequest of selected) {
+      const failure = await getPullRequestActionFailure(dependencies, token, action, pullRequest)
+      if (failure) {
+        failures.push(`#${pullRequest.number}: ${failure}`)
+        continue
+      }
+      nextSelectedPullRequestNumbers = nextSelectedPullRequestNumbers.filter((number) => number !== pullRequest.number)
+      nextOpenPullRequests = nextOpenPullRequests.filter((item) => item.number !== pullRequest.number)
+      const updated = { ...pullRequest, ...(action === 'archive' && { archived: true }), ...(action === 'unarchive' && { archived: false }) }
+      if (nextClosedPullRequests.every((item) => item.number !== updated.number)) nextClosedPullRequests.push(updated)
+      else nextClosedPullRequests = nextClosedPullRequests.map((item) => (item.number === updated.number ? updated : item))
+    }
+    const { filter } = state
+    state = {
+      ...state,
+      actionError: failures.join(' '),
+      actionPending: false,
+      closedPullRequests: nextClosedPullRequests,
+      openPullRequests: nextOpenPullRequests,
+      pullRequests: filter === Closed ? nextClosedPullRequests : nextOpenPullRequests,
+      selectedPullRequestNumbers: nextSelectedPullRequestNumbers,
+    }
+    await requestRerender()
+  }
+
+  const runBulkActionByName = async (name: string): Promise<void> => {
+    const action = getBulkAction(name)
+    if (action) await runBulkAction(action)
+  }
+
+  const handleSelectionActionClick = async (name: string): Promise<void> => {
+    if (name === 'togglePullRequestActionMenu') {
+      const { actionMenuOpen } = state
+      state = { ...state, actionMenuOpen: !actionMenuOpen }
+      return
+    }
+    await runBulkActionByName(name)
+  }
+
   const createInstance = async (): Promise<PullRequestViewInstance> => {
     await loadRepository(false)
     const handleClick = async (name: string): Promise<void> => {
@@ -320,6 +432,10 @@ export const create = (
       }
       if (name === 'refreshPullRequests') {
         await loadRepository(false)
+        return
+      }
+      if (name === 'togglePullRequestActionMenu' || name.startsWith('bulkPullRequest:')) {
+        await handleSelectionActionClick(name)
         return
       }
       if (name === 'showPullRequestList') {
@@ -493,6 +609,23 @@ export const create = (
         focusedCreateControl = name
         createFocusActive = true
       },
+      handlePullRequestSelection(name: unknown, checked: unknown): void {
+        const { pullRequests, query, selectedPullRequestNumbers } = state
+        const normalized = query.trim().toLowerCase()
+        const visible = pullRequests.filter((pullRequest) => !normalized || matchesPullRequestQuery(pullRequest, normalized))
+        const selected = new Set(selectedPullRequestNumbers)
+        if (name === 'toggleAllPullRequests') {
+          for (const pullRequest of visible) {
+            if (checked) selected.add(pullRequest.number)
+            else selected.delete(pullRequest.number)
+          }
+        } else if (typeof name === 'string' && name.startsWith('togglePullRequest:')) {
+          const number = Number(name.slice('togglePullRequest:'.length))
+          if (checked) selected.add(number)
+          else selected.delete(number)
+        }
+        state = { ...state, actionError: '', selectedPullRequestNumbers: [...selected] }
+      },
       async openOnGitHub(open: (url: string) => Promise<void>): Promise<void> {
         const { url } = state
         if (url) {
@@ -568,6 +701,7 @@ export const view: View<PullRequestViewInstance, PullRequestViewState> = {
       name: 'handlePullRequestFilterInput',
       params: ['handlePullRequestFilterInput', 'event.currentTarget.value'],
     },
+    { name: 'handlePullRequestSelection', params: ['handlePullRequestSelection', 'event.currentTarget.name', 'event.currentTarget.checked'] },
   ],
   getComponentState: (instance) => instance.getComponentState(),
   icon: 'media/git-pull-request.svg',

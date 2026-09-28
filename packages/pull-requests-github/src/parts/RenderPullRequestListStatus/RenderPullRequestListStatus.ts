@@ -46,7 +46,8 @@ export const renderPullRequestListStatus = (state: PullRequestViewState): readon
   const normalizedQuery = query.trim().toLowerCase()
   const filteredPullRequests = normalizedQuery ? pullRequests.filter((pullRequest) => matchesQuery(pullRequest, normalizedQuery)) : pullRequests
   if (status === PullRequestViewStatus.Ready && filteredPullRequests.length > 0) {
-    return renderPullRequestList(filteredPullRequests, filter)
+    const { selectedPullRequestNumbers } = state
+    return renderPullRequestList(filteredPullRequests, filter, selectedPullRequestNumbers)
   }
   if (status === PullRequestViewStatus.Ready && normalizedQuery && pullRequests.length > 0) {
     return renderMessage(`No pull requests match “${query.trim()}”.`)

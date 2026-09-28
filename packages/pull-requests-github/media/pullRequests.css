@@ -248,7 +248,23 @@
 }
 
 .PullRequestListItem {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: start;
   min-width: 0;
+  border-bottom: 1px solid var(--PullRequestBorder);
+}
+
+.PullRequestCheckbox {
+  margin: 14px 0 0 12px;
+}
+
+.PullRequestSelectionActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 12px;
   border-bottom: 1px solid var(--PullRequestBorder);
 }
 

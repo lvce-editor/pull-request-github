@@ -1,6 +1,6 @@
 import { afterEach, expect, jest, test } from '@jest/globals'
 import { PullRequestError } from '@lvce-editor/pull-request-shared'
-import { getCreateRequests, request, setCreateResponses } from '../src/parts/CreatePullRequestApi/CreatePullRequestApi.ts'
+import { getCreateRequests, mutatePullRequest, request, setCreateResponses } from '../src/parts/CreatePullRequestApi/CreatePullRequestApi.ts'
 afterEach(() => setCreateResponses(undefined))
 test('uses bearer authentication and fixed backend origin', async () => {
   const fetchFn = jest.fn<typeof fetch>().mockResolvedValue(Response.json({ number: 1 }))
@@ -50,4 +50,31 @@ test('missing token has an unknown error code', async () => {
   const promise = request('', '', {})
   await expect(promise).rejects.toBeInstanceOf(PullRequestError)
   await expect(promise).rejects.toHaveProperty('code', 'E_UNKNOWN')
+})
+
+test.each(['archive', 'close', 'unarchive'] as const)('sends the %s GraphQL mutation', async (action) => {
+  const fetchFn = jest.fn<typeof fetch>().mockResolvedValue(Response.json({ data: {} }))
+  await mutatePullRequest('secret', action, 'PR_node_42', fetchFn)
+  const [, options] = fetchFn.mock.calls[0]
+  const body = JSON.parse(options?.body as string)
+  expect(fetchFn).toHaveBeenCalledWith(
+    'https://api.github.com/graphql',
+    expect.objectContaining({
+      headers: { Accept: 'application/vnd.github+json', Authorization: 'Bearer secret', 'Content-Type': 'application/json' },
+      method: 'POST',
+    }),
+  )
+  expect(body.query).toContain(`${action}PullRequest`)
+  expect(body.variables).toEqual({ input: { pullRequestId: 'PR_node_42' } })
+})
+
+test('reports mutation permission errors', async () => {
+  setCreateResponses([{ body: { error: 'Repository admin access required' }, status: 403 }])
+  await expect(mutatePullRequest('mock', 'archive', 'PR_node_42')).rejects.toThrow('Repository admin access required')
+  expect(getCreateRequests()).toEqual([{ body: { pullRequestId: 'PR_node_42' }, path: '/pull-requests/PR_node_42/archive' }])
+})
+
+test('reports GraphQL errors returned with a successful HTTP status', async () => {
+  const fetchFn = jest.fn<typeof fetch>().mockResolvedValue(Response.json({ errors: [{ message: 'Not an administrator' }] }))
+  await expect(mutatePullRequest('secret', 'archive', 'PR_node_42', fetchFn)).rejects.toThrow('Not an administrator')
 })

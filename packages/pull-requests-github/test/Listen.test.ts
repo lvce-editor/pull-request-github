@@ -58,6 +58,10 @@ test('listen', async () => {
               name: 'handlePullRequestFilterInput',
               params: ['handlePullRequestFilterInput', 'event.currentTarget.value'],
             },
+            {
+              name: 'handlePullRequestSelection',
+              params: ['handlePullRequestSelection', 'event.currentTarget.name', 'event.currentTarget.checked'],
+            },
           ],
           icon: 'media/git-pull-request.svg',
           id: 'github.pullRequests',

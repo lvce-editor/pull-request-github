@@ -9,11 +9,58 @@ const mockState: { responses: readonly MockResponse[] | undefined; requests: { p
   requests: [],
   responses: undefined,
 }
+const mutationInputTypes = {
+  archive: 'ArchivePullRequestInput',
+  close: 'ClosePullRequestInput',
+  unarchive: 'UnarchivePullRequestInput',
+} as const
 export const setCreateResponses = (values: readonly MockResponse[] | undefined): void => {
   mockState.responses = values
   mockState.requests = []
 }
 export const getCreateRequests = (): unknown => mockState.requests
+export const mutatePullRequest = async (
+  token: string,
+  action: 'archive' | 'close' | 'unarchive',
+  pullRequestId: string,
+  fetchFn: typeof fetch = fetch,
+): Promise<void> => {
+  if (!token) throw new PullRequestError('Sign in to GitHub before changing a pull request.', ErrorCodes.Unknown)
+  const { responses } = mockState
+  if (responses) {
+    const path = `/pull-requests/${pullRequestId}/${action}`
+    mockState.requests.push({ body: { pullRequestId }, path })
+    const mock = responses[0]
+    mockState.responses = responses.slice(1)
+    if (!mock) throw new Error('No mock response configured')
+    if (mock.error) throw new PullRequestError(mock.error, ErrorCodes.GitHubRequestFailed)
+    if ((mock.status ?? 200) >= 400) {
+      const { body } = mock
+      const errorMessage =
+        body && typeof body === 'object' && 'error' in body && typeof body.error === 'string' ? body.error : `GitHub request failed (${mock.status}).`
+      throw new PullRequestError(errorMessage, ErrorCodes.GitHubRequestFailed)
+    }
+    return
+  }
+  const mutation = {
+    archive: 'archivePullRequest',
+    close: 'closePullRequest',
+    unarchive: 'unarchivePullRequest',
+  }[action]
+  const inputType = mutationInputTypes[action]
+  const response = await fetchFn('https://api.github.com/graphql', {
+    body: JSON.stringify({
+      query: `mutation($input: ${inputType}!) { ${mutation}(input: $input) { pullRequest { id } } }`,
+      variables: { input: { pullRequestId } },
+    }),
+    headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    method: 'POST',
+    signal: AbortSignal.timeout(70_000),
+  })
+  const value = await parseResponse(response)
+  if (value.errors?.length)
+    throw new PullRequestError(value.errors[0]?.message || 'GitHub could not update the pull request.', ErrorCodes.GitHubRequestFailed)
+}
 
 export const request = async (token: string, path: string, body?: unknown, fetchFn: typeof fetch = fetch): Promise<any> => {
   if (!token) throw new PullRequestError('Sign in to LVCE with GitHub before creating a pull request.', ErrorCodes.Unknown)

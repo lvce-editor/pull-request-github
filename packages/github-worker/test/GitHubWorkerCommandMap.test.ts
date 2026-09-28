@@ -11,6 +11,7 @@ test('exposes github logic over rpc', () => {
       'GitHub.fetchPullRequest',
       'GitHub.fetchPullRequestFileDiff',
       'GitHub.fetchPullRequests',
+      'GitHub.mutatePullRequest',
       'GitHub.setPullRequestData',
       'GitHub.setPullRequestError',
       'GitHub.setPullRequestListData',
