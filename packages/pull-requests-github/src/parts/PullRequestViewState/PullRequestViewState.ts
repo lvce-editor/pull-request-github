@@ -37,13 +37,16 @@ export interface PullRequestViewState {
   readonly actionError: string
   readonly actionMenuOpen: boolean
   readonly actionPending: boolean
+  readonly closedCount: number | undefined
   readonly closedPullRequests: readonly PullRequestListItem[]
   readonly detailTab: PullRequestDetailTab
   readonly error: string
   readonly errorCode: string
   readonly fileDiffs: Readonly<Record<number, PullRequestFileDiffState>>
   readonly filter: PullRequestFilter
+  readonly openCount: number | undefined
   readonly openPullRequests: readonly PullRequestListItem[]
+  readonly page: number
   readonly pullRequest: PullRequestData | undefined
   readonly pullRequests: readonly PullRequestListItem[]
   readonly query: string
@@ -59,13 +62,16 @@ export const createDefaultState = (savedState: PullRequestViewSavedState | undef
     actionError: '',
     actionMenuOpen: false,
     actionPending: false,
+    closedCount: undefined,
     closedPullRequests: [],
     detailTab: PullRequestDetailTabs.Overview,
     error: '',
     errorCode: '',
     fileDiffs: {},
     filter: savedState?.filter === Closed ? Closed : Open,
+    openCount: undefined,
     openPullRequests: [],
+    page: 1,
     pullRequest: undefined,
     pullRequests: [],
     query: '',

@@ -1,4 +1,4 @@
-import type { GitHubRepository, PullRequestData, PullRequestFilter, PullRequestListItem } from '@lvce-editor/pull-request-shared'
+import type { GitHubRepository, PullRequestData, PullRequestFilter, PullRequestListItem, PullRequestPage } from '@lvce-editor/pull-request-shared'
 import type { Rpc } from '@lvce-editor/rpc'
 import { createRpc as createExtensionRpc } from '@lvce-editor/api'
 
@@ -8,6 +8,7 @@ export interface GitHubWorkerRpc {
   readonly clearPullRequestData: () => Promise<void>
   readonly fetchPullRequest: (url: string) => Promise<PullRequestData>
   readonly fetchPullRequestFileDiff: (url: string, filename: string) => Promise<string | undefined>
+  readonly fetchPullRequestPage: (repository: GitHubRepository, state: PullRequestFilter, page: number) => Promise<PullRequestPage>
   readonly fetchPullRequests: (repository: GitHubRepository, state: PullRequestFilter) => Promise<readonly PullRequestListItem[]>
   readonly mutatePullRequest: (token: string, action: 'archive' | 'close' | 'unarchive', pullRequestId: string) => Promise<void>
   readonly setPullRequestData: (url: string, data: PullRequestData) => Promise<void>
@@ -35,6 +36,9 @@ export const create = (getRpc: GetRpc): GitHubWorkerRpc => {
     },
     fetchPullRequestFileDiff(url: string, filename: string): Promise<string | undefined> {
       return invoke('GitHub.fetchPullRequestFileDiff', url, filename)
+    },
+    fetchPullRequestPage(repository: GitHubRepository, state: PullRequestFilter, page: number): Promise<PullRequestPage> {
+      return invoke('GitHub.fetchPullRequestPage', repository, state, page)
     },
     fetchPullRequests(repository: GitHubRepository, state: PullRequestFilter): Promise<readonly PullRequestListItem[]> {
       return invoke('GitHub.fetchPullRequests', repository, state)
@@ -87,6 +91,7 @@ export const {
   clearPullRequestData,
   fetchPullRequest,
   fetchPullRequestFileDiff,
+  fetchPullRequestPage,
   fetchPullRequests,
   mutatePullRequest,
   setPullRequestData,

@@ -170,6 +170,10 @@
 }
 
 .PullRequestListCard {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
   overflow: hidden;
   background: var(--PullRequestSurface);
   border: 1px solid var(--PullRequestBorder);
@@ -237,6 +241,8 @@
 }
 
 .PullRequestList {
+  overflow-y: auto;
+  scrollbar-gutter: stable;
   display: flex;
   min-height: 0;
   flex: 1;
@@ -248,6 +254,7 @@
 }
 
 .PullRequestListItem {
+  flex-shrink: 0;
   display: grid;
   grid-template-columns: 24px minmax(0, 1fr);
   align-items: start;
@@ -1022,4 +1029,44 @@ textarea.PullRequestCreateInput {
 }
 .PullRequestCreatedLink {
   color: var(--PullRequestInfo);
+}
+
+.PullRequestListHeader,
+.PullRequestTabs,
+.PullRequestSelectionActions,
+.PullRequestPagination {
+  flex-shrink: 0;
+}
+
+.PullRequestPagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
+  border-top: 1px solid var(--PullRequestBorder);
+}
+
+.PullRequestPagination button {
+  padding: 4px 8px;
+  color: var(--PullRequestForeground);
+  background: var(--PullRequestSurface);
+  border: 1px solid var(--PullRequestBorder);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.PullRequestPagination button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.PullRequestPagination button[aria-current='page'] {
+  border-color: var(--PullRequestAccent);
+  opacity: 1;
+}
+
+.PullRequestPagination button:focus-visible {
+  outline: 1px solid var(--PullRequestAccent);
 }

@@ -3,7 +3,11 @@ import { Open, type PullRequestFilter } from '@lvce-editor/pull-request-shared'
 import { AriaRoles, mergeClassNames, text, VirtualDomElements } from '@lvce-editor/virtual-dom-worker'
 import * as DomEventListenerFunctions from '../DomEventListenerFunctions/DomEventListenerFunctions.ts'
 
-export const renderPullRequestTab = (filter: PullRequestFilter, activeFilter: PullRequestFilter, count: number): readonly VirtualDomNode[] => {
+export const renderPullRequestTab = (
+  filter: PullRequestFilter,
+  activeFilter: PullRequestFilter,
+  count: number | undefined,
+): readonly VirtualDomNode[] => {
   const active = filter === activeFilter
   const label = filter === Open ? 'Open' : 'Closed'
   const name = filter === Open ? 'showOpenPullRequests' : 'showClosedPullRequests'
@@ -30,6 +34,6 @@ export const renderPullRequestTab = (filter: PullRequestFilter, activeFilter: Pu
       name,
       type: VirtualDomElements.Span,
     },
-    text(String(count)),
+    text(count === undefined ? '—' : String(count)),
   ]
 }

@@ -11,6 +11,10 @@ const tabListNode: VirtualDomNode = {
   type: VirtualDomElements.Div,
 }
 
-export const renderPullRequestTabs = (activeFilter: PullRequestFilter, openCount: number, closedCount: number): readonly VirtualDomNode[] => {
+export const renderPullRequestTabs = (
+  activeFilter: PullRequestFilter,
+  openCount: number | undefined,
+  closedCount: number | undefined,
+): readonly VirtualDomNode[] => {
   return [tabListNode, ...renderPullRequestTab(Open, activeFilter, openCount), ...renderPullRequestTab(Closed, activeFilter, closedCount)]
 }
