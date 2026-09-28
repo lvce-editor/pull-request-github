@@ -972,9 +972,15 @@ textarea.PullRequestCreateInput {
 .PullRequestCreateButton[name='submitCreatePullRequest'] {
   background: var(
     --ButtonBackground,
-    var(--SplitButtonBackground, var(--vscode-button-background, color-mix(in srgb, var(--FocusBorder, var(--WorkbenchForeground)) 34%, var(--MainBackground))))
+    var(
+      --SplitButtonBackground,
+      var(--vscode-button-background, color-mix(in srgb, var(--FocusBorder, var(--WorkbenchForeground)) 34%, var(--MainBackground)))
+    )
   );
-  color: var(--ButtonForeground, var(--SplitButtonForeground, var(--vscode-button-foreground, var(--WorkbenchForeground, var(--PullRequestForeground)))));
+  color: var(
+    --ButtonForeground,
+    var(--SplitButtonForeground, var(--vscode-button-foreground, var(--WorkbenchForeground, var(--PullRequestForeground))))
+  );
 }
 .PullRequestCreateButton[name='submitCreatePullRequest']:hover:not(:disabled) {
   background: var(
