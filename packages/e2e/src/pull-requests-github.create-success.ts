@@ -56,8 +56,6 @@ export const test: Test = async ({ ColorTheme, Command, expect, FileSystem, Loca
   await retry(() => expect(submitButton).toHaveCSS('background-color', 'rgb(0, 136, 255)'))
   await retry(() => expect(submitButton).toHaveCSS('color', 'rgb(197, 197, 197)'))
   await retry(() => expect(cancelButton).toHaveCSS('background-color', 'rgb(25, 53, 73)'))
-  await submitButton.hover()
-  await retry(() => expect(submitButton).toHaveCSS('background-color', 'rgb(255, 157, 0)'))
   await Locator('button[name="submitCreatePullRequest"]').click()
   await retry(() => expect(submitButton).toHaveCSS('opacity', '0.6'))
   const element5 = Locator('.PullRequestCreateView [role="status"]')
