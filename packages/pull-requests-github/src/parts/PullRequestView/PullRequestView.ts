@@ -3,6 +3,8 @@ import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
 import { WhenExpression } from '@lvce-editor/constants'
 import {
   Closed,
+  pullRequestPageSize,
+  type PullRequestPage,
   Open,
   type GitHubRepository,
   type PullRequestData,
@@ -48,7 +50,7 @@ type PullRequestViewContext = Partial<ViewContext>
 interface PullRequestViewDependencies {
   readonly fetchPullRequest: (url: string) => Promise<PullRequestData>
   readonly fetchPullRequestFileDiff: (url: string, filename: string) => Promise<string | undefined>
-  readonly fetchPullRequests: (repository: GitHubRepository, filter: PullRequestFilter) => Promise<readonly PullRequestListItem[]>
+  readonly fetchPullRequestPage: (repository: GitHubRepository, filter: PullRequestFilter, page: number) => Promise<PullRequestPage>
   readonly getRepository: () => Promise<GitHubRepository>
   readonly getToken?: () => Promise<string>
   readonly mutatePullRequest?: (token: string, action: 'archive' | 'close' | 'unarchive', pullRequestId: string) => Promise<void>
@@ -81,7 +83,7 @@ const getPullRequestActionFailure = async (
 const defaultDependencies: PullRequestViewDependencies = {
   fetchPullRequest: GitHubWorkerRpc.fetchPullRequest,
   fetchPullRequestFileDiff: GitHubWorkerRpc.fetchPullRequestFileDiff,
-  fetchPullRequests: GitHubWorkerRpc.fetchPullRequests,
+  fetchPullRequestPage: GitHubWorkerRpc.fetchPullRequestPage,
   getRepository: getGitHubRepository,
   getToken: CreatePullRequestDependencies.dependencies.getToken,
   mutatePullRequest: GitHubWorkerRpc.mutatePullRequest,
@@ -147,6 +149,8 @@ export const create = (
   context?: PullRequestViewContext,
   dependencies: PullRequestViewDependencies = defaultDependencies,
 ): Promise<PullRequestViewInstance> => {
+  let listRequest = 0
+  let disposed = false
   let creation: ReturnType<typeof CreatePullRequestView.create> | undefined
   let focusedCreateControl = ''
   let createFocusActive = false
@@ -157,9 +161,19 @@ export const create = (
     await context?.requestRerender?.()
   }
 
-  const loadLists = async (repository: GitHubRepository, filter: PullRequestFilter, rerender: boolean): Promise<void> => {
+  const fetchSecondaryPage = async (repository: GitHubRepository, filter: PullRequestFilter): Promise<PullRequestPage | undefined> => {
+    try {
+      return await dependencies.fetchPullRequestPage(repository, filter, 1)
+    } catch {
+      return undefined
+    }
+  }
+
+  const loadLists = async (repository: GitHubRepository, filter: PullRequestFilter, rerender: boolean, page = 1): Promise<void> => {
+    const request = ++listRequest
     state = {
       ...state,
+      actionMenuOpen: false,
       closedPullRequests: [],
       detailTab: PullRequestDetailTabs.Overview,
       error: '',
@@ -167,10 +181,12 @@ export const create = (
       fileDiffs: {},
       filter,
       openPullRequests: [],
+      page,
       pullRequest: undefined,
       pullRequests: [],
       repository,
       screen: PullRequestViewStates.List,
+      selectedPullRequestNumbers: [],
       status: PullRequestViewStates.Loading,
       url: '',
     }
@@ -178,33 +194,28 @@ export const create = (
       await requestRerender()
     }
     try {
-      const fetchList = async (listFilter: PullRequestFilter): Promise<readonly PullRequestListItem[]> => {
-        const pullRequests = await dependencies.fetchPullRequests(repository, listFilter)
-        return Array.isArray(pullRequests) ? pullRequests : []
-      }
       const secondaryFilter = filter === Open ? Closed : Open
-      const fetchSecondaryList = async (): Promise<readonly PullRequestListItem[]> => {
-        try {
-          return await fetchList(secondaryFilter)
-        } catch {
-          return []
-        }
+      const [primary, secondary] = await Promise.all([
+        dependencies.fetchPullRequestPage(repository, filter, page),
+        fetchSecondaryPage(repository, secondaryFilter),
+      ])
+      if (disposed || request !== listRequest) return
+      const lastPage = Math.max(1, Math.ceil(primary.total / pullRequestPageSize))
+      if (page > lastPage) {
+        await loadLists(repository, filter, rerender, lastPage)
+        return
       }
-      const [primaryPullRequests, secondaryPullRequests] = await Promise.all([fetchList(filter), fetchSecondaryList()])
-      const openPullRequests = filter === Open ? primaryPullRequests : secondaryPullRequests
-      const closedPullRequests = filter === Closed ? primaryPullRequests : secondaryPullRequests
-      const { selectedPullRequestNumbers } = state
       state = {
         ...state,
-        closedPullRequests,
-        openPullRequests,
-        pullRequests: filter === Closed ? closedPullRequests : openPullRequests,
-        selectedPullRequestNumbers: selectedPullRequestNumbers.filter((number) =>
-          [...openPullRequests, ...closedPullRequests].some((item) => item.number === number),
-        ),
+        closedCount: filter === Closed ? primary.total : secondary?.total,
+        closedPullRequests: filter === Closed ? primary.items : secondary?.items || [],
+        openCount: filter === Open ? primary.total : secondary?.total,
+        openPullRequests: filter === Open ? primary.items : secondary?.items || [],
+        pullRequests: primary.items,
         status: PullRequestViewStates.Ready,
       }
     } catch (error) {
+      if (disposed || request !== listRequest) return
       const errorInfo = getErrorInfo(error)
       state = {
         ...state,
@@ -383,14 +394,17 @@ export const create = (
       if (nextClosedPullRequests.every((item) => item.number !== updated.number)) nextClosedPullRequests.push(updated)
       else nextClosedPullRequests = nextClosedPullRequests.map((item) => (item.number === updated.number ? updated : item))
     }
-    const { filter } = state
+    const { closedCount, filter, openCount } = state
+    const closed = openPullRequests.length - nextOpenPullRequests.length
     state = {
       ...state,
       actionError: failures.join(' '),
       actionPending: false,
+      closedCount: closedCount === undefined ? undefined : closedCount + closed,
       closedPullRequests: nextClosedPullRequests,
+      openCount: openCount === undefined ? undefined : Math.max(0, openCount - closed),
       openPullRequests: nextOpenPullRequests,
-      pullRequests: filter === Closed ? nextClosedPullRequests : nextOpenPullRequests,
+      pullRequests: (filter === Closed ? nextClosedPullRequests : nextOpenPullRequests).slice(0, pullRequestPageSize),
       selectedPullRequestNumbers: nextSelectedPullRequestNumbers,
     }
     await requestRerender()
@@ -410,30 +424,53 @@ export const create = (
     await runBulkActionByName(name)
   }
 
+  const changeFilter = async (filter: PullRequestFilter): Promise<void> => {
+    const { closedCount, closedPullRequests, openCount, openPullRequests, page, repository, status } = state
+    const items = filter === Open ? openPullRequests : closedPullRequests
+    const total = filter === Open ? openCount : closedCount
+    if (page === 1 && status === PullRequestViewStates.Ready && total === items.length && total <= pullRequestPageSize) {
+      state = { ...state, actionMenuOpen: false, filter, pullRequests: items, selectedPullRequestNumbers: [] }
+    } else if (repository) {
+      await loadLists(repository, filter, true)
+    }
+  }
+
+  const changePage = async (nextPage: number): Promise<void> => {
+    const { closedCount, filter, openCount, page, repository } = state
+    const total = filter === Open ? openCount : closedCount
+    if (
+      !repository ||
+      !Number.isSafeInteger(nextPage) ||
+      nextPage < 1 ||
+      nextPage > Math.ceil((total || 0) / pullRequestPageSize) ||
+      nextPage === page
+    )
+      return
+    await loadLists(repository, filter, true, nextPage)
+  }
+
+  const handleListNavigation = async (name: string): Promise<boolean> => {
+    if (name === 'showOpenPullRequests' || name === 'showClosedPullRequests') {
+      await changeFilter(name === 'showOpenPullRequests' ? Open : Closed)
+      return true
+    }
+    if (name.startsWith('pullRequestPage:')) {
+      await changePage(Number(name.slice('pullRequestPage:'.length)))
+      return true
+    }
+    if (name === 'refreshPullRequests') {
+      await loadRepository(false)
+      return true
+    }
+    return false
+  }
+
   const createInstance = async (): Promise<PullRequestViewInstance> => {
     await loadRepository(false)
     const handleClick = async (name: string): Promise<void> => {
-      const { closedPullRequests, openPullRequests, pullRequests } = state
-      if (name === 'showOpenPullRequests') {
-        state = {
-          ...state,
-          filter: Open,
-          pullRequests: openPullRequests,
-        }
-        return
-      }
-      if (name === 'showClosedPullRequests') {
-        state = {
-          ...state,
-          filter: Closed,
-          pullRequests: closedPullRequests,
-        }
-        return
-      }
-      if (name === 'refreshPullRequests') {
-        await loadRepository(false)
-        return
-      }
+      const { actionPending, pullRequests } = state
+      if (actionPending) return
+      if (await handleListNavigation(name)) return
       if (name === 'togglePullRequestActionMenu' || name.startsWith('bulkPullRequest:')) {
         await handleSelectionActionClick(name)
         return
@@ -502,6 +539,8 @@ export const create = (
 
     const instance: PullRequestViewInstance = {
       dispose(): void {
+        disposed = true
+        listRequest++
         creation?.dispose()
         activeInstances.delete(instance)
       },

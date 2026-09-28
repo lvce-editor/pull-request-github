@@ -1,5 +1,5 @@
 import { afterEach, expect, jest, test } from '@jest/globals'
-import { fetchPullRequests, toPullRequestListItem } from '../src/parts/GitHubPullRequestList/GitHubPullRequestList.ts'
+import { fetchPullRequestPage, fetchPullRequests, toPullRequestListItem } from '../src/parts/GitHubPullRequestList/GitHubPullRequestList.ts'
 import {
   clearPullRequestData,
   setPullRequestListData,
@@ -145,4 +145,63 @@ test('fetchPullRequests validates a deterministic raw response', async () => {
     code: 'E_GITHUB_INVALID_LIST_DATA',
     message: 'GitHub returned an invalid pull request list.',
   })
+})
+
+test('loads a bounded page with a count beyond 100 from the last-page link', async () => {
+  const fetchFn = jest
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(Response.json([{ number: 61, title: 'Third page' }]))
+    .mockResolvedValueOnce(
+      Response.json([{ number: 1 }], {
+        headers: { link: '<https://api.github.com/repositories/123/pulls?state=closed&per_page=1&page=243>; rel="last"' },
+      }),
+    )
+  const result = await fetchPullRequestPage({ name: 'repo', owner: 'owner' }, 'closed', 3, fetchFn)
+  expect(result.total).toBe(243)
+  expect(result.items[0].number).toBe(61)
+  expect(fetchFn.mock.calls.map((call: readonly unknown[]) => call[0])).toEqual([
+    'https://api.github.com/repos/owner/repo/pulls?state=closed&per_page=30&page=3',
+    'https://api.github.com/repos/owner/repo/pulls?state=closed&per_page=1&page=1',
+  ])
+})
+
+test.each([0, 1])('counts %i pull requests without a link header', async (total) => {
+  const fetchFn = jest.fn<typeof fetch>().mockImplementation(async () => Response.json(Array.from({ length: total }, () => ({ number: 1 }))))
+  await expect(fetchPullRequestPage({ name: 'repo', owner: 'owner' }, 'open', 1, fetchFn)).resolves.toMatchObject({ total })
+})
+
+test.each([0, -1, 1.5, NaN])('rejects invalid page %s without fetching', async (page) => {
+  const fetchFn = jest.fn<typeof fetch>()
+  await expect(fetchPullRequestPage({ name: 'repo', owner: 'owner' }, 'open', page, fetchFn)).rejects.toThrow('Invalid pull request page')
+  expect(fetchFn).not.toHaveBeenCalled()
+})
+
+test('paginates mock responses and reports their full count', async () => {
+  setPullRequestListResponse(
+    'owner',
+    'repo',
+    'open',
+    Array.from({ length: 121 }, (_, index) => ({ number: index + 1 })),
+  )
+  const result = await fetchPullRequestPage({ name: 'repo', owner: 'owner' }, 'open', 5)
+  expect(result.total).toBe(121)
+  expect(result.items.map((item) => item.number)).toEqual([121])
+})
+
+test.each([
+  { body: { message: 'Rate limit exceeded' }, message: 'Rate limit exceeded', status: 403 },
+  { body: {}, message: 'invalid pull request list', status: 200 },
+])(
+  'reports API errors: $message',
+  async ({ body, message, status }: { readonly body: unknown; readonly message: string; readonly status: number }) => {
+    const fetchFn = jest.fn<typeof fetch>().mockImplementation(async () => Response.json(body, { status }))
+    await expect(fetchPullRequestPage({ name: 'repo', owner: 'owner' }, 'open', 1, fetchFn)).rejects.toThrow(message)
+  },
+)
+
+test('does not report a partial count when GitHub omits last despite a next page', async () => {
+  const fetchFn = jest
+    .fn<typeof fetch>()
+    .mockImplementation(async () => new Response('[{}]', { headers: { link: '<https://api.github.com/pulls?page=2>; rel="next"' } }))
+  await expect(fetchPullRequestPage({ name: 'repo', owner: 'owner' }, 'open', 1, fetchFn)).rejects.toThrow('invalid pull request count')
 })

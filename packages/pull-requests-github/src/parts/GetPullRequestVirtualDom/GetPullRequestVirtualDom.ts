@@ -11,6 +11,7 @@ import { renderPullRequestChanges } from '../RenderPullRequestChanges/RenderPull
 import { renderPullRequestCommits } from '../RenderPullRequestCommits/RenderPullRequestCommits.ts'
 import { renderPullRequestDetailTabs } from '../RenderPullRequestDetailTabs/RenderPullRequestDetailTabs.ts'
 import { renderPullRequestListStatus } from '../RenderPullRequestListStatus/RenderPullRequestListStatus.ts'
+import { renderPullRequestPagination } from '../RenderPullRequestPagination/RenderPullRequestPagination.ts'
 import { renderPullRequestTabs } from '../RenderPullRequestTabs/RenderPullRequestTabs.ts'
 
 const createButtonNode: VirtualDomNode = {
@@ -264,12 +265,13 @@ const getStatePresentation = (draft: boolean | undefined, filter: string): reado
 }
 
 const renderListView = (state: PullRequestViewState): readonly VirtualDomNode[] => {
-  const { closedPullRequests, error, errorCode, filter, openPullRequests, query, repository, status } = state
+  const { closedCount, error, errorCode, filter, openCount, query, repository, status } = state
   if (status === PullRequestViewStates.Unavailable && errorCode === ErrorCodes.WorkspaceNotOpen) {
     return [{ ...listViewNode, childCount: 1 }, ...renderDetailMessage(error)]
   }
   const repositoryLabel = repository ? `${repository.owner} / ${repository.name}` : 'Reading the current workspace repository…'
   const selectionActions = renderSelectionActions(state)
+  const pagination = renderPullRequestPagination(state)
   return [
     listViewNode,
     listHeaderNode,
@@ -293,10 +295,11 @@ const renderListView = (state: PullRequestViewState): readonly VirtualDomNode[] 
     text('Create Pull Request'),
     refreshButtonNode,
     refreshIconNode,
-    { ...listCardNode, childCount: selectionActions.length > 0 ? 3 : 2 },
-    ...renderPullRequestTabs(filter, openPullRequests.length, closedPullRequests.length),
+    { ...listCardNode, childCount: 2 + Number(selectionActions.length > 0) + Number(pagination.length > 0) },
+    ...renderPullRequestTabs(filter, openCount, closedCount),
     ...selectionActions,
     ...renderPullRequestListStatus(state),
+    ...pagination,
   ]
 }
 

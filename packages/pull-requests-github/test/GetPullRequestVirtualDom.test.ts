@@ -297,3 +297,22 @@ test('renders only an informational message when no workspace is open', () => {
     text('Open a Git repository to view its pull requests.'),
   ])
 })
+
+test('renders bounded pagination with exact counts and a valid tree', () => {
+  const dom = getPullRequestVirtualDom(createState({ closedCount: 243, openCount: 30_000, page: 500, status: Ready }))
+  expect(getRootNodeCount(dom)).toBe(1)
+  expect(dom.some((node) => node.text === '30000')).toBe(true)
+  expect(dom.some((node) => node.text === '243')).toBe(true)
+  expect(dom.filter((node) => node.name?.startsWith('pullRequestPage:'))).toHaveLength(7)
+  expect(dom.find((node) => node.name === 'pullRequestPage:500')).toMatchObject({ ariaCurrent: 'page', disabled: true })
+  expect(dom.filter((node) => node.text === '…')).toHaveLength(2)
+})
+
+test('disables previous and next at page boundaries', () => {
+  const first = getPullRequestVirtualDom(createState({ openCount: 61, page: 1, status: Ready }))
+  const last = getPullRequestVirtualDom(createState({ openCount: 61, page: 3, status: Ready }))
+  expect(first.find((node) => node.ariaLabel === 'Previous')).toMatchObject({ disabled: true })
+  expect(last.find((node) => node.ariaLabel === 'Next')).toMatchObject({ disabled: true })
+  expect(getRootNodeCount(first)).toBe(1)
+  expect(getRootNodeCount(last)).toBe(1)
+})

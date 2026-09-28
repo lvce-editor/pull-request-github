@@ -1,4 +1,4 @@
-import type { GitHubRepository, PullRequestData, PullRequestFilter, PullRequestListItem } from '@lvce-editor/pull-request-shared'
+import type { GitHubRepository, PullRequestData, PullRequestFilter, PullRequestListItem, PullRequestPage } from '@lvce-editor/pull-request-shared'
 import { afterEach, expect, jest, test } from '@jest/globals'
 import { WhenExpression } from '@lvce-editor/constants'
 import { RendererWorker } from '@lvce-editor/rpc-registry'
@@ -52,6 +52,7 @@ type PullRequestAction = 'archive' | 'close' | 'unarchive'
 interface Dependencies {
   readonly fetchPullRequest: (url: string) => Promise<any>
   readonly fetchPullRequestFileDiff: (url: string, filename: string) => Promise<string | undefined>
+  readonly fetchPullRequestPage: (repository: GitHubRepository, filter: PullRequestFilter, page: number) => Promise<PullRequestPage>
   readonly fetchPullRequests: (repository: GitHubRepository, filter: PullRequestFilter) => Promise<readonly PullRequestListItem[]>
   readonly getRepository: () => Promise<GitHubRepository>
   readonly getToken: () => Promise<string>
@@ -59,7 +60,7 @@ interface Dependencies {
 }
 
 const createDependencies = (overrides: Readonly<Partial<Dependencies>> = {}): Dependencies => {
-  return {
+  const dependencies = {
     fetchPullRequest: jest.fn<(url: string) => Promise<any>>().mockResolvedValue(pullRequestDetail),
     fetchPullRequestFileDiff: jest.fn<(url: string, filename: string) => Promise<string | undefined>>().mockResolvedValue(undefined),
     fetchPullRequests: jest
@@ -71,6 +72,15 @@ const createDependencies = (overrides: Readonly<Partial<Dependencies>> = {}): De
       .fn<(token: string, action: 'archive' | 'close' | 'unarchive', pullRequestId: string) => Promise<void>>()
       .mockResolvedValue(),
     ...overrides,
+  }
+  return {
+    ...dependencies,
+    fetchPullRequestPage:
+      overrides.fetchPullRequestPage ||
+      (async (repository, filter, page): Promise<PullRequestPage> => {
+        const items = await dependencies.fetchPullRequests(repository, filter)
+        return { items: items.slice((page - 1) * 30, page * 30), total: items.length }
+      }),
   }
 }
 
@@ -361,5 +371,60 @@ test('openOnGitHub opens the selected pull request url', async () => {
   await openActiveInstance(open)
 
   expect(open).toHaveBeenCalledWith('https://github.com/owner/repo/pull/42')
+  view.dispose()
+})
+
+test('navigates pages, clears selection, and resets to page one on tab change', async () => {
+  const fetchPullRequestPage = jest.fn<Dependencies['fetchPullRequestPage']>().mockImplementation(async (_repository, filter, page) => ({
+    items: [{ ...pullRequest, number: (page - 1) * 30 + 1 }],
+    total: filter === 'open' ? 121 : 61,
+  }))
+  const view = await create(undefined, createDependencies({ fetchPullRequestPage }))
+  expect(view.getComponentState()).toMatchObject({ closedCount: 61, openCount: 121, page: 1 })
+  view.handlePullRequestSelection('toggleAllPullRequests', true)
+  await view.handlePullRequestClick('pullRequestPage:3')
+  expect(fetchPullRequestPage).toHaveBeenCalledWith(repository, 'open', 3)
+  expect(view.getComponentState()).toMatchObject({ page: 3, pullRequests: [{ number: 61 }], selectedPullRequestNumbers: [] })
+  await view.handlePullRequestClick('pullRequestPage:6')
+  expect(view.getComponentState().page).toBe(3)
+  await view.handlePullRequestClick('showClosedPullRequests')
+  expect(view.getComponentState()).toMatchObject({ filter: 'closed', page: 1, pullRequests: [{ number: 1 }] })
+  view.dispose()
+})
+
+test('clamps the requested page when the repository shrinks', async () => {
+  const fetchPullRequestPage = jest.fn<Dependencies['fetchPullRequestPage']>().mockResolvedValue({ items: [pullRequest], total: 121 })
+  const view = await create(undefined, createDependencies({ fetchPullRequestPage }))
+  fetchPullRequestPage.mockResolvedValue({ items: [], total: 0 })
+  await view.handlePullRequestClick('pullRequestPage:5')
+  expect(view.getComponentState()).toMatchObject({ openCount: 0, page: 1, pullRequests: [], status: 'ready' })
+  view.dispose()
+})
+
+test('ignores an older page response after a newer tab request completes', async () => {
+  const deferred = Promise.withResolvers<PullRequestPage>()
+  const fetchPullRequestPage = jest.fn<Dependencies['fetchPullRequestPage']>().mockImplementation(async (_repository, filter, page) => {
+    if (page === 2) return deferred.promise
+    return { items: [pullRequest], total: filter === 'open' ? 121 : 61 }
+  })
+  const view = await create(undefined, createDependencies({ fetchPullRequestPage }))
+  const pending = view.handlePullRequestClick('pullRequestPage:2')
+  await Promise.resolve()
+  await view.handlePullRequestClick('showClosedPullRequests')
+  deferred.resolve({ items: [], total: 121 })
+  await pending
+  expect(view.getComponentState()).toMatchObject({ filter: 'closed', page: 1, pullRequests: [pullRequest], status: 'ready' })
+  view.dispose()
+})
+
+test('page failures show an error and can be retried by refresh', async () => {
+  const fetchPullRequestPage = jest.fn<Dependencies['fetchPullRequestPage']>().mockResolvedValue({ items: [pullRequest], total: 121 })
+  const view = await create(undefined, createDependencies({ fetchPullRequestPage }))
+  fetchPullRequestPage.mockRejectedValue(new Error('Rate limit exceeded'))
+  await view.handlePullRequestClick('pullRequestPage:2')
+  expect(view.getComponentState()).toMatchObject({ error: 'Rate limit exceeded', status: 'error' })
+  fetchPullRequestPage.mockResolvedValue({ items: [pullRequest], total: 121 })
+  await view.refresh()
+  expect(view.getComponentState()).toMatchObject({ page: 1, status: 'ready' })
   view.dispose()
 })

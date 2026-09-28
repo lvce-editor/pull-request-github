@@ -9,6 +9,7 @@ export const commandMap = {
   'GitHub.createRequest': CreateApi.request,
   'GitHub.fetchPullRequest': GitHubPullRequest.fetchPullRequest,
   'GitHub.fetchPullRequestFileDiff': GitHubPullRequest.fetchPullRequestFileDiff,
+  'GitHub.fetchPullRequestPage': GitHubPullRequestList.fetchPullRequestPage,
   'GitHub.fetchPullRequests': GitHubPullRequestList.fetchPullRequests,
   'GitHub.getCreateRequests': CreateApi.getCreateRequests,
   'GitHub.mutatePullRequest': CreateApi.mutatePullRequest,
