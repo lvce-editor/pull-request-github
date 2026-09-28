@@ -608,6 +608,11 @@
   border-style: solid;
 }
 
+.PullRequestCreateView > .PullRequestMessageError {
+  flex-shrink: 0;
+  overflow-wrap: anywhere;
+}
+
 .PullRequestErrorCode {
   font-size: 0.9em;
   opacity: 0.8;
