@@ -2,7 +2,7 @@
 import type { Test } from '@lvce-editor/test-with-playwright'
 
 export const name = 'pull-requests-github.create-success'
-export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspace }) => {
+export const test: Test = async ({ ColorTheme, Command, expect, FileSystem, Locator, Workspace }) => {
   const defaults = {
     baseBranch: 'main',
     headBranch: 'feature/create',
@@ -34,6 +34,7 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await FileSystem.mkdir(`${tmpDir}/.git`)
   await FileSystem.writeFile(`${tmpDir}/.git/config`, '[remote "origin"]\n url = https://github.com/lvce-editor/pull-request-github.git\n')
   await Workspace.setPath(tmpDir)
+  await ColorTheme.setColorTheme('cobalt2')
   await Command.executeExtensionCommand('PullRequestsGithub.clearPullRequestData')
   await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestListData', 'lvce-editor', 'pull-request-github', 'open', [])
   await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestListData', 'lvce-editor', 'pull-request-github', 'closed', [])
@@ -50,7 +51,15 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await retry(() => expect(element3).toHaveValue(defaults.title))
   const element4 = Locator('textarea[name="description"]')
   await retry(() => expect(element4).toHaveValue(''))
+  const submitButton = Locator('button[name="submitCreatePullRequest"]')
+  const cancelButton = Locator('button[name="cancelCreatePullRequest"]')
+  await retry(() => expect(submitButton).toHaveCSS('background-color', 'rgb(0, 136, 255)'))
+  await retry(() => expect(submitButton).toHaveCSS('color', 'rgb(197, 197, 197)'))
+  await retry(() => expect(cancelButton).toHaveCSS('background-color', 'rgb(25, 53, 73)'))
+  await submitButton.hover()
+  await retry(() => expect(submitButton).toHaveCSS('background-color', 'rgb(255, 157, 0)'))
   await Locator('button[name="submitCreatePullRequest"]').click()
+  await retry(() => expect(submitButton).toHaveCSS('opacity', '0.6'))
   const element5 = Locator('.PullRequestCreateView [role="status"]')
   await retry(() => expect(element5).toHaveText('Pull request created. Auto-squash enabled.'))
   const element6 = Locator('.PullRequestCreatedLink')
