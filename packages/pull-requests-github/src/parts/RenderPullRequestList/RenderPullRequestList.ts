@@ -122,6 +122,7 @@ const renderPullRequestListItem = (pullRequest: PullRequestListItem, filter: Pul
     {
       ariaLabel: `Select pull request ${pullRequest.number}`,
       checked: selected,
+      childCount: 0,
       className: 'PullRequestCheckbox',
       inputType: 'checkbox',
       name: `togglePullRequest:${pullRequest.number}`,
