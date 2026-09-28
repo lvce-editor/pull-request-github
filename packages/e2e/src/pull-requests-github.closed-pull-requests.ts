@@ -19,6 +19,15 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
       title: 'Completed pull request',
       url: 'https://github.com/lvce-editor/pull-request-github/pull/201',
     },
+    {
+      baseBranch: 'main',
+      description: 'An abandoned draft pull request.',
+      draft: true,
+      headBranch: 'feature/abandoned-draft',
+      number: 202,
+      title: 'Abandoned draft pull request',
+      url: 'https://github.com/lvce-editor/pull-request-github/pull/202',
+    },
   ])
   await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestListData', 'lvce-editor', 'pull-request-github', 'open', [])
   await Command.executeExtensionCommand('PullRequestsGithub.show')
@@ -30,4 +39,10 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await expect(closedTab).toHaveAttribute('aria-selected', 'true')
   const title = Locator('text=Completed pull request')
   await expect(title).toBeVisible()
+  const draftTitle = Locator('text=Draft: Abandoned draft pull request')
+  await expect(draftTitle).toBeVisible()
+  const closedIcons = Locator('.PullRequestStateClosed')
+  await expect(closedIcons).toHaveCount(2)
+  const draftIcons = Locator('.PullRequestStateDraft')
+  await expect(draftIcons).toHaveCount(0)
 }
