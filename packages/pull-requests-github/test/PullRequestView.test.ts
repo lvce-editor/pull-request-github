@@ -2,6 +2,7 @@ import type { GitHubRepository, PullRequestData, PullRequestFilter, PullRequestL
 import { afterEach, expect, jest, test } from '@jest/globals'
 import { WhenExpression } from '@lvce-editor/constants'
 import { RendererWorker } from '@lvce-editor/rpc-registry'
+import { text, type VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
 import { create, openActiveInstance, refreshActiveInstance } from '../src/parts/PullRequestView/PullRequestView.ts'
 
 const repository: GitHubRepository = {
@@ -50,6 +51,7 @@ const pullRequestDetail: PullRequestData = {
 type PullRequestAction = 'archive' | 'close' | 'unarchive'
 
 interface Dependencies {
+  readonly convertMarkdown: (markdown: string) => Promise<readonly VirtualDomNode[]>
   readonly fetchPullRequest: (url: string) => Promise<any>
   readonly fetchPullRequestFileDiff: (url: string, filename: string) => Promise<string | undefined>
   readonly fetchPullRequestPage: (repository: GitHubRepository, filter: PullRequestFilter, page: number) => Promise<PullRequestPage>
@@ -61,6 +63,7 @@ interface Dependencies {
 
 const createDependencies = (overrides: Readonly<Partial<Dependencies>> = {}): Dependencies => {
   const dependencies = {
+    convertMarkdown: jest.fn<(markdown: string) => Promise<readonly VirtualDomNode[]>>().mockImplementation(async (markdown) => [text(markdown)]),
     fetchPullRequest: jest.fn<(url: string) => Promise<any>>().mockResolvedValue(pullRequestDetail),
     fetchPullRequestFileDiff: jest.fn<(url: string, filename: string) => Promise<string | undefined>>().mockResolvedValue(undefined),
     fetchPullRequests: jest

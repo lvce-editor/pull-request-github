@@ -1,21 +1,25 @@
 import { expect, test } from '@jest/globals'
+import { text } from '@lvce-editor/virtual-dom-worker'
 import { renderPullRequest } from '../src/parts/RenderPullRequest/RenderPullRequest.ts'
 
 test('renderPullRequest renders a rich overview', () => {
-  const dom = renderPullRequest({
-    author: 'mira.k',
-    baseBranch: 'main',
-    comments: 12,
-    commits: [],
-    description: 'Review a diff directly from the editor.',
-    files: [],
-    headBranch: 'feat/inline-review-comments',
-    labels: [
-      { color: '1d76db', name: 'feature' },
-      { color: 'd4a72c', name: 'needs-review' },
-    ],
-    title: 'Add inline review comments',
-  })
+  const dom = renderPullRequest(
+    {
+      author: 'mira.k',
+      baseBranch: 'main',
+      comments: 12,
+      commits: [],
+      description: 'Review a diff directly from the editor.',
+      files: [],
+      headBranch: 'feat/inline-review-comments',
+      labels: [
+        { color: '1d76db', name: 'feature' },
+        { color: 'd4a72c', name: 'needs-review' },
+      ],
+      title: 'Add inline review comments',
+    },
+    [text('Review a diff directly from the editor.')],
+  )
 
   expect(dom).toEqual(
     expect.arrayContaining([

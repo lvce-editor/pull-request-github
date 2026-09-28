@@ -83,6 +83,7 @@ test('renders empty closed pull request state', () => {
 test('renders pull request detail with back navigation', () => {
   const dom = getPullRequestVirtualDom(
     createState({
+      descriptionVirtualDom: [text('description')],
       pullRequest: {
         baseBranch: 'main',
         commits: [

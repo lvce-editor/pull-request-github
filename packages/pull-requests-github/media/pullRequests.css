@@ -693,7 +693,58 @@
   color: var(--PullRequestForeground);
   font-size: 14px;
   line-height: 22px;
-  white-space: pre-wrap;
+  white-space: normal;
+}
+
+.PullRequestOverviewDescription .Markdown > :first-child {
+  margin-top: 0;
+}
+
+.PullRequestOverviewDescription .Markdown > :last-child {
+  margin-bottom: 0;
+}
+
+.PullRequestOverviewDescription .Markdown h1,
+.PullRequestOverviewDescription .Markdown h2,
+.PullRequestOverviewDescription .Markdown h3,
+.PullRequestOverviewDescription .Markdown h4,
+.PullRequestOverviewDescription .Markdown h5,
+.PullRequestOverviewDescription .Markdown h6 {
+  margin: 18px 0 8px;
+  color: var(--PullRequestForeground);
+  line-height: 1.35;
+}
+
+.PullRequestOverviewDescription .Markdown p,
+.PullRequestOverviewDescription .Markdown ul,
+.PullRequestOverviewDescription .Markdown ol,
+.PullRequestOverviewDescription .Markdown blockquote {
+  margin: 8px 0;
+}
+
+.PullRequestOverviewDescription .Markdown ul,
+.PullRequestOverviewDescription .Markdown ol {
+  padding-left: 24px;
+}
+
+.PullRequestOverviewDescription .Markdown pre,
+.PullRequestOverviewDescription .Markdown code {
+  font-family: var(--vscode-editor-font-family, monospace);
+}
+
+.PullRequestOverviewDescription .Markdown pre {
+  overflow-x: auto;
+  padding: 10px;
+  background: var(--PullRequestSurface);
+}
+
+.PullRequestOverviewDescription .Markdown a {
+  color: var(--PullRequestAccent);
+}
+
+.PullRequestOverviewDescription .Markdown img {
+  max-width: 100%;
+  height: auto;
 }
 
 .PullRequestOverviewSideCard {
