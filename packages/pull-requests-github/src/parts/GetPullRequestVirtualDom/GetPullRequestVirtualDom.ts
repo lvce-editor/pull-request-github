@@ -47,7 +47,7 @@ const renderDetailMessage = (message: string, error = false): readonly VirtualDo
 }
 
 const renderDetailContent = (state: PullRequestViewState): readonly VirtualDomNode[] => {
-  const { detailTab, error, errorCode, fileDiffs, pullRequest, status } = state
+  const { descriptionVirtualDom, detailTab, error, errorCode, fileDiffs, pullRequest, status } = state
   if (status === PullRequestViewStates.Loading) {
     return renderDetailMessage('Loading pull request...')
   }
@@ -63,7 +63,7 @@ const renderDetailContent = (state: PullRequestViewState): readonly VirtualDomNo
   if (detailTab === PullRequestDetailTabs.Changes) {
     return renderPullRequestChanges(pullRequest.files, fileDiffs)
   }
-  return renderPullRequest(pullRequest)
+  return renderPullRequest(pullRequest, descriptionVirtualDom)
 }
 
 const introNode: VirtualDomNode = {

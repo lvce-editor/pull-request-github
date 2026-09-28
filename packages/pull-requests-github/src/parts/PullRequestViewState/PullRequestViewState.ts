@@ -1,3 +1,4 @@
+import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
 import {
   Closed,
   Open,
@@ -39,6 +40,7 @@ export interface PullRequestViewState {
   readonly actionPending: boolean
   readonly closedCount: number | undefined
   readonly closedPullRequests: readonly PullRequestListItem[]
+  readonly descriptionVirtualDom: readonly VirtualDomNode[]
   readonly detailTab: PullRequestDetailTab
   readonly error: string
   readonly errorCode: string
@@ -64,6 +66,7 @@ export const createDefaultState = (savedState: PullRequestViewSavedState | undef
     actionPending: false,
     closedCount: undefined,
     closedPullRequests: [],
+    descriptionVirtualDom: [],
     detailTab: PullRequestDetailTabs.Overview,
     error: '',
     errorCode: '',

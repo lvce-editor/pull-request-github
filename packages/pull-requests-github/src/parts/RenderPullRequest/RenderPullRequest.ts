@@ -178,7 +178,14 @@ const renderConversationPanel = (pullRequest: PullRequestData): readonly Virtual
   ]
 }
 
-export const renderPullRequest = (pullRequest: PullRequestData): readonly VirtualDomNode[] => {
+const getDescriptionChildren = (descriptionVirtualDom: readonly VirtualDomNode[]): readonly VirtualDomNode[] => {
+  if (descriptionVirtualDom.length > 0) {
+    return descriptionVirtualDom
+  }
+  return [text('No description')]
+}
+
+export const renderPullRequest = (pullRequest: PullRequestData, descriptionVirtualDom: readonly VirtualDomNode[] = []): readonly VirtualDomNode[] => {
   const updatedAt = formatUpdatedAt(pullRequest.updatedAt)
   const updatedAtLabel = updatedAt ? ` ${updatedAt}` : ''
   const openedBy = `${pullRequest.author || 'A contributor'} opened this pull request${updatedAtLabel}`
@@ -190,7 +197,7 @@ export const renderPullRequest = (pullRequest: PullRequestData): readonly Virtua
     overviewCardHeaderNode,
     text(openedBy),
     overviewDescriptionNode,
-    text(pullRequest.description || 'No description'),
+    ...getDescriptionChildren(descriptionVirtualDom),
     {
       childCount: 2 + (labels.length > 0 ? 1 : 0),
       className: 'PullRequestOverviewSidebar',

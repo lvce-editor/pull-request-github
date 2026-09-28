@@ -33,6 +33,18 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
       updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
       url,
     },
+    {
+      author: 'kai.m',
+      baseBranch: 'main',
+      comments: 0,
+      description: '',
+      draft: false,
+      headBranch: 'docs/empty-description',
+      labels: [],
+      number: 483,
+      title: 'Empty description after formatted description',
+      url: 'https://github.com/lvce-editor/pull-request-github/pull/483',
+    },
   ])
   await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestListData', 'lvce-editor', 'pull-request-github', 'closed', [])
   await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestData', url, {
@@ -54,7 +66,8 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
         sha: 'c3d4e5f67890a1b2',
       },
     ],
-    description: 'Adds a comment gutter to the diff editor so reviewers can leave inline comments without leaving the editor.',
+    description:
+      '### Details\n\nAdds **formatted** Markdown to the overview.\n\n- Review the changes\n- Check the rendered description\n\n```ts\nconst ready = true\n```\n\n![Screenshot](https://example.com/screenshot.png)',
     files: [
       {
         additions: 5,
@@ -81,6 +94,14 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
     headBranch: 'feat/inline-review-comments',
     title: 'Add inline review comments to the diff editor',
   })
+  await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestData', 'https://github.com/lvce-editor/pull-request-github/pull/483', {
+    baseBranch: 'main',
+    commits: [],
+    description: '',
+    files: [],
+    headBranch: 'docs/empty-description',
+    title: 'Empty description after formatted description',
+  })
   await Command.executeExtensionCommand('PullRequestsGithub.show')
 
   const pullRequest = Locator('button[name="openPullRequest:482"]')
@@ -103,7 +124,17 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await expect(overviewTab).toHaveAttribute('aria-selected', 'true')
   await expect(overview).toHaveCSS('display', 'grid')
   await expect(overview).toContainText('mira.k opened this pull request')
-  await expect(overview).toContainText('Adds a comment gutter to the diff editor')
+  const markdown = Locator('.PullRequestOverviewDescription')
+  const markdownHeading = markdown.locator('h3')
+  const markdownStrong = markdown.locator('strong')
+  const markdownListItems = markdown.locator('ul li')
+  const markdownCode = markdown.locator('pre code')
+  const markdownImage = markdown.locator('img')
+  await expect(markdownHeading).toContainText('Details')
+  await expect(markdownStrong).toContainText('formatted')
+  await expect(markdownListItems).toHaveCount(2)
+  await expect(markdownCode).toContainText('const ready = true')
+  await expect(markdownImage).toHaveAttribute('src', 'https://example.com/screenshot.png')
   await expect(overview).toContainText('feature')
   await expect(overview).toContainText('needs-review')
   await expect(overview).toContainText('12 comments')
@@ -142,4 +173,13 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await Command.execute('Timeout.sleep', 200)
   await expect(overviewTab).toHaveAttribute('aria-selected', 'true')
   await expect(overview).toBeVisible()
+
+  await Locator('button[name="showPullRequestList"]').click()
+  await Command.execute('Timeout.sleep', 200)
+  await Locator('button[name="openPullRequest:483"]').click()
+  await Command.execute('Timeout.sleep', 200)
+  const emptyDescription = Locator('.PullRequestOverviewDescription')
+  const staleHeading = Locator('.PullRequestOverviewDescription h3')
+  await expect(emptyDescription).toContainText('No description')
+  await expect(staleHeading).toHaveCount(0)
 }

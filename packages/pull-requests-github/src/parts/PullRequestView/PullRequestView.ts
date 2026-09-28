@@ -1,5 +1,5 @@
-import type { View, ViewContext, ViewEvent, VirtualDomViewInstance } from '@lvce-editor/api'
 import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
+import { markdownToVirtualDom, type View, type ViewContext, type ViewEvent, type VirtualDomViewInstance } from '@lvce-editor/api'
 import { WhenExpression } from '@lvce-editor/constants'
 import {
   Closed,
@@ -48,6 +48,7 @@ export interface PullRequestViewInstance extends VirtualDomViewInstance {
 type PullRequestViewContext = Partial<ViewContext>
 
 interface PullRequestViewDependencies {
+  readonly convertMarkdown: (markdown: string) => Promise<readonly VirtualDomNode[]>
   readonly fetchPullRequest: (url: string) => Promise<PullRequestData>
   readonly fetchPullRequestFileDiff: (url: string, filename: string) => Promise<string | undefined>
   readonly fetchPullRequestPage: (repository: GitHubRepository, filter: PullRequestFilter, page: number) => Promise<PullRequestPage>
@@ -81,6 +82,7 @@ const getPullRequestActionFailure = async (
 }
 
 const defaultDependencies: PullRequestViewDependencies = {
+  convertMarkdown: markdownToVirtualDom,
   fetchPullRequest: GitHubWorkerRpc.fetchPullRequest,
   fetchPullRequestFileDiff: GitHubWorkerRpc.fetchPullRequestFileDiff,
   fetchPullRequestPage: GitHubWorkerRpc.fetchPullRequestPage,
@@ -175,6 +177,7 @@ export const create = (
       ...state,
       actionMenuOpen: false,
       closedPullRequests: [],
+      descriptionVirtualDom: [],
       detailTab: PullRequestDetailTabs.Overview,
       error: '',
       errorCode: '',
@@ -274,6 +277,7 @@ export const create = (
     }
     state = {
       ...state,
+      descriptionVirtualDom: [],
       error: '',
       errorCode: '',
       fileDiffs: {},
@@ -285,16 +289,26 @@ export const create = (
     }
     try {
       const detail = await dependencies.fetchPullRequest(url)
+      const descriptionVirtualDom = detail.description ? await dependencies.convertMarkdown(detail.description) : []
+      const { url: currentUrl } = state
+      if (currentUrl !== url) {
+        return
+      }
       const pullRequest: PullRequestData = {
         ...currentPullRequest,
         ...detail,
       }
       state = {
         ...state,
+        descriptionVirtualDom,
         pullRequest,
         status: PullRequestViewStates.Ready,
       }
     } catch (error) {
+      const { url: currentUrl } = state
+      if (currentUrl !== url) {
+        return
+      }
       const errorInfo = getErrorInfo(error)
       state = {
         ...state,
