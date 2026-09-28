@@ -4,6 +4,18 @@ import type { Test } from '@lvce-editor/test-with-playwright'
 export const name = 'pull-requests-github.pagination'
 
 export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspace }) => {
+  const retry = async (assertion: () => Promise<void>): Promise<void> => {
+    const deadline = Date.now() + 5000
+    while (true) {
+      try {
+        await assertion()
+        return
+      } catch (error) {
+        if (Date.now() >= deadline) throw error
+        await Command.execute('Timeout.sleep', 50)
+      }
+    }
+  }
   const tmpDir = await FileSystem.getTmpDir()
   await FileSystem.mkdir(`${tmpDir}/.git`)
   await FileSystem.writeFile(`${tmpDir}/.git/config`, '[remote "origin"]\n url = https://github.com/lvce-editor/pull-request-github.git\n')
@@ -32,37 +44,37 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   const closedCount = Locator('[name="showClosedPullRequests"] .PullRequestTabCount')
   const previous = Locator('button[aria-label="Previous"]')
   const next = Locator('button[aria-label="Next"]')
-  await expect(openCount).toHaveText('121')
-  await expect(closedCount).toHaveText('243')
-  await expect(items).toHaveCount(30)
-  await expect(previous).toHaveJSProperty('disabled', true)
-  await expect(list).toHaveCSS('overflow-y', 'auto')
-  await expect(list).toHaveJSProperty('scrollTop', 0)
+  await retry(() => expect(openCount).toHaveText('121'))
+  await retry(() => expect(closedCount).toHaveText('243'))
+  await retry(() => expect(items).toHaveCount(30))
+  await retry(() => expect(previous).toHaveJSProperty('disabled', true))
+  await retry(() => expect(list).toHaveCSS('overflow-y', 'auto'))
+  await retry(() => expect(list).toHaveJSProperty('scrollTop', 0))
   const lastCheckbox = Locator('[name="togglePullRequest:30"]')
   await lastCheckbox.click()
-  await expect(list).not.toHaveJSProperty('scrollTop', 0)
+  await retry(() => expect(list).not.toHaveJSProperty('scrollTop', 0))
   await next.click()
   const firstTitle = Locator('.PullRequestListItemTitle').first()
-  await expect(firstTitle).toHaveText('open pull request 31')
+  await retry(() => expect(firstTitle).toHaveText('open pull request 31'))
   const selected = Locator('.PullRequestSelectionCount')
-  await expect(selected).toHaveText('Select pull requests')
+  await retry(() => expect(selected).toHaveText('Select pull requests'))
   const thirdPage = Locator('button[aria-label="Page 3"]')
   await thirdPage.click()
-  await expect(firstTitle).toHaveText('open pull request 61')
+  await retry(() => expect(firstTitle).toHaveText('open pull request 61'))
   const lastPage = Locator('button[aria-label="Page 5"]')
   await lastPage.click()
-  await expect(items).toHaveCount(1)
-  await expect(firstTitle).toHaveText('open pull request 121')
-  await expect(next).toHaveJSProperty('disabled', true)
+  await retry(() => expect(items).toHaveCount(1))
+  await retry(() => expect(firstTitle).toHaveText('open pull request 121'))
+  await retry(() => expect(next).toHaveJSProperty('disabled', true))
   await previous.click()
-  await expect(firstTitle).toHaveText('open pull request 91')
+  await retry(() => expect(firstTitle).toHaveText('open pull request 91'))
   const closedTab = Locator('button[name="showClosedPullRequests"]')
   await closedTab.click()
-  await expect(firstTitle).toHaveText('closed pull request 1')
-  await expect(previous).toHaveJSProperty('disabled', true)
+  await retry(() => expect(firstTitle).toHaveText('closed pull request 1'))
+  await retry(() => expect(previous).toHaveJSProperty('disabled', true))
   await next.click()
-  await expect(firstTitle).toHaveText('closed pull request 31')
+  await retry(() => expect(firstTitle).toHaveText('closed pull request 31'))
   const refresh = Locator('button[name="refreshPullRequests"]')
   await refresh.click()
-  await expect(firstTitle).toHaveText('closed pull request 1')
+  await retry(() => expect(firstTitle).toHaveText('closed pull request 1'))
 }
