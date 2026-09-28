@@ -9,6 +9,7 @@ export interface GitHubWorkerRpc {
   readonly fetchPullRequest: (url: string) => Promise<PullRequestData>
   readonly fetchPullRequestFileDiff: (url: string, filename: string) => Promise<string | undefined>
   readonly fetchPullRequests: (repository: GitHubRepository, state: PullRequestFilter) => Promise<readonly PullRequestListItem[]>
+  readonly mutatePullRequest: (token: string, action: 'archive' | 'close' | 'unarchive', pullRequestId: string) => Promise<void>
   readonly setPullRequestData: (url: string, data: PullRequestData) => Promise<void>
   readonly setPullRequestError: (url: string, message: string) => Promise<void>
   readonly setPullRequestFileDiff: (url: string, filename: string, diff: string) => Promise<void>
@@ -37,6 +38,9 @@ export const create = (getRpc: GetRpc): GitHubWorkerRpc => {
     },
     fetchPullRequests(repository: GitHubRepository, state: PullRequestFilter): Promise<readonly PullRequestListItem[]> {
       return invoke('GitHub.fetchPullRequests', repository, state)
+    },
+    mutatePullRequest(token: string, action: 'archive' | 'close' | 'unarchive', pullRequestId: string): Promise<void> {
+      return invoke('GitHub.mutatePullRequest', token, action, pullRequestId)
     },
     setPullRequestData(url: string, data: PullRequestData): Promise<void> {
       return invoke('GitHub.setPullRequestData', url, data)
@@ -84,6 +88,7 @@ export const {
   fetchPullRequest,
   fetchPullRequestFileDiff,
   fetchPullRequests,
+  mutatePullRequest,
   setPullRequestData,
   setPullRequestError,
   setPullRequestFileDiff,

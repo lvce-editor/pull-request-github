@@ -1,6 +1,6 @@
 import { expect, test } from '@jest/globals'
 import * as PullRequestFilters from '@lvce-editor/pull-request-shared'
-import { AriaRoles, mergeClassNames, text, VirtualDomElements } from '@lvce-editor/virtual-dom-worker'
+import { AriaRoles, mergeClassNames, text, type VirtualDomNode, VirtualDomElements } from '@lvce-editor/virtual-dom-worker'
 import type { PullRequestViewState, PullRequestViewStatus } from '../src/parts/PullRequestViewState/PullRequestViewState.ts'
 import { getPullRequestVirtualDom } from '../src/parts/GetPullRequestVirtualDom/GetPullRequestVirtualDom.ts'
 import { createDefaultState, Detail, Error, Loading, Ready, Unavailable } from '../src/parts/PullRequestViewState/PullRequestViewState.ts'
@@ -10,6 +10,24 @@ const createState = (overrides: Partial<PullRequestViewState> = {}): PullRequest
     ...createDefaultState(undefined),
     ...overrides,
   }
+}
+
+const getRootNodeCount = (nodes: readonly VirtualDomNode[]): number => {
+  const getNodeSize = (index: number, parentIndex = -1): number => {
+    if (!nodes[index]) throw new globalThis.Error(`Virtual DOM requested a missing node at index ${index} from ${JSON.stringify(nodes[parentIndex])}`)
+    let nextIndex = index + 1
+    for (let childIndex = 0; childIndex < (nodes[index].childCount ?? 0); childIndex++) {
+      nextIndex += getNodeSize(nextIndex, index)
+    }
+    return nextIndex - index
+  }
+  let index = 0
+  let rootCount = 0
+  while (index < nodes.length) {
+    index += getNodeSize(index)
+    rootCount++
+  }
+  return rootCount
 }
 
 test('renders repository pull request list with open and closed tabs', () => {
@@ -38,6 +56,7 @@ test('renders repository pull request list with open and closed tabs', () => {
     }),
   )
 
+  expect(getRootNodeCount(dom)).toBe(1)
   expect(dom.some((node) => node.text === 'owner / repo')).toBe(true)
   expect(dom.some((node) => node.text === 'Open')).toBe(true)
   expect(dom.some((node) => node.text === 'Closed')).toBe(true)
@@ -57,6 +76,7 @@ test('renders empty closed pull request state', () => {
     }),
   )
 
+  expect(getRootNodeCount(dom)).toBe(1)
   expect(dom.some((node) => node.text === 'No closed pull requests.')).toBe(true)
 })
 

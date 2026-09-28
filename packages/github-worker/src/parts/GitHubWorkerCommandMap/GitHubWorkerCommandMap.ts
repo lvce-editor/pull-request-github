@@ -11,6 +11,7 @@ export const commandMap = {
   'GitHub.fetchPullRequestFileDiff': GitHubPullRequest.fetchPullRequestFileDiff,
   'GitHub.fetchPullRequests': GitHubPullRequestList.fetchPullRequests,
   'GitHub.getCreateRequests': CreateApi.getCreateRequests,
+  'GitHub.mutatePullRequest': CreateApi.mutatePullRequest,
   'GitHub.setCreateResponses': CreateApi.setCreateResponses,
   'GitHub.setPullRequestData': PullRequestMockRegistry.setPullRequestData,
   'GitHub.setPullRequestError': PullRequestMockRegistry.setPullRequestError,

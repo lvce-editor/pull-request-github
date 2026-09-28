@@ -19,8 +19,10 @@ interface GitHubPullRequestListResponse {
     readonly ref?: unknown
   }
   readonly html_url?: unknown
+  readonly is_archived?: unknown
   readonly labels?: unknown
   readonly message?: unknown
+  readonly node_id?: unknown
   readonly number?: unknown
   readonly title?: unknown
   readonly updated_at?: unknown
@@ -52,6 +54,7 @@ const toLabels = (value: unknown): PullRequestListItem['labels'] => {
 
 export const toPullRequestListItem = (response: GitHubPullRequestListResponse): PullRequestListItem => {
   return {
+    archived: response.is_archived === true,
     author: assertString(response.user?.login),
     baseBranch: assertString(response.base?.ref),
     comments: typeof response.comments === 'number' ? response.comments : 0,
@@ -59,6 +62,7 @@ export const toPullRequestListItem = (response: GitHubPullRequestListResponse): 
     draft: response.draft === true,
     headBranch: assertString(response.head?.ref),
     labels: toLabels(response.labels),
+    nodeId: assertString(response.node_id),
     number: typeof response.number === 'number' ? response.number : 0,
     title: assertString(response.title),
     updatedAt: assertString(response.updated_at),

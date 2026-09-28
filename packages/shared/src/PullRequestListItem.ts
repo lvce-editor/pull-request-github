@@ -6,10 +6,12 @@ export interface PullRequestLabel {
 }
 
 export interface PullRequestListItem extends PullRequestSummary {
+  readonly archived?: boolean
   readonly author: string
   readonly comments: number
   readonly draft: boolean
   readonly labels: readonly PullRequestLabel[]
+  readonly nodeId?: string
   readonly number: number
   readonly updatedAt: string
   readonly url: string

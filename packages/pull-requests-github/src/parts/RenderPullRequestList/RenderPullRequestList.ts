@@ -4,7 +4,7 @@ import { mergeClassNames, text, VirtualDomElements } from '@lvce-editor/virtual-
 import * as DomEventListenerFunctions from '../DomEventListenerFunctions/DomEventListenerFunctions.ts'
 
 const listItemNode: VirtualDomNode = {
-  childCount: 1,
+  childCount: 2,
   className: 'PullRequestListItem',
   type: VirtualDomElements.Li,
 }
@@ -112,13 +112,24 @@ const renderComments = (pullRequest: PullRequestListItem, name: string): readonl
   ]
 }
 
-const renderPullRequestListItem = (pullRequest: PullRequestListItem, filter: PullRequestFilter): readonly VirtualDomNode[] => {
+const renderPullRequestListItem = (pullRequest: PullRequestListItem, filter: PullRequestFilter, selected: boolean): readonly VirtualDomNode[] => {
   const name = `openPullRequest:${pullRequest.number}`
   const labels = pullRequest.labels ?? []
   const title = getTitle(pullRequest)
   const stateClass = getStateClass(pullRequest, filter)
   return [
     listItemNode,
+    {
+      ariaLabel: `Select pull request ${pullRequest.number}`,
+      checked: selected,
+      childCount: 0,
+      className: 'PullRequestCheckbox',
+      inputType: 'checkbox',
+      name: `togglePullRequest:${pullRequest.number}`,
+      onInput: DomEventListenerFunctions.HandleSelection,
+      type: VirtualDomElements.Input,
+      value: 'on',
+    },
     {
       ariaLabel: `Pull request ${pullRequest.number}: ${title}`,
       childCount: pullRequest.comments ? 3 : 2,
@@ -164,13 +175,17 @@ const renderPullRequestListItem = (pullRequest: PullRequestListItem, filter: Pul
   ]
 }
 
-export const renderPullRequestList = (pullRequests: readonly PullRequestListItem[], filter: PullRequestFilter): readonly VirtualDomNode[] => {
+export const renderPullRequestList = (
+  pullRequests: readonly PullRequestListItem[],
+  filter: PullRequestFilter,
+  selectedPullRequestNumbers: readonly number[] = [],
+): readonly VirtualDomNode[] => {
   return [
     {
       childCount: pullRequests.length,
       className: 'PullRequestList',
       type: VirtualDomElements.Ul,
     },
-    ...pullRequests.flatMap((pullRequest) => renderPullRequestListItem(pullRequest, filter)),
+    ...pullRequests.flatMap((pullRequest) => renderPullRequestListItem(pullRequest, filter, selectedPullRequestNumbers.includes(pullRequest.number))),
   ]
 }
