@@ -51,6 +51,8 @@ export const test: Test = async ({ ColorTheme, Command, expect, FileSystem, Loca
   await retry(() => expect(element3).toHaveValue(defaults.title))
   const element4 = Locator('textarea[name="description"]')
   await retry(() => expect(element4).toHaveValue(''))
+  await retry(() => expect(element4).toHaveCSS('flex-grow', '1'))
+  await retry(() => expect(element4).toHaveCSS('min-height', '0px'))
   const submitButton = Locator('button[name="submitCreatePullRequest"]')
   const cancelButton = Locator('button[name="cancelCreatePullRequest"]')
   await retry(() => expect(submitButton).toHaveCSS('background-color', 'rgb(0, 136, 255)'))
@@ -62,6 +64,9 @@ export const test: Test = async ({ ColorTheme, Command, expect, FileSystem, Loca
   await retry(() => expect(element5).toHaveText('Pull request created. Auto-squash enabled.'))
   const element6 = Locator('.PullRequestCreatedLink')
   await retry(() => expect(element6).toHaveAttribute('href', created.url))
+  await retry(() => expect(element6).toBeVisible())
+  await retry(() => expect(cancelButton).toBeVisible())
+  await retry(() => expect(submitButton).toBeVisible())
   await assertRequests([
     {
       body: { base: 'main', description: '', head: 'feature/create', repository: 'lvce-editor/pull-request-github', title: defaults.title },
