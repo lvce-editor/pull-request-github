@@ -81,11 +81,11 @@ const getMetadata = (pullRequest: PullRequestListItem): string => {
 }
 
 const getStateClass = (pullRequest: PullRequestListItem, filter: PullRequestFilter): string => {
-  if (pullRequest.draft) {
-    return 'PullRequestStateDraft'
-  }
   if (filter === Closed) {
     return 'PullRequestStateClosed'
+  }
+  if (pullRequest.draft) {
+    return 'PullRequestStateDraft'
   }
   return 'PullRequestStateOpen'
 }
