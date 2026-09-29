@@ -36,7 +36,21 @@ export const test: Test = async ({ ColorTheme, Command, expect, FileSystem, Loca
   await Workspace.setPath(tmpDir)
   await ColorTheme.setColorTheme('cobalt2')
   await Command.executeExtensionCommand('PullRequestsGithub.clearPullRequestData')
-  await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestListData', 'lvce-editor', 'pull-request-github', 'open', [])
+  await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestListData', 'lvce-editor', 'pull-request-github', 'open', [
+    {
+      author: 'mira.k',
+      baseBranch: 'main',
+      comments: 0,
+      description: '',
+      draft: false,
+      headBranch: 'feature/create',
+      labels: [],
+      number: 42,
+      title: defaults.title,
+      updatedAt: new Date().toISOString(),
+      url: created.url,
+    },
+  ])
   await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestListData', 'lvce-editor', 'pull-request-github', 'closed', [])
   await Command.executeExtensionCommand('PullRequestsGithub.setCreationFixture', fixture)
   await Command.executeExtensionCommand('PullRequestsGithub.show')
@@ -60,13 +74,10 @@ export const test: Test = async ({ ColorTheme, Command, expect, FileSystem, Loca
   await retry(() => expect(cancelButton).toHaveCSS('background-color', 'rgb(25, 53, 73)'))
   await Locator('button[name="submitCreatePullRequest"]').click()
   await retry(() => expect(submitButton).toHaveCSS('opacity', '0.6'))
-  const element5 = Locator('.PullRequestCreateView [role="status"]')
-  await retry(() => expect(element5).toHaveText('Pull request created. Auto-squash enabled.'))
-  const element6 = Locator('.PullRequestCreatedLink')
-  await retry(() => expect(element6).toHaveAttribute('href', created.url))
-  await retry(() => expect(element6).toBeVisible())
-  await retry(() => expect(cancelButton).toBeVisible())
-  await retry(() => expect(submitButton).toBeVisible())
+  const overviewTitle = Locator('text=feature: create pull requests')
+  const createView = Locator('.PullRequestCreateView')
+  await retry(() => expect(overviewTitle).toBeVisible())
+  await retry(() => expect(createView).toBeHidden())
   await assertRequests([
     {
       body: { base: 'main', description: '', head: 'feature/create', repository: 'lvce-editor/pull-request-github', title: defaults.title },

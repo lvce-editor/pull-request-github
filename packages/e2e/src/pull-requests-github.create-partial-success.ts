@@ -32,7 +32,21 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await FileSystem.writeFile(`${tmpDir}/.git/config`, '[remote "origin"]\n url = https://github.com/lvce-editor/pull-request-github.git\n')
   await Workspace.setPath(tmpDir)
   await Command.executeExtensionCommand('PullRequestsGithub.clearPullRequestData')
-  await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestListData', 'lvce-editor', 'pull-request-github', 'open', [])
+  await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestListData', 'lvce-editor', 'pull-request-github', 'open', [
+    {
+      author: 'mira.k',
+      baseBranch: 'main',
+      comments: 0,
+      description: '',
+      draft: false,
+      headBranch: 'feature/create',
+      labels: [],
+      number: 42,
+      title: defaults.title,
+      updatedAt: new Date().toISOString(),
+      url: created.url,
+    },
+  ])
   await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestListData', 'lvce-editor', 'pull-request-github', 'closed', [])
   await Command.executeExtensionCommand('PullRequestsGithub.setCreationFixture', fixture)
   await Command.executeExtensionCommand('PullRequestsGithub.show')
@@ -47,8 +61,10 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   const element3 = Locator('button[name="submitCreatePullRequest"]')
   await retry(() => expect(element3).toHaveText('Retry Auto-Squash'))
   await Locator('button[name="submitCreatePullRequest"]').click()
-  const element4 = Locator('.PullRequestCreateView [role="status"]')
-  await retry(() => expect(element4).toHaveText('Pull request created. Auto-squash enabled.'))
+  const overviewTitle = Locator('text=feature: create pull requests')
+  const createView = Locator('.PullRequestCreateView')
+  await retry(() => expect(overviewTitle).toBeVisible())
+  await retry(() => expect(createView).toBeHidden())
   const calls = (await Command.executeExtensionCommand('PullRequestsGithub.getCreateRequests')) as readonly { readonly path: string }[]
   if (calls.map((call) => call.path).join(',') !== ',/auto-merge,/auto-merge') throw new Error('Retried PR creation')
 }

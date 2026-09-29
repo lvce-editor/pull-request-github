@@ -163,6 +163,12 @@ export const create = (
     await context?.requestRerender?.()
   }
 
+  const clearCreateFocus = (): void => {
+    focusedCreateControl = ''
+    createFocusActive = false
+    focusRequested = false
+  }
+
   const fetchSecondaryPage = async (repository: GitHubRepository, filter: PullRequestFilter): Promise<PullRequestPage | undefined> => {
     try {
       return await dependencies.fetchPullRequestPage(repository, filter, 1)
@@ -643,6 +649,8 @@ export const create = (
           if (name === 'cancelCreatePullRequest' && creation.canCancel()) {
             creation.dispose()
             creation = undefined
+            clearCreateFocus()
+            await requestRerender()
           }
           return
         }
@@ -722,9 +730,16 @@ export const create = (
       },
       async startCreate(): Promise<void> {
         if (creation) return
-        creation = CreatePullRequestView.create(requestRerender)
+        const currentCreation = CreatePullRequestView.create(requestRerender, CreatePullRequestDependencies.dependencies, async () => {
+          if (disposed || creation !== currentCreation) return
+          creation.dispose()
+          creation = undefined
+          clearCreateFocus()
+          await loadRepository(true)
+        })
+        creation = currentCreation
         await requestRerender()
-        await creation.initialize()
+        await currentCreation.initialize()
       },
     }
     activeInstances.add(instance)

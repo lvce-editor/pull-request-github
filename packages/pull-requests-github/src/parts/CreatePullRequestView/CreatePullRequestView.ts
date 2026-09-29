@@ -27,7 +27,11 @@ export interface CreationView {
   readonly render: () => readonly VirtualDomNode[]
   readonly submit: () => Promise<void>
 }
-export const create = (rerender: () => Promise<void>, dependencies: Dependencies = defaultDependencies): CreationView => {
+export const create = (
+  rerender: () => Promise<void>,
+  dependencies: Dependencies = defaultDependencies,
+  onComplete: () => Promise<void> = async () => {},
+): CreationView => {
   let disposed = false
   let state: CreateState = {
     autoMerge: false,
@@ -95,6 +99,7 @@ export const create = (rerender: () => Promise<void>, dependencies: Dependencies
       const result = await dependencies.request(token, '/auto-merge', { number, repository })
       if (result.autoMerge !== true) throw new Error('GitHub did not confirm auto-squash.')
       await update({ autoMerge: true })
+      if (!disposed) await onComplete()
     } catch (error) {
       const errorInfo = getErrorInfo(error)
       const { number } = state
