@@ -44,8 +44,10 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await retry(() => expect(titleInput).toBeVisible())
   await Locator('textarea[name="description"]').type('Description from the UI')
   await Locator('button[name="submitCreatePullRequest"]').click()
-  const element1 = Locator('.PullRequestCreateView [role="status"]')
-  await retry(() => expect(element1).toHaveText('Pull request created. Auto-squash enabled.'))
+  const createView = Locator('.PullRequestCreateView')
+  const createButton = Locator('button[name="createPullRequest"]')
+  await retry(() => expect(createView).toBeHidden())
+  await retry(() => expect(createButton).toBeVisible())
   await assertRequests([
     {
       body: {
