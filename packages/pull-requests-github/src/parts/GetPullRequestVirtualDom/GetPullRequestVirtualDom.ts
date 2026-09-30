@@ -122,6 +122,7 @@ const listCardNode: VirtualDomNode = {
 const selectionCheckboxNode: VirtualDomNode = {
   ariaLabel: 'Select all pull requests',
   childCount: 0,
+  className: 'PullRequestSelectAllCheckbox',
   inputType: 'checkbox',
   name: 'toggleAllPullRequests',
   onInput: DomEventListenerFunctions.HandleSelection,
@@ -130,9 +131,28 @@ const selectionCheckboxNode: VirtualDomNode = {
 
 const selectCountNode: VirtualDomNode = { childCount: 1, className: 'PullRequestSelectionCount', type: VirtualDomElements.Span }
 const actionMenuNode: VirtualDomNode = {
+  ariaExpanded: false,
+  ariaHasPopup: 'menu',
   childCount: 1,
+  className: 'PullRequestActionMenuButton',
   name: 'togglePullRequestActionMenu',
   onClick: DomEventListenerFunctions.HandleClick,
+  type: VirtualDomElements.Button,
+}
+const actionMenuListNode: VirtualDomNode = {
+  childCount: 6,
+  className: 'PullRequestActionMenu',
+  role: AriaRoles.Menu,
+  type: VirtualDomElements.Div,
+}
+const actionMenuContainerNode: VirtualDomNode = {
+  className: 'PullRequestActionMenuContainer',
+  type: VirtualDomElements.Div,
+}
+const actionMenuItemNode: VirtualDomNode = {
+  childCount: 1,
+  className: 'PullRequestActionMenuItem',
+  role: AriaRoles.MenuItem,
   type: VirtualDomElements.Button,
 }
 const actionMenuItems = [
@@ -142,25 +162,51 @@ const actionMenuItems = [
 ] as const
 const pendingActionNode: VirtualDomNode = { childCount: 1, role: AriaRoles.Status, type: VirtualDomElements.Span }
 const actionErrorNode: VirtualDomNode = { childCount: 1, role: AriaRoles.Alert, type: VirtualDomElements.Div }
+const pullRequestListToolbarNode: VirtualDomNode = { childCount: 2, className: 'PullRequestListToolbar', type: VirtualDomElements.Div }
+
+const matchesPullRequestQuery = (pullRequest: PullRequestViewState['pullRequests'][number], query: string): boolean => {
+  if (!query) return true
+  const searchableText = [
+    pullRequest.title,
+    pullRequest.author,
+    pullRequest.headBranch,
+    pullRequest.baseBranch,
+    String(pullRequest.number),
+    ...(pullRequest.labels ?? []).map((label) => label.name),
+  ]
+    .join(' ')
+    .toLowerCase()
+  return searchableText.includes(query)
+}
 
 const renderSelectionActions = (state: PullRequestViewState): readonly VirtualDomNode[] => {
-  const { actionError, actionMenuOpen, actionPending, pullRequests, selectedPullRequestNumbers, status } = state
+  const { actionError, actionMenuOpen, actionPending, pullRequests, query, selectedPullRequestNumbers, status } = state
   if (status !== PullRequestViewStates.Ready || pullRequests.length === 0) return []
   const selectedCount = selectedPullRequestNumbers.length
-  const visibleSelectionCount = selectedPullRequestNumbers.filter((number) =>
-    pullRequests.some((pullRequest) => pullRequest.number === number),
-  ).length
-  const selectionCheckbox = { ...selectionCheckboxNode, checked: visibleSelectionCount === pullRequests.length }
-  let childCount = 2
-  const nodes: VirtualDomNode[] = [selectionCheckbox, selectCountNode, text(selectedCount ? `${selectedCount} selected` : 'Select pull requests')]
-  if (selectedCount) {
-    childCount++
-    nodes.push(actionMenuNode, text('Mark as'))
-    if (actionMenuOpen) {
-      childCount += actionMenuItems.length
-      for (const { action, label } of actionMenuItems) {
-        nodes.push({ ...actionMenuNode, name: `bulkPullRequest:${action}` }, text(label))
-      }
+  if (!selectedCount) return []
+  const normalizedQuery = query.trim().toLowerCase()
+  const visiblePullRequests = pullRequests.filter((pullRequest) => matchesPullRequestQuery(pullRequest, normalizedQuery))
+  const visibleSelectionCount = visiblePullRequests.filter((pullRequest) => selectedPullRequestNumbers.includes(pullRequest.number)).length
+  const mixedSelection = visibleSelectionCount > 0 && visibleSelectionCount < visiblePullRequests.length
+  const selectionCheckbox = {
+    ...selectionCheckboxNode,
+    ariaChecked: mixedSelection ? 'mixed' : visibleSelectionCount === visiblePullRequests.length,
+    checked: visiblePullRequests.length > 0 && visibleSelectionCount === visiblePullRequests.length,
+    className: mixedSelection ? 'PullRequestSelectAllCheckbox PullRequestSelectAllCheckboxMixed' : 'PullRequestSelectAllCheckbox',
+  }
+  let childCount = 4
+  const nodes: VirtualDomNode[] = [
+    selectionCheckbox,
+    selectCountNode,
+    text(`${selectedCount} selected`),
+    { ...actionMenuContainerNode, childCount: actionMenuOpen ? 3 : 2 },
+    { ...actionMenuNode, ariaExpanded: actionMenuOpen },
+    text('Mark as'),
+  ]
+  if (actionMenuOpen) {
+    nodes.push(actionMenuListNode)
+    for (const { action, label } of actionMenuItems) {
+      nodes.push({ ...actionMenuItemNode, name: `bulkPullRequest:${action}` }, text(label))
     }
   }
   if (actionPending) {
@@ -172,6 +218,29 @@ const renderSelectionActions = (state: PullRequestViewState): readonly VirtualDo
     nodes.push(actionErrorNode, text(actionError))
   }
   return [{ childCount, className: 'PullRequestSelectionActions', type: VirtualDomElements.Div }, ...nodes]
+}
+
+const renderPullRequestListToolbar = (state: PullRequestViewState): readonly VirtualDomNode[] => {
+  const selectionActions = renderSelectionActions(state)
+  if (selectionActions.length > 0) return selectionActions
+  const { closedCount, filter, openCount, pullRequests, query, selectedPullRequestNumbers } = state
+  const normalizedQuery = query.trim().toLowerCase()
+  const visiblePullRequests = pullRequests.filter((pullRequest) => matchesPullRequestQuery(pullRequest, normalizedQuery))
+  const visibleSelectionCount = visiblePullRequests.filter((pullRequest) => selectedPullRequestNumbers.includes(pullRequest.number)).length
+  const selectionCheckbox = {
+    ...selectionCheckboxNode,
+    ariaChecked:
+      visibleSelectionCount > 0 && visibleSelectionCount < visiblePullRequests.length
+        ? 'mixed'
+        : visibleSelectionCount === visiblePullRequests.length,
+    checked: visiblePullRequests.length > 0 && visibleSelectionCount === visiblePullRequests.length,
+    className:
+      visibleSelectionCount > 0 && visibleSelectionCount < visiblePullRequests.length
+        ? 'PullRequestSelectAllCheckbox PullRequestSelectAllCheckboxMixed'
+        : 'PullRequestSelectAllCheckbox',
+  }
+  const tabs = renderPullRequestTabs(filter, openCount, closedCount)
+  return [pullRequestListToolbarNode, selectionCheckbox, ...tabs]
 }
 
 const descriptionNode: VirtualDomNode = {
@@ -265,12 +334,12 @@ const getStatePresentation = (draft: boolean | undefined, filter: string): reado
 }
 
 const renderListView = (state: PullRequestViewState): readonly VirtualDomNode[] => {
-  const { closedCount, error, errorCode, filter, openCount, query, repository, status } = state
+  const { error, errorCode, query, repository, status } = state
   if (status === PullRequestViewStates.Unavailable && errorCode === ErrorCodes.WorkspaceNotOpen) {
     return [{ ...listViewNode, childCount: 1 }, ...renderDetailMessage(error)]
   }
   const repositoryLabel = repository ? `${repository.owner} / ${repository.name}` : 'Reading the current workspace repository…'
-  const selectionActions = renderSelectionActions(state)
+  const listToolbar = renderPullRequestListToolbar(state)
   const pagination = renderPullRequestPagination(state)
   return [
     listViewNode,
@@ -295,9 +364,8 @@ const renderListView = (state: PullRequestViewState): readonly VirtualDomNode[] 
     text('Create Pull Request'),
     refreshButtonNode,
     refreshIconNode,
-    { ...listCardNode, childCount: 2 + Number(selectionActions.length > 0) + Number(pagination.length > 0) },
-    ...renderPullRequestTabs(filter, openCount, closedCount),
-    ...selectionActions,
+    { ...listCardNode, childCount: 1 + Number(listToolbar.length > 0) + Number(pagination.length > 0) },
+    ...listToolbar,
     ...renderPullRequestListStatus(state),
     ...pagination,
   ]

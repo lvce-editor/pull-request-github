@@ -118,7 +118,7 @@ const renderPullRequestListItem = (pullRequest: PullRequestListItem, filter: Pul
   const title = getTitle(pullRequest)
   const stateClass = getStateClass(pullRequest, filter)
   return [
-    listItemNode,
+    { ...listItemNode, className: selected ? 'PullRequestListItem PullRequestListItemSelected' : 'PullRequestListItem' },
     {
       ariaLabel: `Select pull request ${pullRequest.number}`,
       checked: selected,

@@ -189,6 +189,24 @@
   border-bottom: 1px solid var(--PullRequestBorder);
 }
 
+.PullRequestListToolbar {
+  display: flex;
+  min-height: 44px;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  background: var(--PullRequestTitlebar);
+  border-bottom: 1px solid var(--PullRequestBorder);
+}
+
+.PullRequestListToolbar .PullRequestTabs {
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
+
 .PullRequestTab {
   display: flex;
   height: 24px;
@@ -262,17 +280,144 @@
   border-bottom: 1px solid var(--PullRequestBorder);
 }
 
+.PullRequestListItemSelected {
+  background: color-mix(in srgb, var(--PullRequestAccent) 14%, var(--PullRequestSurface));
+}
+
 .PullRequestCheckbox {
   margin: 14px 0 0 12px;
 }
 
+.PullRequestCheckbox,
+.PullRequestSelectAllCheckbox {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  margin-top: 14px;
+  border: 1px solid color-mix(in srgb, var(--PullRequestForeground) 38%, var(--PullRequestBorder));
+  border-radius: 4px;
+  background-color: var(--PullRequestSurface);
+  color: #fff;
+  cursor: pointer;
+}
+
+.PullRequestSelectAllCheckbox {
+  margin: 0;
+}
+
+.PullRequestCheckbox:checked,
+.PullRequestSelectAllCheckbox:checked,
+.PullRequestSelectAllCheckboxMixed {
+  border-color: var(--PullRequestAccent);
+  background-color: var(--PullRequestAccent);
+}
+
+.PullRequestCheckbox:checked,
+.PullRequestSelectAllCheckbox:checked {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m3 8 3 3 7-7' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+.PullRequestSelectAllCheckboxMixed {
+  background-image: linear-gradient(white, white);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 8px 2px;
+}
+
+.PullRequestCheckbox:focus-visible,
+.PullRequestSelectAllCheckbox:focus-visible {
+  outline: 2px solid var(--PullRequestAccent);
+  outline-offset: 2px;
+}
+
 .PullRequestSelectionActions {
+  position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   min-height: 44px;
+  flex: none;
   padding: 0 12px;
+  background: var(--PullRequestTitlebar);
   border-bottom: 1px solid var(--PullRequestBorder);
+}
+
+.PullRequestSelectionCount {
+  color: var(--PullRequestForeground);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.PullRequestActionMenuContainer {
+  position: relative;
+  flex: none;
+}
+
+.PullRequestActionMenuButton {
+  display: flex;
+  min-height: 30px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  color: var(--PullRequestForeground);
+  background: var(--PullRequestSurface);
+  border: 1px solid var(--PullRequestBorder);
+  border-radius: 6px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 500;
+}
+
+.PullRequestActionMenuButton::after {
+  width: 6px;
+  height: 6px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  content: '';
+  transform: rotate(45deg) translateY(-2px);
+}
+
+.PullRequestActionMenuButton:hover {
+  background: var(--PullRequestSurfaceRaised);
+}
+
+.PullRequestActionMenuButton:focus-visible,
+.PullRequestActionMenuItem:focus-visible {
+  outline: 2px solid var(--PullRequestAccent);
+  outline-offset: 2px;
+}
+
+.PullRequestActionMenu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 5;
+  min-width: 160px;
+  overflow: hidden;
+  padding: 4px;
+  background: var(--PullRequestSurface);
+  border: 1px solid var(--PullRequestBorder);
+  border-radius: 6px;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--PullRequestForeground) 18%, transparent);
+}
+
+.PullRequestActionMenuItem {
+  display: block;
+  width: 100%;
+  padding: 7px 9px;
+  color: var(--PullRequestForeground);
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.PullRequestActionMenuItem:hover {
+  background: var(--PullRequestSurfaceRaised);
 }
 
 .PullRequestListItem:last-child {
@@ -1083,6 +1228,7 @@ textarea.PullRequestCreateInput {
 }
 
 .PullRequestListHeader,
+.PullRequestListToolbar,
 .PullRequestTabs,
 .PullRequestSelectionActions,
 .PullRequestPagination {
