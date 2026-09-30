@@ -12,6 +12,20 @@ const createState = (overrides: Partial<PullRequestViewState> = {}): PullRequest
   }
 }
 
+const getPullRequest = (number: number, title = String(number)): PullRequestViewState['pullRequests'][number] => ({
+  author: 'alice',
+  baseBranch: 'main',
+  comments: 0,
+  description: '',
+  draft: false,
+  headBranch: `feature/${number}`,
+  labels: [],
+  number,
+  title,
+  updatedAt: '2026-09-28T10:00:00Z',
+  url: `https://github.com/owner/repo/pull/${number}`,
+})
+
 const getRootNodeCount = (nodes: readonly VirtualDomNode[]): number => {
   const getNodeSize = (index: number, parentIndex = -1): number => {
     if (!nodes[index]) throw new globalThis.Error(`Virtual DOM requested a missing node at index ${index} from ${JSON.stringify(nodes[parentIndex])}`)
@@ -62,6 +76,40 @@ test('renders repository pull request list with open and closed tabs', () => {
   expect(dom.some((node) => node.text === 'Closed')).toBe(true)
   expect(dom.some((node) => node.name === 'openPullRequest:42')).toBe(true)
   expect(dom.some((node) => node.text === 'Add feature')).toBe(true)
+})
+
+test('moves the selection count and mark-as menu into the list header', () => {
+  const dom = getPullRequestVirtualDom(
+    createState({
+      actionMenuOpen: true,
+      pullRequests: [getPullRequest(42), getPullRequest(43)],
+      selectedPullRequestNumbers: [42],
+      status: Ready,
+    }),
+  )
+
+  expect(getRootNodeCount(dom)).toBe(1)
+  const selectAll = dom.find((node) => node.name === 'toggleAllPullRequests')
+  expect(selectAll).toMatchObject({ ariaChecked: 'mixed', checked: false })
+  expect(dom.some((node) => node.className === 'PullRequestSelectionActions')).toBe(true)
+  expect(dom.some((node) => node.className === 'PullRequestTabs')).toBe(false)
+  expect(dom.some((node) => node.text === '1 selected')).toBe(true)
+  expect(dom.some((node) => node.className === 'PullRequestActionMenu')).toBe(true)
+  expect(dom.some((node) => node.name === 'bulkPullRequest:close')).toBe(true)
+})
+
+test('select-all state follows visible rows when a search hides selected pull requests', () => {
+  const dom = getPullRequestVirtualDom(
+    createState({
+      pullRequests: [getPullRequest(42, 'Visible pull request'), getPullRequest(43, 'Hidden pull request')],
+      query: 'Visible',
+      selectedPullRequestNumbers: [42, 43],
+      status: Ready,
+    }),
+  )
+
+  expect(dom.find((node) => node.name === 'toggleAllPullRequests')).toMatchObject({ ariaChecked: true, checked: true })
+  expect(dom.some((node) => node.text === '2 selected')).toBe(true)
 })
 
 test('renders empty closed pull request state', () => {
