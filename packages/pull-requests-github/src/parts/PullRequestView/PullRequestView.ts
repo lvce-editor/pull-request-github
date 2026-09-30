@@ -410,7 +410,7 @@ export const create = (
       }
       nextSelectedPullRequestNumbers = nextSelectedPullRequestNumbers.filter((number) => number !== pullRequest.number)
       nextOpenPullRequests = nextOpenPullRequests.filter((item) => item.number !== pullRequest.number)
-      const updated = { ...pullRequest, ...(action === 'archive' && { archived: true }), ...(action === 'unarchive' && { archived: false }) }
+      const updated = { ...pullRequest, ...(action === 'archive' && { isArchived: true }), ...(action === 'unarchive' && { isArchived: false }) }
       if (nextClosedPullRequests.every((item) => item.number !== updated.number)) nextClosedPullRequests.push(updated)
       else nextClosedPullRequests = nextClosedPullRequests.map((item) => (item.number === updated.number ? updated : item))
     }

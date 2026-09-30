@@ -30,13 +30,13 @@ test('toPullRequestListItem maps GitHub response data', () => {
       user: { login: 'mira.k' },
     }),
   ).toEqual({
-    archived: true,
     author: 'mira.k',
     baseBranch: 'main',
     comments: 12,
     description: 'description',
     draft: false,
     headBranch: 'feature',
+    isArchived: true,
     labels: [{ color: '1d76db', name: 'feature' }],
     nodeId: 'PR_node_42',
     number: 42,
@@ -44,6 +44,14 @@ test('toPullRequestListItem maps GitHub response data', () => {
     updatedAt: '2026-08-18T10:00:00.000Z',
     url: 'https://github.com/owner/repo/pull/42',
   })
+})
+
+test('toPullRequestListItem normalizes a false archive state', () => {
+  expect(toPullRequestListItem({ is_archived: false })).toMatchObject({ isArchived: false })
+})
+
+test('toPullRequestListItem defaults missing archive state to false', () => {
+  expect(toPullRequestListItem({})).toMatchObject({ isArchived: false })
 })
 
 test('fetchPullRequests requests the selected state', async () => {

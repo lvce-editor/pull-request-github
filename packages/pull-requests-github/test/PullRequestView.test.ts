@@ -357,9 +357,25 @@ test('preserves failed items for retry after mixed bulk results', async () => {
   await view.handleEvent({ name: 'bulkPullRequest:archive', type: 'click' })
 
   expect(view.getComponentState().openPullRequests).toEqual([secondPullRequest])
-  expect(view.getComponentState().closedPullRequests).toEqual([{ ...pullRequest, archived: true }])
+  expect(view.getComponentState().closedPullRequests).toEqual([{ ...pullRequest, isArchived: true }])
   expect(view.getComponentState().selectedPullRequestNumbers).toEqual([43])
   expect(view.render().some((node) => node.text === '#43: Permission denied')).toBe(true)
+  view.dispose()
+})
+
+test('sets archive state to false after unarchive', async () => {
+  const archivedPullRequest: PullRequestListItem = { ...pullRequest, isArchived: true }
+  const fetchPullRequests = jest
+    .fn<(repository: GitHubRepository, filter: PullRequestFilter) => Promise<readonly PullRequestListItem[]>>()
+    .mockImplementation(async (_repository, filter) => (filter === 'closed' ? [archivedPullRequest] : []))
+  const dependencies = createDependencies({ fetchPullRequests })
+  const view = await create(undefined, dependencies)
+  view.handlePullRequestSelection('togglePullRequest:42', true)
+
+  await view.handleEvent({ name: 'bulkPullRequest:unarchive', type: 'click' })
+
+  expect(dependencies.mutatePullRequest).toHaveBeenCalledWith('token', 'unarchive', 'PR_node_42')
+  expect(view.getComponentState().closedPullRequests).toEqual([{ ...pullRequest, isArchived: false }])
   view.dispose()
 })
 
