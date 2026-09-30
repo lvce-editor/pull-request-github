@@ -140,7 +140,7 @@ const actionMenuNode: VirtualDomNode = {
   type: VirtualDomElements.Button,
 }
 const actionMenuListNode: VirtualDomNode = {
-  childCount: 6,
+  childCount: 3,
   className: 'PullRequestActionMenu',
   role: AriaRoles.Menu,
   type: VirtualDomElements.Div,
@@ -152,6 +152,7 @@ const actionMenuContainerNode: VirtualDomNode = {
 const actionMenuItemNode: VirtualDomNode = {
   childCount: 1,
   className: 'PullRequestActionMenuItem',
+  onClick: DomEventListenerFunctions.HandleClick,
   role: AriaRoles.MenuItem,
   type: VirtualDomElements.Button,
 }
@@ -194,12 +195,12 @@ const renderSelectionActions = (state: PullRequestViewState): readonly VirtualDo
     checked: visiblePullRequests.length > 0 && visibleSelectionCount === visiblePullRequests.length,
     className: mixedSelection ? 'PullRequestSelectAllCheckbox PullRequestSelectAllCheckboxMixed' : 'PullRequestSelectAllCheckbox',
   }
-  let childCount = 4
+  let childCount = 3
   const nodes: VirtualDomNode[] = [
     selectionCheckbox,
     selectCountNode,
     text(`${selectedCount} selected`),
-    { ...actionMenuContainerNode, childCount: actionMenuOpen ? 3 : 2 },
+    { ...actionMenuContainerNode, childCount: actionMenuOpen ? 2 : 1 },
     { ...actionMenuNode, ariaExpanded: actionMenuOpen },
     text('Mark as'),
   ]

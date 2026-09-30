@@ -88,6 +88,7 @@ test('moves the selection count and mark-as menu into the list header', () => {
     }),
   )
 
+  expect(getRootNodeCount(dom)).toBe(1)
   const selectAll = dom.find((node) => node.name === 'toggleAllPullRequests')
   expect(selectAll).toMatchObject({ ariaChecked: 'mixed', checked: false })
   expect(dom.some((node) => node.className === 'PullRequestSelectionActions')).toBe(true)
