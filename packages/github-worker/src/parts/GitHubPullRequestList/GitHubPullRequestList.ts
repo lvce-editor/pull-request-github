@@ -56,13 +56,13 @@ const toLabels = (value: unknown): PullRequestListItem['labels'] => {
 
 export const toPullRequestListItem = (response: GitHubPullRequestListResponse): PullRequestListItem => {
   return {
-    archived: response.is_archived === true,
     author: assertString(response.user?.login),
     baseBranch: assertString(response.base?.ref),
     comments: typeof response.comments === 'number' ? response.comments : 0,
     description: assertString(response.body),
     draft: response.draft === true,
     headBranch: assertString(response.head?.ref),
+    isArchived: response.is_archived === true,
     labels: toLabels(response.labels),
     nodeId: assertString(response.node_id),
     number: typeof response.number === 'number' ? response.number : 0,
