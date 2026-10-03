@@ -76,3 +76,58 @@ test('renderPullRequest renders overview fallbacks', () => {
     ]),
   )
 })
+
+test('renderPullRequest shows mixed check results in the overview', () => {
+  const dom = renderPullRequest({
+    baseBranch: 'main',
+    checks: [
+      { conclusion: 'failure', detailsUrl: 'https://github.com/owner/repo/actions/runs/1', name: 'Windows', status: 'completed' },
+      ...['macOS', 'Linux ARM', 'Linux'].map((name) => ({
+        conclusion: 'success',
+        detailsUrl: 'https://github.com/owner/repo/actions/runs/2',
+        name,
+        status: 'completed',
+      })),
+    ],
+    checksStatus: 'loaded',
+    commits: [],
+    description: '',
+    files: [],
+    headBranch: 'feature',
+    title: 'Add feature',
+  })
+
+  expect(dom).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ text: '1 failing, 3 successful' }),
+      expect.objectContaining({ text: 'Windows' }),
+      expect.objectContaining({ text: 'macOS' }),
+      expect.objectContaining({ className: 'PullRequestCheck PullRequestCheck-failed', name: 'openPullRequestCheck:0' }),
+      expect.objectContaining({ text: 'passed' }),
+    ]),
+  )
+})
+
+test('renderPullRequest distinguishes unavailable checks from an empty check list', () => {
+  const unavailable = renderPullRequest({
+    baseBranch: '',
+    checksStatus: 'unavailable',
+    commits: [],
+    description: '',
+    files: [],
+    headBranch: '',
+    title: '',
+  })
+  const empty = renderPullRequest({
+    baseBranch: '',
+    checks: [],
+    checksStatus: 'loaded',
+    commits: [],
+    description: '',
+    files: [],
+    headBranch: '',
+    title: '',
+  })
+  expect(unavailable).toContainEqual(expect.objectContaining({ text: 'Check status is unavailable' }))
+  expect(empty).toContainEqual(expect.objectContaining({ text: 'No checks reported' }))
+})

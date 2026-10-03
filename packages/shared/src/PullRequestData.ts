@@ -12,6 +12,13 @@ export interface PullRequestFile {
   readonly status: string
 }
 
+export interface PullRequestCheck {
+  readonly conclusion: string | null
+  readonly detailsUrl: string
+  readonly name: string
+  readonly status: string
+}
+
 export interface PullRequestSummary {
   readonly baseBranch: string
   readonly description: string
@@ -21,6 +28,8 @@ export interface PullRequestSummary {
 
 export interface PullRequestData extends PullRequestSummary {
   readonly author?: string
+  readonly checks?: readonly PullRequestCheck[]
+  readonly checksStatus?: 'loaded' | 'unavailable'
   readonly comments?: number
   readonly commits: readonly PullRequestCommit[]
   readonly draft?: boolean

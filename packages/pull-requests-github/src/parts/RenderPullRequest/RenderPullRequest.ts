@@ -1,6 +1,7 @@
 import type { PullRequestData } from '@lvce-editor/pull-request-shared'
 import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
 import { AriaRoles, mergeClassNames, text, VirtualDomElements } from '@lvce-editor/virtual-dom-worker'
+import * as DomEventListenerFunctions from '../DomEventListenerFunctions/DomEventListenerFunctions.ts'
 
 const metaRowNode: VirtualDomNode = {
   childCount: 2,
@@ -38,6 +39,30 @@ const conversationPanelNode: VirtualDomNode = {
   type: VirtualDomElements.Div,
 }
 
+const checksPanelNode: VirtualDomNode = {
+  childCount: 2,
+  className: mergeClassNames('PullRequestOverviewSideCard', 'PullRequestChecksPanel'),
+  type: VirtualDomElements.Div,
+}
+
+const checkSummaryNode: VirtualDomNode = {
+  childCount: 1,
+  className: 'PullRequestChecksSummary',
+  type: VirtualDomElements.Div,
+}
+
+const checkOutcomeNode: VirtualDomNode = {
+  childCount: 1,
+  className: 'PullRequestCheckOutcome',
+  type: VirtualDomElements.Span,
+}
+
+const checkNameNode: VirtualDomNode = {
+  childCount: 1,
+  className: 'PullRequestCheckName',
+  type: VirtualDomElements.Span,
+}
+
 const conversationNode: VirtualDomNode = {
   childCount: 2,
   className: 'PullRequestOverviewConversation',
@@ -59,7 +84,7 @@ const overviewNode: VirtualDomNode = {
 }
 
 const overviewMainNode: VirtualDomNode = {
-  childCount: 1,
+  childCount: 2,
   className: 'PullRequestOverviewMain',
   type: VirtualDomElements.Div,
 }
@@ -178,11 +203,83 @@ const renderConversationPanel = (pullRequest: PullRequestData): readonly Virtual
   ]
 }
 
+const getCheckOutcome = (check: NonNullable<PullRequestData['checks']>[number]): string => {
+  if (check.status !== 'completed') return 'pending'
+  switch (check.conclusion) {
+    case 'action_required':
+    case 'failure':
+    case 'timed_out':
+      return 'failed'
+    case 'cancelled':
+      return 'cancelled'
+    case 'skipped':
+      return 'skipped'
+    case 'success':
+      return 'passed'
+    default:
+      return 'unknown'
+  }
+}
+
+const renderChecksPanel = (pullRequest: PullRequestData): readonly VirtualDomNode[] => {
+  if (pullRequest.checksStatus === 'unavailable') {
+    return [checksPanelNode, sideHeadingNode, text('Checks'), checkSummaryNode, text('Check status is unavailable')]
+  }
+  const checks = pullRequest.checks ?? []
+  if (checks.length === 0) {
+    return [checksPanelNode, sideHeadingNode, text('Checks'), checkSummaryNode, text('No checks reported')]
+  }
+  const outcomes = checks.map(getCheckOutcome)
+  const passed = outcomes.filter((outcome) => outcome === 'passed').length
+  const failed = outcomes.filter((outcome) => outcome === 'failed').length
+  const pending = outcomes.filter((outcome) => outcome === 'pending').length
+  const summary =
+    [failed && `${failed} failing`, passed && `${passed} successful`, pending > 0 && `${pending} pending`].filter(Boolean).join(', ') ||
+    `${checks.length} checks`
+  return [
+    { ...checksPanelNode, childCount: 3 },
+    sideHeadingNode,
+    text('Checks'),
+    checkSummaryNode,
+    text(summary),
+    {
+      childCount: checks.length,
+      className: 'PullRequestCheckList',
+      type: VirtualDomElements.Div,
+    },
+    ...checks.flatMap((check, index) => {
+      const outcome = outcomes[index]
+      const hasLog = canOpenCheckLog(check.detailsUrl)
+      return [
+        {
+          ariaLabel: `${check.name}: ${outcome}`,
+          childCount: 2,
+          className: mergeClassNames('PullRequestCheck', `PullRequestCheck-${outcome}`),
+          disabled: !hasLog,
+          name: `openPullRequestCheck:${index}`,
+          onClick: DomEventListenerFunctions.HandleClick,
+          type: VirtualDomElements.Button,
+        },
+        checkOutcomeNode,
+        text(outcome),
+        checkNameNode,
+        text(check.name),
+      ]
+    }),
+  ]
+}
+
 const getDescriptionChildren = (descriptionVirtualDom: readonly VirtualDomNode[]): readonly VirtualDomNode[] => {
   if (descriptionVirtualDom.length > 0) {
     return descriptionVirtualDom
   }
   return [text('No description')]
+}
+
+const canOpenCheckLog = (url: string): boolean => {
+  if (!URL.canParse(url)) return false
+  const parsedUrl = new URL(url)
+  return parsedUrl.protocol === 'https:' && parsedUrl.hostname === 'github.com'
 }
 
 export const renderPullRequest = (pullRequest: PullRequestData, descriptionVirtualDom: readonly VirtualDomNode[] = []): readonly VirtualDomNode[] => {
@@ -198,6 +295,7 @@ export const renderPullRequest = (pullRequest: PullRequestData, descriptionVirtu
     text(openedBy),
     overviewDescriptionNode,
     ...getDescriptionChildren(descriptionVirtualDom),
+    ...renderChecksPanel(pullRequest),
     {
       childCount: 2 + (labels.length > 0 ? 1 : 0),
       className: 'PullRequestOverviewSidebar',

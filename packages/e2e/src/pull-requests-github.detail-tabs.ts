@@ -49,6 +49,21 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestListData', 'lvce-editor', 'pull-request-github', 'closed', [])
   await Command.executeExtensionCommand('PullRequestsGithub.setPullRequestData', url, {
     baseBranch: 'main',
+    checks: [
+      {
+        conclusion: 'failure',
+        detailsUrl: 'https://github.com/lvce-editor/pull-request-github/actions/runs/1',
+        name: 'PR / pr (windows-2025)',
+        status: 'completed',
+      },
+      ...['macos-15', 'ubuntu-24.04-arm', 'ubuntu-24.04'].map((name) => ({
+        conclusion: 'success',
+        detailsUrl: 'https://github.com/lvce-editor/pull-request-github/actions/runs/1',
+        name: `PR / pr (${name})`,
+        status: 'completed',
+      })),
+    ],
+    checksStatus: 'loaded',
     commits: [
       {
         author: 'mira-k',
@@ -138,6 +153,11 @@ export const test: Test = async ({ Command, expect, FileSystem, Locator, Workspa
   await expect(overview).toContainText('feature')
   await expect(overview).toContainText('needs-review')
   await expect(overview).toContainText('12 comments')
+  const checksPanel = Locator('.PullRequestChecksPanel')
+  const checkRows = checksPanel.locator('.PullRequestCheck')
+  await expect(checksPanel).toContainText('1 failing, 3 successful')
+  await expect(checksPanel).toContainText('PR / pr (windows-2025)')
+  await expect(checkRows).toHaveCount(4)
 
   await Command.execute('Layout.setExplicitBounds', 1200, 720)
   await Command.execute('Layout.moveSideBarLeft')

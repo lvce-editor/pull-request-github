@@ -12,6 +12,7 @@ export interface PullRequestMockError {
 }
 
 export interface PullRequestMockResponse {
+  readonly checks: unknown
   readonly commits: unknown
   readonly files: unknown
   readonly pullRequest: unknown
@@ -53,8 +54,9 @@ export const setPullRequestError = (url: string, message: string): void => {
   })
 }
 
-export const setPullRequestResponse = (url: string, pullRequest: unknown, commits: unknown, files: unknown): void => {
+export const setPullRequestResponse = (url: string, pullRequest: unknown, commits: unknown, files: unknown, checks: unknown = []): void => {
   mocks.set(getPullRequestApiUrl(url), {
+    checks,
     commits,
     files,
     pullRequest,

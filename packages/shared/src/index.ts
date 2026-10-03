@@ -1,7 +1,7 @@
 export * as ErrorCodes from './ErrorCode.ts'
 export type { ErrorCode } from './ErrorCode.ts'
 export type { GitHubRepository } from './GitHubRepository.ts'
-export type { PullRequestCommit, PullRequestData, PullRequestFile, PullRequestSummary } from './PullRequestData.ts'
+export type { PullRequestCheck, PullRequestCommit, PullRequestData, PullRequestFile, PullRequestSummary } from './PullRequestData.ts'
 export { PullRequestError } from './PullRequestError.ts'
 export { Closed, Open, type PullRequestFilter } from './PullRequestFilter.ts'
 export type { PullRequestLabel, PullRequestListItem } from './PullRequestListItem.ts'
