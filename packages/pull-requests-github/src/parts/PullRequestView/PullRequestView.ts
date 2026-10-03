@@ -1,5 +1,5 @@
 import type { VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
-import { markdownToVirtualDom, type View, type ViewContext, type ViewEvent, type VirtualDomViewInstance } from '@lvce-editor/api'
+import { executeCommand, markdownToVirtualDom, type View, type ViewContext, type ViewEvent, type VirtualDomViewInstance } from '@lvce-editor/api'
 import { WhenExpression } from '@lvce-editor/constants'
 import {
   Closed,
@@ -55,10 +55,17 @@ interface PullRequestViewDependencies {
   readonly getRepository: () => Promise<GitHubRepository>
   readonly getToken?: () => Promise<string>
   readonly mutatePullRequest?: (token: string, action: 'archive' | 'close' | 'unarchive', pullRequestId: string) => Promise<void>
+  readonly openExternal?: (url: string) => Promise<void>
 }
 
 type ActionTokenResult = Error | string
 type PullRequestAction = 'archive' | 'close' | 'unarchive'
+
+const isGitHubCheckUrl = (url: string): boolean => {
+  if (!URL.canParse(url)) return false
+  const parsedUrl = new URL(url)
+  return parsedUrl.protocol === 'https:' && parsedUrl.hostname === 'github.com'
+}
 
 const getBulkAction = (name: string): PullRequestAction | undefined => {
   const action = name.slice('bulkPullRequest:'.length)
@@ -487,6 +494,21 @@ export const create = (
 
   const createInstance = async (): Promise<PullRequestViewInstance> => {
     await loadRepository(false)
+    const openPullRequestCheck = async (name: string): Promise<boolean> => {
+      if (!name.startsWith('openPullRequestCheck:')) return false
+      const index = Number(name.slice('openPullRequestCheck:'.length))
+      const { pullRequest } = state
+      const check = pullRequest?.checks?.[index]
+      if (check && isGitHubCheckUrl(check.detailsUrl)) {
+        const openExternal =
+          dependencies.openExternal ??
+          (async (url: string): Promise<void> => {
+            await executeCommand('Open.openExternal', url)
+          })
+        await openExternal(check.detailsUrl)
+      }
+      return true
+    }
     const handleClick = async (name: string): Promise<void> => {
       const { actionPending, pullRequests } = state
       if (actionPending) return
@@ -535,6 +557,7 @@ export const create = (
         }
         return
       }
+      if (await openPullRequestCheck(name)) return
       if (name.startsWith('openPullRequest:')) {
         const number = Number(name.slice('openPullRequest:'.length))
         const pullRequest = pullRequests.find((item) => item.number === number)

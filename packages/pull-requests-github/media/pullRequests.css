@@ -1267,3 +1267,64 @@ textarea.PullRequestCreateInput {
 .PullRequestPagination button:focus-visible {
   outline: 1px solid var(--PullRequestAccent);
 }
+
+.PullRequestChecksSummary {
+  color: var(--PullRequestMuted);
+  font-size: 12px;
+}
+
+.PullRequestCheckList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.PullRequestCheck {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  color: var(--PullRequestForeground);
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+
+.PullRequestCheck:not(:disabled) {
+  cursor: pointer;
+}
+
+.PullRequestCheck:not(:disabled):hover {
+  background: var(--PullRequestSurfaceRaised);
+}
+
+.PullRequestCheck:focus-visible {
+  outline: 1px solid var(--PullRequestAccent);
+}
+
+.PullRequestCheckName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.PullRequestCheckOutcome {
+  flex: none;
+  color: var(--PullRequestMuted);
+  font-size: 11px;
+}
+
+.PullRequestCheck-passed .PullRequestCheckOutcome {
+  color: var(--PullRequestOpen);
+}
+
+.PullRequestCheck-failed .PullRequestCheckOutcome {
+  color: var(--PullRequestClosed);
+}
+
+.PullRequestCheck-pending .PullRequestCheckOutcome {
+  color: var(--PullRequestWarn);
+}

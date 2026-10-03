@@ -79,6 +79,7 @@ test('setPullRequestResponse stores raw github responses', () => {
   setPullRequestResponse('https://github.com/owner/repo/pull/7', { title: 'Title' }, [], [])
 
   expect(getMockPullRequest('https://github.com/owner/repo/pull/7')).toEqual({
+    checks: [],
     commits: [],
     files: [],
     pullRequest: { title: 'Title' },

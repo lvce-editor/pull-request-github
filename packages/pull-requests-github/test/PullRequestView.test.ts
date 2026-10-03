@@ -59,6 +59,7 @@ interface Dependencies {
   readonly getRepository: () => Promise<GitHubRepository>
   readonly getToken: () => Promise<string>
   readonly mutatePullRequest: (token: string, action: PullRequestAction, pullRequestId: string) => Promise<void>
+  readonly openExternal: (url: string) => Promise<void>
 }
 
 const createDependencies = (overrides: Readonly<Partial<Dependencies>> = {}): Dependencies => {
@@ -74,6 +75,7 @@ const createDependencies = (overrides: Readonly<Partial<Dependencies>> = {}): De
     mutatePullRequest: jest
       .fn<(token: string, action: 'archive' | 'close' | 'unarchive', pullRequestId: string) => Promise<void>>()
       .mockResolvedValue(),
+    openExternal: jest.fn<(url: string) => Promise<void>>().mockResolvedValue(),
     ...overrides,
   }
   return {
@@ -86,6 +88,40 @@ const createDependencies = (overrides: Readonly<Partial<Dependencies>> = {}): De
       }),
   }
 }
+
+test('opens the selected check log through the Simple Browser command', async () => {
+  const openExternal = jest.fn<(url: string) => Promise<void>>().mockResolvedValue()
+  const dependencies = createDependencies({
+    fetchPullRequest: async () => ({
+      ...pullRequestDetail,
+      checks: [{ conclusion: 'failure', detailsUrl: 'https://github.com/owner/repo/actions/runs/123', name: 'windows', status: 'completed' }],
+      checksStatus: 'loaded',
+    }),
+    openExternal,
+  })
+  const view = await create(undefined, dependencies)
+  await view.handleEvent({ name: 'openPullRequest:42', type: 'click' })
+  await view.handleEvent({ name: 'openPullRequestCheck:0', type: 'click' })
+  expect(openExternal).toHaveBeenCalledWith('https://github.com/owner/repo/actions/runs/123')
+  view.dispose()
+})
+
+test('does not open non-GitHub check log URLs', async () => {
+  const openExternal = jest.fn<(url: string) => Promise<void>>().mockResolvedValue()
+  const dependencies = createDependencies({
+    fetchPullRequest: async () => ({
+      ...pullRequestDetail,
+      checks: [{ conclusion: 'success', detailsUrl: 'https://example.com/log', name: 'check', status: 'completed' }],
+      checksStatus: 'loaded',
+    }),
+    openExternal,
+  })
+  const view = await create(undefined, dependencies)
+  await view.handleEvent({ name: 'openPullRequest:42', type: 'click' })
+  await view.handleEvent({ name: 'openPullRequestCheck:0', type: 'click' })
+  expect(openExternal).not.toHaveBeenCalled()
+  view.dispose()
+})
 
 afterEach(() => {
   jest.restoreAllMocks()

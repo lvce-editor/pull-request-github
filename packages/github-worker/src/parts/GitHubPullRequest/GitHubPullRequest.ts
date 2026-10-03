@@ -1,6 +1,7 @@
 import {
   ErrorCodes,
   type PullRequestCommit,
+  type PullRequestCheck,
   type PullRequestData,
   PullRequestError,
   type PullRequestFile,
@@ -16,9 +17,21 @@ interface GitHubPullResponse {
   readonly body?: unknown
   readonly head?: {
     readonly ref?: unknown
+    readonly sha?: unknown
   }
   readonly message?: unknown
   readonly title?: unknown
+}
+
+interface GitHubCheckRunResponse {
+  readonly conclusion?: unknown
+  readonly details_url?: unknown
+  readonly name?: unknown
+  readonly status?: unknown
+}
+
+interface GitHubCheckRunsResponse {
+  readonly check_runs?: unknown
 }
 
 interface GitHubCommitResponse {
@@ -72,6 +85,44 @@ export const toPullRequestFile = (response: GitHubFileResponse): PullRequestFile
     filename: assertString(response.filename),
     patch: assertString(response.patch),
     status: assertString(response.status),
+  }
+}
+
+export const toPullRequestCheck = (response: unknown): PullRequestCheck => {
+  const check = response && typeof response === 'object' ? (response as GitHubCheckRunResponse) : {}
+  return {
+    conclusion: typeof check.conclusion === 'string' ? check.conclusion : null,
+    detailsUrl: assertString(check.details_url),
+    name: assertString(check.name),
+    status: assertString(check.status),
+  }
+}
+
+const fetchPullRequestChecks = async (
+  owner: string,
+  repo: string,
+  headSha: string,
+  fetchFn: typeof fetch,
+): Promise<readonly PullRequestCheck[] | undefined> => {
+  try {
+    const checks: unknown[] = []
+    let checksUrl = `https://api.github.com/repos/${owner}/${repo}/commits/${headSha}/check-runs?per_page=100`
+    while (checksUrl) {
+      const response: Response = await fetchFn(checksUrl, { headers: { Accept: 'application/vnd.github+json' } })
+      const json = (await response.json()) as GitHubCheckRunsResponse
+      if (!response.ok || !Array.isArray(json.check_runs)) return undefined
+      checks.push(...json.check_runs)
+      const link = response.headers?.get('link') || ''
+      const next = link
+        .split(',')
+        .find((part) => part.includes('rel="next"'))
+        ?.split(';', 1)[0]
+        ?.trim()
+      checksUrl = next?.startsWith('<') && next.endsWith('>') ? next.slice(1, -1) : ''
+    }
+    return checks.map(toPullRequestCheck)
+  } catch {
+    return undefined
   }
 }
 
@@ -157,10 +208,12 @@ export const fetchPullRequest = async (url: string, fetchFn: typeof fetch = fetc
   let pullRequestResponse: unknown
   let commitResponse: unknown
   let fileResponse: unknown
+  let checkRunResponse: unknown
   if (mock?.type === 'response') {
     pullRequestResponse = mock.pullRequest
     commitResponse = mock.commits
     fileResponse = mock.files
+    checkRunResponse = mock.checks
   } else {
     try {
       const location = parsePullRequestUrl(url)
@@ -177,10 +230,13 @@ export const fetchPullRequest = async (url: string, fetchFn: typeof fetch = fetc
         }
         return json
       }
-      const responses = await Promise.all([fetchJson(apiUrl), fetchJson(`${apiUrl}/commits?per_page=100`), fetchJson(`${apiUrl}/files?per_page=100`)])
-      pullRequestResponse = responses[0]
-      commitResponse = responses[1]
-      fileResponse = responses[2]
+      const pullRequest = (await fetchJson(apiUrl)) as GitHubPullResponse
+      const responses = await Promise.all([fetchJson(`${apiUrl}/commits?per_page=100`), fetchJson(`${apiUrl}/files?per_page=100`)])
+      pullRequestResponse = pullRequest
+      commitResponse = responses[0]
+      fileResponse = responses[1]
+      const headSha = assertString(pullRequest.head?.sha)
+      checkRunResponse = headSha ? await fetchPullRequestChecks(location.owner, location.repo, headSha, fetchFn) : undefined
     } catch (error) {
       throw toPullRequestError(error, ErrorCodes.GitHubRequestFailed)
     }
@@ -193,5 +249,9 @@ export const fetchPullRequest = async (url: string, fetchFn: typeof fetch = fetc
   }
   const commits = commitResponse.map(toPullRequestCommit)
   const files = fileResponse.map(toPullRequestFile)
-  return toPullRequestData(pullRequestResponse as GitHubPullResponse, commits, files)
+  return {
+    ...toPullRequestData(pullRequestResponse as GitHubPullResponse, commits, files),
+    checks: Array.isArray(checkRunResponse) ? checkRunResponse : [],
+    checksStatus: Array.isArray(checkRunResponse) ? 'loaded' : 'unavailable',
+  }
 }

@@ -17,7 +17,7 @@ export interface GitHubWorkerRpc {
   readonly setPullRequestListData: (owner: string, repo: string, state: PullRequestFilter, data: readonly PullRequestListItem[]) => Promise<void>
   readonly setPullRequestListError: (owner: string, repo: string, state: PullRequestFilter, message: string) => Promise<void>
   readonly setPullRequestListResponse: (owner: string, repo: string, state: PullRequestFilter, data: unknown) => Promise<void>
-  readonly setPullRequestResponse: (url: string, pullRequest: unknown, commits: unknown, files: unknown) => Promise<void>
+  readonly setPullRequestResponse: (url: string, pullRequest: unknown, commits: unknown, files: unknown, checks?: unknown) => Promise<void>
   readonly validatePullRequestUrl: (url: string) => Promise<void>
 }
 
@@ -64,8 +64,8 @@ export const create = (getRpc: GetRpc): GitHubWorkerRpc => {
     setPullRequestListResponse(owner: string, repo: string, state: PullRequestFilter, data: unknown): Promise<void> {
       return invoke('GitHub.setPullRequestListResponse', owner, repo, state, data)
     },
-    setPullRequestResponse(url: string, pullRequest: unknown, commits: unknown, files: unknown): Promise<void> {
-      return invoke('GitHub.setPullRequestResponse', url, pullRequest, commits, files)
+    setPullRequestResponse(url: string, pullRequest: unknown, commits: unknown, files: unknown, checks?: unknown): Promise<void> {
+      return invoke('GitHub.setPullRequestResponse', url, pullRequest, commits, files, ...(checks === undefined ? [] : [checks]))
     },
     validatePullRequestUrl(url: string): Promise<void> {
       return invoke('GitHub.validatePullRequestUrl', url)

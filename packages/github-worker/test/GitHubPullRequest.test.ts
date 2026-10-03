@@ -36,7 +36,7 @@ const createDiffFetch = (): { readonly calls: readonly unknown[]; readonly fetch
       status: 200,
       text: async () =>
         `diff --git a/src/large.ts b/src/large.ts\nindex 123..456 100644\n--- a/src/large.ts\n+++ b/src/large.ts\n@@ -1 +1 @@\n-old\n+new\ndiff --git a/src/other.ts b/src/other.ts\n--- a/src/other.ts\n+++ b/src/other.ts\n@@ -1 +1 @@\n-old\n+other`,
-    } as Response
+    } as unknown as Response
   }
   return { calls, fetchFn }
 }
@@ -120,7 +120,11 @@ test('fetchPullRequest fetches public github pull request', async () => {
     }
     calls.push([requestUrl, options])
     let json: unknown
-    if (requestUrl.endsWith('/commits?per_page=100')) {
+    if (requestUrl.endsWith('/check-runs?per_page=100')) {
+      json = {
+        check_runs: [{ conclusion: 'success', details_url: 'https://github.com/owner/repo/actions/runs/1', name: 'lint', status: 'completed' }],
+      }
+    } else if (requestUrl.endsWith('/commits?per_page=100')) {
       json = [
         {
           author: { login: 'test-user' },
@@ -146,19 +150,23 @@ test('fetchPullRequest fetches public github pull request', async () => {
         body: 'description',
         head: {
           ref: 'feature',
+          sha: 'abcdef1234567890',
         },
         title: 'Add feature',
       }
     }
     return {
+      headers: { get: () => null },
       json: async () => json,
       ok: true,
       status: 200,
-    } as Response
+    } as unknown as Response
   }
 
   await expect(fetchPullRequest('https://github.com/owner/repo/pull/7', fetchFn)).resolves.toEqual({
     baseBranch: 'main',
+    checks: [{ conclusion: 'success', detailsUrl: 'https://github.com/owner/repo/actions/runs/1', name: 'lint', status: 'completed' }],
+    checksStatus: 'loaded',
     commits: [
       {
         author: 'test-user',
@@ -204,7 +212,54 @@ test('fetchPullRequest fetches public github pull request', async () => {
         },
       },
     ],
+    [
+      'https://api.github.com/repos/owner/repo/commits/abcdef1234567890/check-runs?per_page=100',
+      { headers: { Accept: 'application/vnd.github+json' } },
+    ],
   ])
+})
+
+test('fetchPullRequest keeps check failures separate from pull request detail', async () => {
+  let requestIndex = 0
+  const fetchFn: typeof fetch = async (): Promise<Response> => {
+    const currentRequest = requestIndex++
+    if (currentRequest === 3) {
+      return { json: async () => ({ message: 'Unavailable' }), ok: false, status: 500 } as Response
+    }
+    const json = currentRequest === 1 || currentRequest === 2 ? [] : { head: { sha: 'head-sha' } }
+    return { headers: { get: () => null }, json: async () => json, ok: true, status: 200 } as unknown as Response
+  }
+  const data = await fetchPullRequest('https://github.com/owner/repo/pull/7', fetchFn)
+  expect(requestIndex).toBe(4)
+  expect(data.checksStatus).toBe('unavailable')
+  expect(data.checks).toEqual([])
+})
+
+test('fetchPullRequest follows check run pagination for the current head', async () => {
+  let requestIndex = 0
+  const fetchFn: typeof fetch = async (): Promise<Response> => {
+    const currentRequest = requestIndex++
+    if (currentRequest >= 3) {
+      const secondPage = currentRequest === 4
+      return {
+        headers: {
+          get: () => (secondPage ? null : '<https://api.github.com/repos/owner/repo/commits/head-sha/check-runs?per_page=100&page=2>; rel="next"'),
+        },
+        json: async () => ({
+          check_runs: secondPage
+            ? [{ conclusion: 'success', details_url: 'https://github.com/owner/repo/actions/runs/2', name: 'second page', status: 'completed' }]
+            : [],
+        }),
+        ok: true,
+        status: 200,
+      } as unknown as Response
+    }
+    const json = currentRequest === 1 || currentRequest === 2 ? [] : { head: { sha: 'head-sha' } }
+    return { json: async () => json, ok: true, status: 200 } as unknown as Response
+  }
+  const data = await fetchPullRequest('https://github.com/owner/repo/pull/7', fetchFn)
+  expect(requestIndex).toBe(5)
+  expect(data.checks?.map((check) => check.name)).toEqual(['second page'])
 })
 
 test('fetchPullRequest reports github error message', async () => {
