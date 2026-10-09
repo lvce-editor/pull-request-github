@@ -5,6 +5,8 @@ import { root } from './root.ts'
 
 const locations: string[] = [
   'package.json',
+  'packages/build/src/configureRuntime.ts',
+  'packages/build/src/postinstall.ts',
   'package-lock.json',
   '.github/workflows/pr.yml',
   '.github/workflows/ci.yml',

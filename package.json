@@ -17,7 +17,8 @@
     "measure": "cd packages/build && npm run measure",
     "measure:visible": "cd packages/build && npm run measure:visible",
     "test": "npm test --workspaces --if-present",
-    "type-check": "tsc -b"
+    "type-check": "tsc -b",
+    "postinstall": "node packages/build/src/postinstall.ts"
   },
   "prettier": {
     "semi": false,
