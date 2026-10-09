@@ -1,8 +1,11 @@
+import { configureRuntime } from './configureRuntime.ts'
 import { cp, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { githubPagesPath } from './githubPagesPath.ts'
 import { root } from './root.ts'
+
+await configureRuntime()
 
 const sharedProcessPath = join(root, 'node_modules', '@lvce-editor', 'shared-process', 'index.js')
 
