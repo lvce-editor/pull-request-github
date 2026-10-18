@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { root } from './root.ts'
 
 const locations: string[] = [
+  '.nvmrc',
   'package.json',
   'packages/build/src/configureRuntime.ts',
   'packages/build/src/postinstall.ts',
